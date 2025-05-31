@@ -1,12 +1,12 @@
 
-import { Mail, Phone, MapPin, Globe, Linkedin } from "lucide-react";
+import { Mail, Phone, MapPin, Globe, Linkedin, ExternalLink, Github } from "lucide-react";
 
 interface ClassicTemplateProps {
   data: any;
 }
 
 const ClassicTemplate = ({ data }: ClassicTemplateProps) => {
-  const { personalInfo, experience, education, skills } = data;
+  const { personalInfo, experience, education, skills, projects } = data;
 
   return (
     <div className="max-w-4xl mx-auto bg-white p-8 shadow-lg min-h-[297mm]">
@@ -85,6 +85,56 @@ const ClassicTemplate = ({ data }: ClassicTemplateProps) => {
                 <div className="text-gray-700 leading-relaxed whitespace-pre-line mt-2">
                   {exp.description}
                 </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Projects */}
+      {projects?.length > 0 && (
+        <section className="mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide border-b border-gray-300 pb-2">
+            Projects
+          </h2>
+          <div className="space-y-6">
+            {projects.map((project: any, index: number) => (
+              <div key={index}>
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
+                    <div className="flex space-x-4 mt-1">
+                      {project.url && (
+                        <div className="flex items-center space-x-1 text-gray-600">
+                          <ExternalLink className="w-3 h-3" />
+                          <span className="text-sm">Live Demo</span>
+                        </div>
+                      )}
+                      {project.github && (
+                        <div className="flex items-center space-x-1 text-gray-600">
+                          <Github className="w-3 h-3" />
+                          <span className="text-sm">GitHub</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {(project.startDate || project.endDate) && (
+                    <div className="text-right text-gray-600">
+                      <p className="font-medium">
+                        {project.startDate} {project.endDate && `- ${project.endDate}`}
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <div className="text-gray-700 leading-relaxed whitespace-pre-line mt-2">
+                  {project.description}
+                </div>
+                {project.technologies && (
+                  <div className="mt-2">
+                    <span className="text-gray-600 font-medium">Technologies: </span>
+                    <span className="text-gray-700">{project.technologies}</span>
+                  </div>
+                )}
               </div>
             ))}
           </div>

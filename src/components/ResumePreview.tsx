@@ -3,9 +3,13 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Download, Brain, Eye } from "lucide-react";
+import { Download, Brain, Eye, Palette } from "lucide-react";
 import ModernTemplate from "./templates/ModernTemplate";
 import ClassicTemplate from "./templates/ClassicTemplate";
+import CreativeTemplate from "./templates/CreativeTemplate";
+import MinimalTemplate from "./templates/MinimalTemplate";
+import ExecutiveTemplate from "./templates/ExecutiveTemplate";
+import TechTemplate from "./templates/TechTemplate";
 import AIAnalysis from "./AIAnalysis";
 
 interface ResumePreviewProps {
@@ -22,7 +26,6 @@ const ResumePreview = ({ data }: ResumePreviewProps) => {
   const [showAnalysis, setShowAnalysis] = useState(false);
 
   const handleDownload = () => {
-    // We'll implement PDF generation here
     const element = document.getElementById('resume-preview');
     if (element) {
       window.print();
@@ -30,11 +33,15 @@ const ResumePreview = ({ data }: ResumePreviewProps) => {
   };
 
   const templates = {
-    modern: ModernTemplate,
-    classic: ClassicTemplate
+    modern: { component: ModernTemplate, name: 'Modern', description: 'Clean and professional' },
+    classic: { component: ClassicTemplate, name: 'Classic', description: 'Traditional format' },
+    creative: { component: CreativeTemplate, name: 'Creative', description: 'Colorful and unique' },
+    minimal: { component: MinimalTemplate, name: 'Minimal', description: 'Simple and elegant' },
+    executive: { component: ExecutiveTemplate, name: 'Executive', description: 'Leadership focused' },
+    tech: { component: TechTemplate, name: 'Tech', description: 'Perfect for developers' }
   };
 
-  const SelectedTemplate = templates[selectedTemplate as keyof typeof templates];
+  const SelectedTemplate = templates[selectedTemplate as keyof typeof templates].component;
 
   if (showAnalysis) {
     return (
@@ -78,38 +85,57 @@ const ResumePreview = ({ data }: ResumePreviewProps) => {
         </div>
       </div>
 
-      <Tabs value={selectedTemplate} onValueChange={setSelectedTemplate}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="modern">Modern Template</TabsTrigger>
-          <TabsTrigger value="classic">Classic Template</TabsTrigger>
-        </TabsList>
+      {/* Template Selection */}
+      <div className="bg-white p-6 rounded-lg border-2 border-gray-200">
+        <div className="flex items-center space-x-2 mb-4">
+          <Palette className="w-5 h-5 text-purple-600" />
+          <h4 className="text-lg font-semibold text-gray-900">Choose Your Template</h4>
+        </div>
         
-        <TabsContent value="modern" className="mt-6">
-          <Card className="border-2 border-gray-200">
-            <CardContent className="p-0">
-              <div id="resume-preview" className="bg-white">
-                <ModernTemplate data={data} />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="classic" className="mt-6">
-          <Card className="border-2 border-gray-200">
-            <CardContent className="p-0">
-              <div id="resume-preview" className="bg-white">
-                <ClassicTemplate data={data} />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+          {Object.entries(templates).map(([key, template]) => (
+            <button
+              key={key}
+              onClick={() => setSelectedTemplate(key)}
+              className={`p-4 rounded-lg border-2 text-left transition-all ${
+                selectedTemplate === key
+                  ? 'border-purple-600 bg-purple-50'
+                  : 'border-gray-200 hover:border-purple-300'
+              }`}
+            >
+              <h5 className="font-semibold text-gray-900 mb-1">{template.name}</h5>
+              <p className="text-sm text-gray-600">{template.description}</p>
+            </button>
+          ))}
+        </div>
+
+        {/* Template Preview */}
+        <Card className="border-2 border-gray-200">
+          <CardContent className="p-0">
+            <div id="resume-preview" className="bg-white transform scale-75 origin-top">
+              <SelectedTemplate data={data} />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
         <h4 className="font-medium text-green-900 mb-2">🎉 Your Resume is Ready!</h4>
         <p className="text-sm text-green-800">
-          Your professional resume has been generated. You can download it as a PDF or get AI-powered feedback to make it even better.
+          Your professional resume has been generated with {Object.keys(templates).length} template options. You can download it as a PDF or get AI-powered feedback to make it even better.
         </p>
+      </div>
+
+      {/* Beginner Tips */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h4 className="font-medium text-blue-900 mb-2">💡 Resume Tips for Success</h4>
+        <ul className="text-sm text-blue-800 space-y-1">
+          <li>• Keep your resume to 1-2 pages maximum</li>
+          <li>• Use action verbs and quantify your achievements</li>
+          <li>• Tailor your resume for each job application</li>
+          <li>• Proofread carefully for spelling and grammar errors</li>
+          <li>• Save your resume as a PDF to preserve formatting</li>
+        </ul>
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import PersonalInfoForm from "./forms/PersonalInfoForm";
 import ExperienceForm from "./forms/ExperienceForm";
 import EducationForm from "./forms/EducationForm";
+import ProjectsForm from "./forms/ProjectsForm";
 import SkillsForm from "./forms/SkillsForm";
 import ResumePreview from "./ResumePreview";
 
@@ -20,6 +21,7 @@ const ResumeBuilder = ({ onBack }: ResumeBuilderProps) => {
     personalInfo: {},
     experience: [],
     education: [],
+    projects: [],
     skills: [],
     summary: ''
   });
@@ -28,6 +30,7 @@ const ResumeBuilder = ({ onBack }: ResumeBuilderProps) => {
     { title: "Personal Info", component: PersonalInfoForm },
     { title: "Experience", component: ExperienceForm },
     { title: "Education", component: EducationForm },
+    { title: "Projects", component: ProjectsForm },
     { title: "Skills", component: SkillsForm },
     { title: "Preview", component: ResumePreview }
   ];
@@ -80,6 +83,24 @@ const ResumeBuilder = ({ onBack }: ResumeBuilderProps) => {
           <div className="mt-4">
             <Progress value={progress} className="h-2" />
           </div>
+
+          {/* Step Indicators */}
+          <div className="flex justify-center mt-4 space-x-2">
+            {steps.map((step, index) => (
+              <div
+                key={index}
+                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  index === currentStep
+                    ? 'bg-blue-600 text-white'
+                    : index < currentStep
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-gray-100 text-gray-600'
+                }`}
+              >
+                {step.title}
+              </div>
+            ))}
+          </div>
         </div>
       </header>
 
@@ -91,6 +112,32 @@ const ResumeBuilder = ({ onBack }: ResumeBuilderProps) => {
               <CardTitle className="text-3xl font-bold text-gray-900">
                 {steps[currentStep].title}
               </CardTitle>
+              {/* Beginner Tips */}
+              {currentStep === 0 && (
+                <p className="text-gray-600 mt-2">
+                  Start with your basic information. This will appear at the top of your resume.
+                </p>
+              )}
+              {currentStep === 1 && (
+                <p className="text-gray-600 mt-2">
+                  Add your work experience. Include internships, part-time jobs, and volunteer work.
+                </p>
+              )}
+              {currentStep === 2 && (
+                <p className="text-gray-600 mt-2">
+                  Include your education background. Don't forget relevant coursework and achievements.
+                </p>
+              )}
+              {currentStep === 3 && (
+                <p className="text-gray-600 mt-2">
+                  Showcase your projects! This is especially important for new graduates and career changers.
+                </p>
+              )}
+              {currentStep === 4 && (
+                <p className="text-gray-600 mt-2">
+                  List your technical and soft skills. Be specific and honest about your abilities.
+                </p>
+              )}
             </CardHeader>
             <CardContent className="p-8">
               <CurrentStepComponent 
