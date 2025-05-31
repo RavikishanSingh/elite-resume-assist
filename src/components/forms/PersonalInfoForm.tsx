@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,9 @@ interface PersonalInfoFormProps {
   data: any;
   onUpdate: (section: string, data: any) => void;
   onNext: () => void;
+  onPrevious: () => void;
+  isLastStep: boolean;
+  isFirstStep: boolean;
 }
 
 const PersonalInfoForm = ({ data, onUpdate, onNext }: PersonalInfoFormProps) => {
