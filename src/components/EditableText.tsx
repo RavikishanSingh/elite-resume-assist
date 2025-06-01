@@ -42,10 +42,12 @@ const EditableText = ({
     }
   };
 
+  // If not in editing mode, just show the text
   if (!isEditing) {
     return <span className={className}>{value || placeholder}</span>;
   }
 
+  // If in edit mode and currently editing this field
   if (isEdit) {
     const InputComponent = multiline ? Textarea : Input;
     return (
@@ -61,12 +63,13 @@ const EditableText = ({
     );
   }
 
+  // If in edit mode but not currently editing this field - show clickable text
   return (
     <div 
-      className={`${className} group cursor-pointer hover:bg-blue-50 rounded px-1 relative`}
+      className={`${className} group cursor-pointer hover:bg-blue-50 rounded px-1 relative inline-block`}
       onClick={() => setIsEdit(true)}
     >
-      {value || placeholder}
+      <span>{value || placeholder}</span>
       <Edit className="w-3 h-3 absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 text-blue-600" />
     </div>
   );

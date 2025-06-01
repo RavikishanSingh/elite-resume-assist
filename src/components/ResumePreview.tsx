@@ -40,55 +40,100 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
   };
 
   const handleDownload = async () => {
-    const element = document.getElementById('resume-preview');
-    if (!element) return;
-
     try {
       // Import jsPDF dynamically
       const { default: jsPDF } = await import('jspdf');
-      const html2canvas = await import('html2canvas');
+      
+      // Create a temporary div for clean PDF generation
+      const tempDiv = document.createElement('div');
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.top = '-9999px';
+      tempDiv.style.left = '-9999px';
+      tempDiv.style.width = '210mm'; // A4 width
+      tempDiv.style.backgroundColor = 'white';
+      tempDiv.style.fontFamily = 'Arial, sans-serif';
+      
+      document.body.appendChild(tempDiv);
 
-      // Create canvas from the resume element
-      const canvas = await html2canvas.default(element, {
+      // Clone the resume content without the scaling
+      const originalElement = document.getElementById('resume-preview');
+      if (!originalElement) return;
+      
+      const clonedElement = originalElement.cloneNode(true) as HTMLElement;
+      clonedElement.style.transform = 'none';
+      clonedElement.style.scale = '1';
+      clonedElement.style.width = '210mm';
+      clonedElement.style.minHeight = 'auto';
+      clonedElement.style.padding = '20mm';
+      clonedElement.style.boxSizing = 'border-box';
+      
+      tempDiv.appendChild(clonedElement);
+
+      // Wait for fonts and images to load
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const html2canvas = await import('html2canvas');
+      
+      // Create canvas from the temporary element
+      const canvas = await html2canvas.default(clonedElement, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        width: element.scrollWidth,
-        height: element.scrollHeight,
-        onclone: (clonedDoc) => {
-          const clonedElement = clonedDoc.getElementById('resume-preview');
-          if (clonedElement) {
-            clonedElement.style.transform = 'scale(1)';
-            clonedElement.style.transformOrigin = 'top left';
-          }
-        }
+        width: clonedElement.scrollWidth,
+        height: clonedElement.scrollHeight,
+        removeContainer: true
       });
 
-      // Calculate dimensions for A4 page
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-
+      // Calculate dimensions for proper A4 formatting
       const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = 210; // A4 width in mm
+      const pdfHeight = 297; // A4 height in mm
+      
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+      
       let position = 0;
+      let remainingHeight = imgHeight;
 
-      // Add the image to PDF
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      // Add first page
+      pdf.addImage(
+        canvas.toDataURL('image/png', 1.0), 
+        'PNG', 
+        0, 
+        position, 
+        imgWidth, 
+        imgHeight,
+        undefined,
+        'FAST'
+      );
 
-      // Add new pages if content is longer than one page
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
+      // Add additional pages if content exceeds one page
+      while (remainingHeight > pdfHeight) {
+        remainingHeight -= pdfHeight;
+        position -= pdfHeight;
+        
         pdf.addPage();
-        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+        pdf.addImage(
+          canvas.toDataURL('image/png', 1.0), 
+          'PNG', 
+          0, 
+          position, 
+          imgWidth, 
+          imgHeight,
+          undefined,
+          'FAST'
+        );
       }
 
+      // Clean up
+      document.body.removeChild(tempDiv);
+
       // Download the PDF
-      const fileName = `${data.personalInfo?.fullName || 'Resume'}_Resume.pdf`;
+      const fileName = `${data.personalInfo?.fullName?.replace(/\s+/g, '_') || 'Resume'}_Resume.pdf`;
       pdf.save(fileName);
+      
+      console.log('PDF generated successfully');
     } catch (error) {
       console.error('Error generating PDF:', error);
       // Fallback to print dialog
@@ -145,7 +190,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
             className="flex items-center space-x-2"
           >
             {isEditMode ? <Save className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
-            <span>{isEditMode ? 'Save Changes' : 'Edit Resume'}</span>
+            <span>{isEditMode ? 'Exit Edit Mode' : 'Edit Resume'}</span>
           </Button>
           <Button 
             onClick={handleDownload}
@@ -161,7 +206,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h4 className="font-medium text-blue-900 mb-2">✏️ Edit Mode Active</h4>
           <p className="text-sm text-blue-800">
-            Click on any text in the resume to edit it. Changes are saved automatically.
+            Click on any text in the resume to edit it. Changes are saved automatically. Click "Exit Edit Mode" when finished.
           </p>
         </div>
       )}
@@ -193,7 +238,10 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
         {/* Template Preview */}
         <Card className="border-2 border-gray-200">
           <CardContent className="p-0">
-            <div id="resume-preview" className="bg-white transform scale-75 origin-top">
+            <div 
+              id="resume-preview" 
+              className={`bg-white ${!isEditMode ? 'transform scale-75 origin-top' : ''} transition-transform`}
+            >
               <SelectedTemplate data={data} onUpdate={handleUpdateData} isEditing={isEditMode} />
             </div>
           </CardContent>
@@ -207,7 +255,6 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
         </p>
       </div>
 
-      {/* Beginner Tips */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h4 className="font-medium text-blue-900 mb-2">💡 Resume Tips for Success</h4>
         <ul className="text-sm text-blue-800 space-y-1">
