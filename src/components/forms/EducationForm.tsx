@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2 } from "lucide-react";
 
 interface Education {
@@ -13,6 +14,7 @@ interface Education {
   location: string;
   graduationDate: string;
   gpa: string;
+  current: boolean;
 }
 
 interface EducationFormProps {
@@ -30,7 +32,8 @@ const EducationForm = ({ data, onUpdate, onNext }: EducationFormProps) => {
         school: '',
         location: '',
         graduationDate: '',
-        gpa: ''
+        gpa: '',
+        current: false
       }
     ]
   );
@@ -46,7 +49,8 @@ const EducationForm = ({ data, onUpdate, onNext }: EducationFormProps) => {
       school: '',
       location: '',
       graduationDate: '',
-      gpa: ''
+      gpa: '',
+      current: false
     };
     setEducation([...education, newEducation]);
   };
@@ -57,7 +61,7 @@ const EducationForm = ({ data, onUpdate, onNext }: EducationFormProps) => {
     }
   };
 
-  const updateEducation = (id: string, field: string, value: string) => {
+  const updateEducation = (id: string, field: string, value: string | boolean) => {
     setEducation(education.map(edu => 
       edu.id === id ? { ...edu, [field]: value } : edu
     ));
@@ -136,13 +140,14 @@ const EducationForm = ({ data, onUpdate, onNext }: EducationFormProps) => {
               </div>
               <div>
                 <Label className="text-sm font-medium text-gray-700">
-                  Graduation Date *
+                  Graduation Date {!edu.current && '*'}
                 </Label>
                 <Input
                   type="month"
                   value={edu.graduationDate}
                   onChange={(e) => updateEducation(edu.id, 'graduationDate', e.target.value)}
-                  required
+                  required={!edu.current}
+                  disabled={edu.current}
                   className="mt-1"
                 />
               </div>
@@ -157,6 +162,17 @@ const EducationForm = ({ data, onUpdate, onNext }: EducationFormProps) => {
                   className="mt-1"
                 />
               </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id={`current-${edu.id}`}
+                checked={edu.current}
+                onCheckedChange={(checked) => updateEducation(edu.id, 'current', checked)}
+              />
+              <Label htmlFor={`current-${edu.id}`} className="text-sm font-medium text-gray-700">
+                I am currently pursuing this degree
+              </Label>
             </div>
           </CardContent>
         </Card>

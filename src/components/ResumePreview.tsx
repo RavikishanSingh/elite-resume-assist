@@ -25,9 +25,59 @@ const ResumePreview = ({ data }: ResumePreviewProps) => {
   const [selectedTemplate, setSelectedTemplate] = useState('modern');
   const [showAnalysis, setShowAnalysis] = useState(false);
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     const element = document.getElementById('resume-preview');
-    if (element) {
+    if (!element) return;
+
+    try {
+      // Import jsPDF dynamically
+      const { default: jsPDF } = await import('jspdf');
+      const html2canvas = await import('html2canvas');
+
+      // Create canvas from the resume element
+      const canvas = await html2canvas.default(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        width: element.scrollWidth,
+        height: element.scrollHeight,
+        onclone: (clonedDoc) => {
+          const clonedElement = clonedDoc.getElementById('resume-preview');
+          if (clonedElement) {
+            clonedElement.style.transform = 'scale(1)';
+            clonedElement.style.transformOrigin = 'top left';
+          }
+        }
+      });
+
+      // Calculate dimensions for A4 page
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      let position = 0;
+
+      // Add the image to PDF
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      // Add new pages if content is longer than one page
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      // Download the PDF
+      const fileName = `${data.personalInfo?.fullName || 'Resume'}_Resume.pdf`;
+      pdf.save(fileName);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      // Fallback to print dialog
       window.print();
     }
   };

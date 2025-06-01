@@ -8,28 +8,42 @@ interface MinimalTemplateProps {
 const MinimalTemplate = ({ data }: MinimalTemplateProps) => {
   const { personalInfo, experience, education, skills, projects } = data;
 
+  // Helper function to check if a section has content
+  const hasContent = (section: any[] | undefined) => {
+    return section && section.length > 0 && section.some(item => 
+      Object.values(item).some(value => value && String(value).trim() !== '')
+    );
+  };
+
+  const hasPersonalInfo = personalInfo && (
+    personalInfo.fullName || personalInfo.email || personalInfo.phone || 
+    personalInfo.location || personalInfo.linkedIn || personalInfo.portfolio || personalInfo.summary
+  );
+
   return (
     <div className="max-w-4xl mx-auto bg-white p-8 shadow-lg min-h-[297mm] font-light">
       {/* Header */}
-      <header className="text-center mb-8">
-        <h1 className="text-5xl font-thin text-gray-900 mb-4 tracking-wide">
-          {personalInfo?.fullName || 'Your Name'}
-        </h1>
-        <div className="flex justify-center space-x-4 text-gray-600 text-sm">
-          {personalInfo?.email && <span>{personalInfo.email}</span>}
-          {personalInfo?.phone && <span>•</span>}
-          {personalInfo?.phone && <span>{personalInfo.phone}</span>}
-          {personalInfo?.location && <span>•</span>}
-          {personalInfo?.location && <span>{personalInfo.location}</span>}
-        </div>
-        {(personalInfo?.linkedIn || personalInfo?.portfolio) && (
-          <div className="flex justify-center space-x-4 text-gray-600 text-sm mt-2">
-            {personalInfo?.linkedIn && <span>{personalInfo.linkedIn}</span>}
-            {personalInfo?.portfolio && personalInfo?.linkedIn && <span>•</span>}
-            {personalInfo?.portfolio && <span>{personalInfo.portfolio}</span>}
+      {hasPersonalInfo && (
+        <header className="text-center mb-8">
+          <h1 className="text-5xl font-thin text-gray-900 mb-4 tracking-wide">
+            {personalInfo?.fullName || 'Your Name'}
+          </h1>
+          <div className="flex justify-center space-x-4 text-gray-600 text-sm">
+            {personalInfo?.email && <span>{personalInfo.email}</span>}
+            {personalInfo?.phone && <span>•</span>}
+            {personalInfo?.phone && <span>{personalInfo.phone}</span>}
+            {personalInfo?.location && <span>•</span>}
+            {personalInfo?.location && <span>{personalInfo.location}</span>}
           </div>
-        )}
-      </header>
+          {(personalInfo?.linkedIn || personalInfo?.portfolio) && (
+            <div className="flex justify-center space-x-4 text-gray-600 text-sm mt-2">
+              {personalInfo?.linkedIn && <span>{personalInfo.linkedIn}</span>}
+              {personalInfo?.portfolio && personalInfo?.linkedIn && <span>•</span>}
+              {personalInfo?.portfolio && <span>{personalInfo.portfolio}</span>}
+            </div>
+          )}
+        </header>
+      )}
 
       {/* Summary */}
       {personalInfo?.summary && (
@@ -41,7 +55,7 @@ const MinimalTemplate = ({ data }: MinimalTemplateProps) => {
       )}
 
       {/* Experience */}
-      {experience?.length > 0 && (
+      {hasContent(experience) && (
         <section className="mb-8">
           <h2 className="text-2xl font-thin text-gray-900 mb-6 text-center">
             EXPERIENCE
@@ -64,7 +78,7 @@ const MinimalTemplate = ({ data }: MinimalTemplateProps) => {
       )}
 
       {/* Projects */}
-      {projects?.length > 0 && (
+      {hasContent(projects) && (
         <section className="mb-8">
           <h2 className="text-2xl font-thin text-gray-900 mb-6 text-center">
             PROJECTS
@@ -89,20 +103,20 @@ const MinimalTemplate = ({ data }: MinimalTemplateProps) => {
 
       {/* Skills & Education */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {skills?.length > 0 && (
+        {skills?.length > 0 && skills.some(skill => skill.trim()) && (
           <section>
             <h2 className="text-2xl font-thin text-gray-900 mb-6 text-center">
               SKILLS
             </h2>
             <div className="text-center">
               <p className="text-gray-700">
-                {skills.join(' • ')}
+                {skills.filter(skill => skill.trim()).join(' • ')}
               </p>
             </div>
           </section>
         )}
 
-        {education?.length > 0 && (
+        {hasContent(education) && (
           <section>
             <h2 className="text-2xl font-thin text-gray-900 mb-6 text-center">
               EDUCATION
@@ -112,7 +126,9 @@ const MinimalTemplate = ({ data }: MinimalTemplateProps) => {
                 <div key={index}>
                   <h3 className="font-medium text-gray-900">{edu.degree}</h3>
                   <p className="text-gray-700 font-light">{edu.school}</p>
-                  <p className="text-gray-600 text-sm">{edu.graduationDate}</p>
+                  <p className="text-gray-600 text-sm">
+                    {edu.current ? 'Currently Pursuing' : edu.graduationDate}
+                  </p>
                 </div>
               ))}
             </div>
