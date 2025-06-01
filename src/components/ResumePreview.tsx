@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Download, Brain, Eye, Palette } from "lucide-react";
+import { Download, Brain, Eye, Palette, Edit, Save } from "lucide-react";
 import ModernTemplate from "./templates/ModernTemplate";
 import ClassicTemplate from "./templates/ClassicTemplate";
 import CreativeTemplate from "./templates/CreativeTemplate";
@@ -21,9 +20,24 @@ interface ResumePreviewProps {
   isFirstStep: boolean;
 }
 
-const ResumePreview = ({ data }: ResumePreviewProps) => {
+const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
   const [selectedTemplate, setSelectedTemplate] = useState('modern');
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  const handleUpdateData = (section: string, field: string, value: string, index?: number) => {
+    if (index !== undefined) {
+      const updatedSection = [...data[section]];
+      updatedSection[index] = { ...updatedSection[index], [field]: value };
+      onUpdate(section, updatedSection);
+    } else if (section === 'personalInfo') {
+      onUpdate(section, { ...data.personalInfo, [field]: value });
+    } else if (section === 'skills') {
+      const updatedSkills = [...data.skills];
+      updatedSkills[index || 0] = value;
+      onUpdate(section, updatedSkills);
+    }
+  };
 
   const handleDownload = async () => {
     const element = document.getElementById('resume-preview');
@@ -126,6 +140,14 @@ const ResumePreview = ({ data }: ResumePreviewProps) => {
             <span>AI Analysis</span>
           </Button>
           <Button 
+            variant={isEditMode ? "default" : "outline"}
+            onClick={() => setIsEditMode(!isEditMode)}
+            className="flex items-center space-x-2"
+          >
+            {isEditMode ? <Save className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
+            <span>{isEditMode ? 'Save Changes' : 'Edit Resume'}</span>
+          </Button>
+          <Button 
             onClick={handleDownload}
             className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600"
           >
@@ -134,6 +156,15 @@ const ResumePreview = ({ data }: ResumePreviewProps) => {
           </Button>
         </div>
       </div>
+
+      {isEditMode && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h4 className="font-medium text-blue-900 mb-2">✏️ Edit Mode Active</h4>
+          <p className="text-sm text-blue-800">
+            Click on any text in the resume to edit it. Changes are saved automatically.
+          </p>
+        </div>
+      )}
 
       {/* Template Selection */}
       <div className="bg-white p-6 rounded-lg border-2 border-gray-200">
@@ -163,7 +194,7 @@ const ResumePreview = ({ data }: ResumePreviewProps) => {
         <Card className="border-2 border-gray-200">
           <CardContent className="p-0">
             <div id="resume-preview" className="bg-white transform scale-75 origin-top">
-              <SelectedTemplate data={data} />
+              <SelectedTemplate data={data} onUpdate={handleUpdateData} isEditing={isEditMode} />
             </div>
           </CardContent>
         </Card>
