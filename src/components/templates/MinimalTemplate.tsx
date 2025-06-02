@@ -27,14 +27,14 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
     <div className="max-w-4xl mx-auto bg-white p-8 shadow-lg min-h-[297mm] font-light">
       {/* Header */}
       {hasPersonalInfo && (
-        <header className="text-center mb-8">
+        <header className="text-center mb-8 page-break-inside-avoid">
           <h1 className="text-5xl font-thin text-gray-900 mb-4 tracking-wide">
             <EditableText
               value={personalInfo?.fullName || ''}
               onSave={(value) => onUpdate?.('personalInfo', 'fullName', value)}
               placeholder="Your Name"
               isEditing={isEditing}
-              className="inline-block"
+              className="inline-block w-full text-center"
             />
           </h1>
           <div className="flex justify-center space-x-4 text-gray-600 text-sm flex-wrap">
@@ -92,41 +92,41 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
       {/* Summary */}
       {personalInfo?.summary && (
         <section className="mb-8 page-break-inside-avoid">
-          <p className="text-gray-700 leading-relaxed text-center italic">
+          <div className="text-gray-700 leading-relaxed text-center italic">
             <EditableText
               value={personalInfo.summary}
               onSave={(value) => onUpdate?.('personalInfo', 'summary', value)}
               multiline
               isEditing={isEditing}
-              className="inline-block w-full"
+              className="inline-block w-full text-center"
             />
-          </p>
+          </div>
         </section>
       )}
 
       {/* Experience */}
       {hasContent(experience) && (
         <section className="mb-8 page-break-inside-avoid">
-          <h2 className="text-2xl font-thin text-gray-900 mb-6 text-center">
+          <h2 className="text-2xl font-thin text-gray-900 mb-6 text-center page-break-after">
             EXPERIENCE
           </h2>
           <div className="space-y-6">
             {experience.map((exp: any, index: number) => (
-              <div key={index} className="text-center page-break-inside-avoid">
-                <h3 className="text-lg font-medium text-gray-900">
+              <div key={index} className="text-center page-break-inside-avoid mb-8">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
                   <EditableText
                     value={exp.jobTitle}
                     onSave={(value) => onUpdate?.('experience', 'jobTitle', value, index)}
                     isEditing={isEditing}
-                    className="inline-block"
+                    className="inline-block w-full text-center"
                   />
                 </h3>
-                <p className="text-gray-700 font-light">
+                <p className="text-gray-700 font-light mb-2">
                   <EditableText
                     value={exp.company}
                     onSave={(value) => onUpdate?.('experience', 'company', value, index)}
                     isEditing={isEditing}
-                    className="inline-block"
+                    className="inline-block w-full text-center"
                   />
                 </p>
                 <p className="text-gray-600 text-sm mb-3">
@@ -152,7 +152,7 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
                     onSave={(value) => onUpdate?.('experience', 'description', value, index)}
                     multiline
                     isEditing={isEditing}
-                    className="inline-block w-full"
+                    className="inline-block w-full text-center"
                   />
                 </div>
               </div>

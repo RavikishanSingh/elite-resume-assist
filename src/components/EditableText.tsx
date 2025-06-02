@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Edit } from "lucide-react";
@@ -21,21 +21,26 @@ const EditableText = ({
   placeholder = "Click to edit",
   isEditing = false 
 }: EditableTextProps) => {
-  const [isEdit, setIsEdit] = useState(false);
+  const [isActiveEdit, setIsActiveEdit] = useState(false);
   const [editValue, setEditValue] = useState(value);
+
+  useEffect(() => {
+    setEditValue(value);
+  }, [value]);
 
   const handleSave = () => {
     onSave(editValue);
-    setIsEdit(false);
+    setIsActiveEdit(false);
   };
 
   const handleCancel = () => {
     setEditValue(value);
-    setIsEdit(false);
+    setIsActiveEdit(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !multiline) {
+      e.preventDefault();
       handleSave();
     } else if (e.key === 'Escape') {
       handleCancel();
@@ -48,7 +53,7 @@ const EditableText = ({
   }
 
   // If in edit mode and currently editing this field
-  if (isEdit) {
+  if (isActiveEdit) {
     const InputComponent = multiline ? Textarea : Input;
     return (
       <InputComponent
@@ -56,7 +61,7 @@ const EditableText = ({
         onChange={(e) => setEditValue(e.target.value)}
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
-        className={`${className} border-2 border-blue-500`}
+        className={`${className} border-2 border-blue-500 bg-white`}
         autoFocus
         placeholder={placeholder}
       />
@@ -66,11 +71,11 @@ const EditableText = ({
   // If in edit mode but not currently editing this field - show clickable text
   return (
     <div 
-      className={`${className} group cursor-pointer hover:bg-blue-50 rounded px-1 relative inline-block`}
-      onClick={() => setIsEdit(true)}
+      className={`${className} group cursor-pointer hover:bg-blue-50 rounded px-2 py-1 relative inline-block min-h-[1.5rem]`}
+      onClick={() => setIsActiveEdit(true)}
     >
-      <span>{value || placeholder}</span>
-      <Edit className="w-3 h-3 absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 text-blue-600" />
+      <span className="break-words">{value || placeholder}</span>
+      <Edit className="w-3 h-3 absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 text-blue-600 bg-white rounded" />
     </div>
   );
 };

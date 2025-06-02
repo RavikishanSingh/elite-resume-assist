@@ -41,61 +41,83 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
 
   const handleDownload = async () => {
     try {
-      // Import jsPDF dynamically
       const { default: jsPDF } = await import('jspdf');
+      const html2canvas = await import('html2canvas');
       
       // Create a temporary div for clean PDF generation
       const tempDiv = document.createElement('div');
       tempDiv.style.position = 'absolute';
       tempDiv.style.top = '-9999px';
       tempDiv.style.left = '-9999px';
-      tempDiv.style.width = '210mm'; // A4 width
+      tempDiv.style.width = '794px'; // A4 width in pixels at 96dpi
+      tempDiv.style.minHeight = '1123px'; // A4 height in pixels at 96dpi
       tempDiv.style.backgroundColor = 'white';
       tempDiv.style.fontFamily = 'Arial, sans-serif';
+      tempDiv.style.padding = '40px';
+      tempDiv.style.boxSizing = 'border-box';
       
       document.body.appendChild(tempDiv);
 
-      // Clone the resume content without the scaling
+      // Clone the resume content
       const originalElement = document.getElementById('resume-preview');
-      if (!originalElement) return;
+      if (!originalElement) {
+        console.error('Resume preview element not found');
+        return;
+      }
       
       const clonedElement = originalElement.cloneNode(true) as HTMLElement;
+      
+      // Remove any transform/scale styles
       clonedElement.style.transform = 'none';
       clonedElement.style.scale = '1';
-      clonedElement.style.width = '210mm';
+      clonedElement.style.width = '100%';
       clonedElement.style.minHeight = 'auto';
-      clonedElement.style.padding = '20mm';
-      clonedElement.style.boxSizing = 'border-box';
+      clonedElement.style.padding = '0';
+      clonedElement.style.margin = '0';
       
+      // Add page break styles
+      const style = document.createElement('style');
+      style.textContent = `
+        .page-break-inside-avoid { page-break-inside: avoid; break-inside: avoid; }
+        .page-break-before { page-break-before: always; break-before: page; }
+        .page-break-after { page-break-after: always; break-after: page; }
+        @media print {
+          .page-break-inside-avoid { page-break-inside: avoid; break-inside: avoid; }
+          .page-break-before { page-break-before: always; break-before: page; }
+          .page-break-after { page-break-after: always; break-after: page; }
+        }
+      `;
+      tempDiv.appendChild(style);
       tempDiv.appendChild(clonedElement);
 
-      // Wait for fonts and images to load
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for rendering
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const html2canvas = await import('html2canvas');
-      
-      // Create canvas from the temporary element
-      const canvas = await html2canvas.default(clonedElement, {
+      // Generate canvas with high quality
+      const canvas = await html2canvas.default(tempDiv, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        width: clonedElement.scrollWidth,
-        height: clonedElement.scrollHeight,
-        removeContainer: true
+        width: 794,
+        height: Math.max(1123, tempDiv.scrollHeight),
+        windowWidth: 794,
+        windowHeight: Math.max(1123, tempDiv.scrollHeight)
       });
 
-      // Calculate dimensions for proper A4 formatting
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = 210; // A4 width in mm
-      const pdfHeight = 297; // A4 height in mm
+      // Clean up temporary element
+      document.body.removeChild(tempDiv);
+
+      // Create PDF with proper A4 dimensions
+      const pdf = new jsPDF('p', 'pt', 'a4');
+      const pdfWidth = 595.28; // A4 width in points
+      const pdfHeight = 841.89; // A4 height in points
       
       const imgWidth = pdfWidth;
       const imgHeight = (canvas.height * pdfWidth) / canvas.width;
       
       let position = 0;
-      let remainingHeight = imgHeight;
-
+      
       // Add first page
       pdf.addImage(
         canvas.toDataURL('image/png', 1.0), 
@@ -109,6 +131,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
       );
 
       // Add additional pages if content exceeds one page
+      let remainingHeight = imgHeight;
       while (remainingHeight > pdfHeight) {
         remainingHeight -= pdfHeight;
         position -= pdfHeight;
@@ -126,9 +149,6 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
         );
       }
 
-      // Clean up
-      document.body.removeChild(tempDiv);
-
       // Download the PDF
       const fileName = `${data.personalInfo?.fullName?.replace(/\s+/g, '_') || 'Resume'}_Resume.pdf`;
       pdf.save(fileName);
@@ -136,8 +156,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
       console.log('PDF generated successfully');
     } catch (error) {
       console.error('Error generating PDF:', error);
-      // Fallback to print dialog
-      window.print();
+      alert('There was an error generating the PDF. Please try again.');
     }
   };
 
@@ -206,7 +225,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h4 className="font-medium text-blue-900 mb-2">✏️ Edit Mode Active</h4>
           <p className="text-sm text-blue-800">
-            Click on any text in the resume to edit it. Changes are saved automatically. Click "Exit Edit Mode" when finished.
+            Click on any text in the resume to edit it. Press Enter to save or Escape to cancel. Changes are saved automatically when you click outside the field.
           </p>
         </div>
       )}
@@ -240,7 +259,8 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
           <CardContent className="p-0">
             <div 
               id="resume-preview" 
-              className={`bg-white ${!isEditMode ? 'transform scale-75 origin-top' : ''} transition-transform`}
+              className={`bg-white overflow-hidden ${!isEditMode ? 'transform scale-75 origin-top' : ''} transition-transform`}
+              style={{ minHeight: isEditMode ? 'auto' : '297mm' }}
             >
               <SelectedTemplate data={data} onUpdate={handleUpdateData} isEditing={isEditMode} />
             </div>
