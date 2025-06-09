@@ -42,118 +42,178 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
   const handleDownload = async () => {
     try {
       const { default: jsPDF } = await import('jspdf');
-      const html2canvas = await import('html2canvas');
       
-      // Create a temporary div for clean PDF generation
-      const tempDiv = document.createElement('div');
-      tempDiv.style.position = 'absolute';
-      tempDiv.style.top = '-9999px';
-      tempDiv.style.left = '-9999px';
-      tempDiv.style.width = '794px'; // A4 width in pixels at 96dpi
-      tempDiv.style.minHeight = '1123px'; // A4 height in pixels at 96dpi
-      tempDiv.style.backgroundColor = 'white';
-      tempDiv.style.fontFamily = 'Arial, sans-serif';
-      tempDiv.style.padding = '40px';
-      tempDiv.style.boxSizing = 'border-box';
-      
-      document.body.appendChild(tempDiv);
-
-      // Clone the resume content
-      const originalElement = document.getElementById('resume-preview');
-      if (!originalElement) {
-        console.error('Resume preview element not found');
-        return;
-      }
-      
-      const clonedElement = originalElement.cloneNode(true) as HTMLElement;
-      
-      // Remove any transform/scale styles
-      clonedElement.style.transform = 'none';
-      clonedElement.style.scale = '1';
-      clonedElement.style.width = '100%';
-      clonedElement.style.minHeight = 'auto';
-      clonedElement.style.padding = '0';
-      clonedElement.style.margin = '0';
-      
-      // Add page break styles
-      const style = document.createElement('style');
-      style.textContent = `
-        .page-break-inside-avoid { page-break-inside: avoid; break-inside: avoid; }
-        .page-break-before { page-break-before: always; break-before: page; }
-        .page-break-after { page-break-after: always; break-after: page; }
-        @media print {
-          .page-break-inside-avoid { page-break-inside: avoid; break-inside: avoid; }
-          .page-break-before { page-break-before: always; break-before: page; }
-          .page-break-after { page-break-after: always; break-after: page; }
-        }
-      `;
-      tempDiv.appendChild(style);
-      tempDiv.appendChild(clonedElement);
-
-      // Wait for rendering
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Generate canvas with high quality
-      const canvas = await html2canvas.default(tempDiv, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        width: 794,
-        height: Math.max(1123, tempDiv.scrollHeight),
-        windowWidth: 794,
-        windowHeight: Math.max(1123, tempDiv.scrollHeight)
-      });
-
-      // Clean up temporary element
-      document.body.removeChild(tempDiv);
-
-      // Create PDF with proper A4 dimensions
       const pdf = new jsPDF('p', 'pt', 'a4');
-      const pdfWidth = 595.28; // A4 width in points
-      const pdfHeight = 841.89; // A4 height in points
-      
-      const imgWidth = pdfWidth;
-      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      let position = 0;
-      
-      // Add first page
-      pdf.addImage(
-        canvas.toDataURL('image/png', 1.0), 
-        'PNG', 
-        0, 
-        position, 
-        imgWidth, 
-        imgHeight,
-        undefined,
-        'FAST'
-      );
+      const pageWidth = 595.28;
+      const pageHeight = 841.89;
+      const margin = 40;
+      const usableWidth = pageWidth - (2 * margin);
+      let yPosition = margin;
 
-      // Add additional pages if content exceeds one page
-      let remainingHeight = imgHeight;
-      while (remainingHeight > pdfHeight) {
-        remainingHeight -= pdfHeight;
-        position -= pdfHeight;
+      // Helper function to add text with word wrapping
+      const addText = (text: string, x: number, y: number, fontSize: number = 12, fontStyle: string = 'normal', maxWidth?: number) => {
+        pdf.setFontSize(fontSize);
+        pdf.setFont('helvetica', fontStyle);
         
-        pdf.addPage();
-        pdf.addImage(
-          canvas.toDataURL('image/png', 1.0), 
-          'PNG', 
-          0, 
-          position, 
-          imgWidth, 
-          imgHeight,
-          undefined,
-          'FAST'
-        );
+        if (maxWidth) {
+          const lines = pdf.splitTextToSize(text, maxWidth);
+          pdf.text(lines, x, y);
+          return y + (lines.length * fontSize * 1.2);
+        } else {
+          pdf.text(text, x, y);
+          return y + (fontSize * 1.2);
+        }
+      };
+
+      // Helper function to check if we need a new page
+      const checkNewPage = (requiredHeight: number) => {
+        if (yPosition + requiredHeight > pageHeight - margin) {
+          pdf.addPage();
+          yPosition = margin;
+        }
+      };
+
+      // Header - Personal Info
+      if (data.personalInfo) {
+        const { fullName, email, phone, location, linkedIn, portfolio, summary } = data.personalInfo;
+        
+        if (fullName) {
+          yPosition = addText(fullName, margin, yPosition + 20, 24, 'bold');
+          yPosition += 10;
+        }
+
+        // Contact info in a line
+        const contactInfo = [];
+        if (email) contactInfo.push(email);
+        if (phone) contactInfo.push(phone);
+        if (location) contactInfo.push(location);
+        
+        if (contactInfo.length > 0) {
+          yPosition = addText(contactInfo.join(' | '), margin, yPosition, 10);
+          yPosition += 5;
+        }
+
+        // Links
+        const links = [];
+        if (linkedIn) links.push(linkedIn);
+        if (portfolio) links.push(portfolio);
+        
+        if (links.length > 0) {
+          yPosition = addText(links.join(' | '), margin, yPosition, 10);
+          yPosition += 15;
+        }
+
+        // Summary
+        if (summary) {
+          checkNewPage(60);
+          yPosition = addText('SUMMARY', margin, yPosition, 14, 'bold');
+          yPosition += 10;
+          yPosition = addText(summary, margin, yPosition, 11, 'normal', usableWidth);
+          yPosition += 20;
+        }
+      }
+
+      // Experience
+      if (data.experience && data.experience.length > 0) {
+        checkNewPage(80);
+        yPosition = addText('EXPERIENCE', margin, yPosition, 14, 'bold');
+        yPosition += 15;
+
+        data.experience.forEach((exp: any, index: number) => {
+          checkNewPage(100);
+          
+          // Job title and dates
+          if (exp.jobTitle) {
+            yPosition = addText(exp.jobTitle, margin, yPosition, 12, 'bold');
+          }
+          
+          const dateRange = `${exp.startDate || ''} - ${exp.current ? 'Present' : exp.endDate || ''}`;
+          if (dateRange.trim() !== ' - ') {
+            pdf.text(dateRange, pageWidth - margin - 100, yPosition - 12);
+          }
+          
+          // Company
+          if (exp.company) {
+            yPosition = addText(exp.company, margin, yPosition, 11, 'italic');
+            yPosition += 5;
+          }
+          
+          // Description
+          if (exp.description) {
+            yPosition = addText(exp.description, margin, yPosition, 10, 'normal', usableWidth);
+          }
+          
+          yPosition += 15;
+        });
+      }
+
+      // Projects
+      if (data.projects && data.projects.length > 0) {
+        checkNewPage(80);
+        yPosition = addText('PROJECTS', margin, yPosition, 14, 'bold');
+        yPosition += 15;
+
+        data.projects.forEach((project: any) => {
+          checkNewPage(80);
+          
+          if (project.name) {
+            yPosition = addText(project.name, margin, yPosition, 12, 'bold');
+          }
+          
+          if (project.description) {
+            yPosition = addText(project.description, margin, yPosition, 10, 'normal', usableWidth);
+          }
+          
+          if (project.technologies) {
+            yPosition += 5;
+            yPosition = addText(`Technologies: ${project.technologies}`, margin, yPosition, 9, 'italic', usableWidth);
+          }
+          
+          yPosition += 15;
+        });
+      }
+
+      // Education
+      if (data.education && data.education.length > 0) {
+        checkNewPage(80);
+        yPosition = addText('EDUCATION', margin, yPosition, 14, 'bold');
+        yPosition += 15;
+
+        data.education.forEach((edu: any) => {
+          checkNewPage(60);
+          
+          if (edu.degree) {
+            yPosition = addText(edu.degree, margin, yPosition, 12, 'bold');
+          }
+          
+          if (edu.graduationDate) {
+            pdf.text(edu.current ? 'Currently Pursuing' : edu.graduationDate, pageWidth - margin - 100, yPosition - 12);
+          }
+          
+          if (edu.school) {
+            yPosition = addText(edu.school, margin, yPosition, 11, 'normal');
+          }
+          
+          yPosition += 15;
+        });
+      }
+
+      // Skills
+      if (data.skills && data.skills.length > 0) {
+        const skillsText = data.skills.filter((skill: string) => skill.trim()).join(', ');
+        if (skillsText) {
+          checkNewPage(60);
+          yPosition = addText('SKILLS', margin, yPosition, 14, 'bold');
+          yPosition += 10;
+          yPosition = addText(skillsText, margin, yPosition, 10, 'normal', usableWidth);
+        }
       }
 
       // Download the PDF
       const fileName = `${data.personalInfo?.fullName?.replace(/\s+/g, '_') || 'Resume'}_Resume.pdf`;
       pdf.save(fileName);
       
-      console.log('PDF generated successfully');
+      console.log('PDF generated successfully with proper formatting');
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('There was an error generating the PDF. Please try again.');
