@@ -1,11 +1,13 @@
-
 import { Mail, Phone, MapPin, Globe, Linkedin } from "lucide-react";
+import EditableText from "../EditableText";
 
 interface ExecutiveTemplateProps {
   data: any;
+  onUpdate?: (section: string, field: string, value: string, index?: number) => void;
+  isEditing?: boolean;
 }
 
-const ExecutiveTemplate = ({ data }: ExecutiveTemplateProps) => {
+const ExecutiveTemplate = ({ data, onUpdate, isEditing = false }: ExecutiveTemplateProps) => {
   const { personalInfo, experience, education, skills, projects } = data;
 
   return (
@@ -15,19 +17,37 @@ const ExecutiveTemplate = ({ data }: ExecutiveTemplateProps) => {
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              {personalInfo?.fullName || 'Your Name'}
+              <EditableText
+                value={personalInfo?.fullName || ''}
+                onSave={(value) => onUpdate?.('personalInfo', 'fullName', value)}
+                placeholder="Your Name"
+                isEditing={isEditing}
+                className="inline-block"
+              />
             </h1>
             <div className="space-y-1 text-gray-600">
               {personalInfo?.email && (
                 <div className="flex items-center space-x-2">
                   <Mail className="w-4 h-4" />
-                  <span>{personalInfo.email}</span>
+                  <EditableText
+                    value={personalInfo.email}
+                    onSave={(value) => onUpdate?.('personalInfo', 'email', value)}
+                    isEditing={isEditing}
+                    className="inline-block"
+                    placeholder="email@example.com"
+                  />
                 </div>
               )}
               {personalInfo?.phone && (
                 <div className="flex items-center space-x-2">
                   <Phone className="w-4 h-4" />
-                  <span>{personalInfo.phone}</span>
+                  <EditableText
+                    value={personalInfo.phone}
+                    onSave={(value) => onUpdate?.('personalInfo', 'phone', value)}
+                    isEditing={isEditing}
+                    className="inline-block"
+                    placeholder="123-456-7890"
+                  />
                 </div>
               )}
             </div>
@@ -36,13 +56,25 @@ const ExecutiveTemplate = ({ data }: ExecutiveTemplateProps) => {
             {personalInfo?.location && (
               <div className="flex items-center space-x-2 justify-end">
                 <MapPin className="w-4 h-4" />
-                <span>{personalInfo.location}</span>
+                <EditableText
+                  value={personalInfo.location}
+                  onSave={(value) => onUpdate?.('personalInfo', 'location', value)}
+                  isEditing={isEditing}
+                  className="inline-block"
+                  placeholder="Location"
+                />
               </div>
             )}
             {personalInfo?.linkedIn && (
               <div className="flex items-center space-x-2 justify-end mt-1">
                 <Linkedin className="w-4 h-4" />
-                <span>{personalInfo.linkedIn}</span>
+                <EditableText
+                  value={personalInfo.linkedIn}
+                  onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
+                  isEditing={isEditing}
+                  className="inline-block"
+                  placeholder="LinkedIn URL"
+                />
               </div>
             )}
           </div>

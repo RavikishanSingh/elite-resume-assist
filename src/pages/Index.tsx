@@ -52,6 +52,7 @@ const Index = () => {
   if (showBuilder) {
     return <ResumeBuilder onBack={() => {
       setShowBuilder(false);
+      // Only show resumes if user is signed in
       if (isSignedIn) {
         setShowResumes(true);
       }
@@ -107,6 +108,7 @@ const Index = () => {
           <div className="flex items-center space-x-2">
             {isSignedIn ? (
               <>
+                <span className="text-gray-600">Welcome, {userName}!</span>
                 <Button variant="outline" onClick={() => setShowResumes(true)}>
                   My Resumes
                 </Button>
@@ -141,7 +143,12 @@ const Index = () => {
               Start Building Free
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
-            <Button variant="outline" size="lg" className="text-lg px-8 py-6">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="text-lg px-8 py-6"
+              onClick={() => setShowBuilder(true)}
+            >
               View Templates
             </Button>
           </div>
@@ -160,6 +167,13 @@ const Index = () => {
               <CheckCircle className="w-4 h-4 text-green-500" />
               <span>ATS-friendly</span>
             </div>
+          </div>
+
+          {/* Feature highlight for no account needed */}
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-8 max-w-2xl mx-auto">
+            <p className="text-green-800 font-medium">
+              ✨ No account required to start building! Create your resume instantly and sign up later to save it.
+            </p>
           </div>
         </div>
       </section>
