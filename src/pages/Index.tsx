@@ -1,15 +1,94 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, CheckCircle, Star, Users, FileText, Brain } from "lucide-react";
 import ResumeBuilder from "@/components/ResumeBuilder";
+import SignInModal from "@/components/auth/SignInModal";
+import ResumeManager from "@/components/resume/ResumeManager";
+import { generatePDF } from "@/utils/pdfGenerator";
 
 const Index = () => {
   const [showBuilder, setShowBuilder] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [showResumes, setShowResumes] = useState(false);
+
+  const handleSignIn = (email: string, password: string) => {
+    // Simple mock authentication
+    setIsSignedIn(true);
+    setUserName(email.split('@')[0]);
+    setShowSignIn(false);
+    console.log('User signed in:', email);
+  };
+
+  const handleSignOut = () => {
+    setIsSignedIn(false);
+    setUserName('');
+    setShowResumes(false);
+  };
+
+  const handleCreateNewResume = () => {
+    setShowResumes(false);
+    setShowBuilder(true);
+  };
+
+  const handleEditResume = (resume: any) => {
+    // Load resume data and open builder
+    setShowResumes(false);
+    setShowBuilder(true);
+  };
+
+  const handleDownloadResume = async (resume: any) => {
+    try {
+      const pdf = await generatePDF(resume.data);
+      pdf.save(`${resume.name.replace(/\s+/g, '_')}.pdf`);
+    } catch (error) {
+      console.error('Error downloading resume:', error);
+      alert('Failed to download resume. Please try again.');
+    }
+  };
 
   if (showBuilder) {
-    return <ResumeBuilder onBack={() => setShowBuilder(false)} />;
+    return <ResumeBuilder onBack={() => {
+      setShowBuilder(false);
+      if (isSignedIn) {
+        setShowResumes(true);
+      }
+    }} />;
+  }
+
+  if (showResumes && isSignedIn) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <header className="container mx-auto px-4 py-6">
+          <nav className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <FileText className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                SmartResume
+              </h1>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-gray-600">Welcome, {userName}!</span>
+              <Button variant="outline" onClick={handleSignOut}>
+                Sign Out
+              </Button>
+            </div>
+          </nav>
+        </header>
+        
+        <main className="container mx-auto px-4 py-8">
+          <ResumeManager
+            onCreateNew={handleCreateNewResume}
+            onEditResume={handleEditResume}
+            onDownloadResume={handleDownloadResume}
+          />
+        </main>
+      </div>
+    );
   }
 
   return (
@@ -25,9 +104,22 @@ const Index = () => {
               SmartResume
             </h1>
           </div>
-          <Button variant="outline" className="hidden md:flex">
-            Sign In
-          </Button>
+          <div className="flex items-center space-x-2">
+            {isSignedIn ? (
+              <>
+                <Button variant="outline" onClick={() => setShowResumes(true)}>
+                  My Resumes
+                </Button>
+                <Button variant="outline" onClick={handleSignOut}>
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <Button variant="outline" onClick={() => setShowSignIn(true)}>
+                Sign In
+              </Button>
+            )}
+          </div>
         </nav>
       </header>
 
@@ -155,6 +247,12 @@ const Index = () => {
           <p>&copy; 2024 SmartResume. Built with AI to help you succeed.</p>
         </div>
       </footer>
+
+      <SignInModal
+        isOpen={showSignIn}
+        onClose={() => setShowSignIn(false)}
+        onSignIn={handleSignIn}
+      />
     </div>
   );
 };

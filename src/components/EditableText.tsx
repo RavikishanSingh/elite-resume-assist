@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Edit } from "lucide-react";
@@ -23,13 +23,23 @@ const EditableText = ({
 }: EditableTextProps) => {
   const [isActiveEdit, setIsActiveEdit] = useState(false);
   const [editValue, setEditValue] = useState(value);
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
   useEffect(() => {
     setEditValue(value);
   }, [value]);
 
+  useEffect(() => {
+    if (isActiveEdit && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isActiveEdit]);
+
   const handleSave = () => {
-    onSave(editValue);
+    if (editValue !== value) {
+      onSave(editValue);
+    }
     setIsActiveEdit(false);
   };
 
@@ -57,13 +67,14 @@ const EditableText = ({
     const InputComponent = multiline ? Textarea : Input;
     return (
       <InputComponent
+        ref={inputRef as any}
         value={editValue}
         onChange={(e) => setEditValue(e.target.value)}
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
-        className={`${className} border-2 border-blue-500 bg-white`}
-        autoFocus
+        className={`${className} border-2 border-blue-500 bg-white min-w-[200px]`}
         placeholder={placeholder}
+        rows={multiline ? 3 : undefined}
       />
     );
   }
@@ -71,11 +82,11 @@ const EditableText = ({
   // If in edit mode but not currently editing this field - show clickable text
   return (
     <div 
-      className={`${className} group cursor-pointer hover:bg-blue-50 rounded px-2 py-1 relative inline-block min-h-[1.5rem]`}
+      className={`${className} group cursor-pointer hover:bg-blue-50 rounded px-2 py-1 relative inline-block min-h-[1.5rem] border border-transparent hover:border-blue-300`}
       onClick={() => setIsActiveEdit(true)}
     >
-      <span className="break-words">{value || placeholder}</span>
-      <Edit className="w-3 h-3 absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 text-blue-600 bg-white rounded" />
+      <span className="break-words select-none">{value || placeholder}</span>
+      <Edit className="w-3 h-3 absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 text-blue-600 bg-white rounded shadow-sm" />
     </div>
   );
 };

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Download, Brain, Eye, Palette, Edit, Save } from "lucide-react";
 import ModernTemplate from "./templates/ModernTemplate";
 import ClassicTemplate from "./templates/ClassicTemplate";
@@ -10,6 +9,7 @@ import MinimalTemplate from "./templates/MinimalTemplate";
 import ExecutiveTemplate from "./templates/ExecutiveTemplate";
 import TechTemplate from "./templates/TechTemplate";
 import AIAnalysis from "./AIAnalysis";
+import { generatePDF } from "../utils/pdfGenerator";
 
 interface ResumePreviewProps {
   data: any;
@@ -24,6 +24,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
   const [selectedTemplate, setSelectedTemplate] = useState('modern');
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   const handleUpdateData = (section: string, field: string, value: string, index?: number) => {
     if (index !== undefined) {
@@ -40,183 +41,17 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
   };
 
   const handleDownload = async () => {
+    setIsGeneratingPDF(true);
     try {
-      const { default: jsPDF } = await import('jspdf');
-      
-      const pdf = new jsPDF('p', 'pt', 'a4');
-      const pageWidth = 595.28;
-      const pageHeight = 841.89;
-      const margin = 40;
-      const usableWidth = pageWidth - (2 * margin);
-      let yPosition = margin;
-
-      // Helper function to add text with word wrapping
-      const addText = (text: string, x: number, y: number, fontSize: number = 12, fontStyle: string = 'normal', maxWidth?: number) => {
-        pdf.setFontSize(fontSize);
-        pdf.setFont('helvetica', fontStyle);
-        
-        if (maxWidth) {
-          const lines = pdf.splitTextToSize(text, maxWidth);
-          pdf.text(lines, x, y);
-          return y + (lines.length * fontSize * 1.2);
-        } else {
-          pdf.text(text, x, y);
-          return y + (fontSize * 1.2);
-        }
-      };
-
-      // Helper function to check if we need a new page
-      const checkNewPage = (requiredHeight: number) => {
-        if (yPosition + requiredHeight > pageHeight - margin) {
-          pdf.addPage();
-          yPosition = margin;
-        }
-      };
-
-      // Header - Personal Info
-      if (data.personalInfo) {
-        const { fullName, email, phone, location, linkedIn, portfolio, summary } = data.personalInfo;
-        
-        if (fullName) {
-          yPosition = addText(fullName, margin, yPosition + 20, 24, 'bold');
-          yPosition += 10;
-        }
-
-        // Contact info in a line
-        const contactInfo = [];
-        if (email) contactInfo.push(email);
-        if (phone) contactInfo.push(phone);
-        if (location) contactInfo.push(location);
-        
-        if (contactInfo.length > 0) {
-          yPosition = addText(contactInfo.join(' | '), margin, yPosition, 10);
-          yPosition += 5;
-        }
-
-        // Links
-        const links = [];
-        if (linkedIn) links.push(linkedIn);
-        if (portfolio) links.push(portfolio);
-        
-        if (links.length > 0) {
-          yPosition = addText(links.join(' | '), margin, yPosition, 10);
-          yPosition += 15;
-        }
-
-        // Summary
-        if (summary) {
-          checkNewPage(60);
-          yPosition = addText('SUMMARY', margin, yPosition, 14, 'bold');
-          yPosition += 10;
-          yPosition = addText(summary, margin, yPosition, 11, 'normal', usableWidth);
-          yPosition += 20;
-        }
-      }
-
-      // Experience
-      if (data.experience && data.experience.length > 0) {
-        checkNewPage(80);
-        yPosition = addText('EXPERIENCE', margin, yPosition, 14, 'bold');
-        yPosition += 15;
-
-        data.experience.forEach((exp: any, index: number) => {
-          checkNewPage(100);
-          
-          // Job title and dates
-          if (exp.jobTitle) {
-            yPosition = addText(exp.jobTitle, margin, yPosition, 12, 'bold');
-          }
-          
-          const dateRange = `${exp.startDate || ''} - ${exp.current ? 'Present' : exp.endDate || ''}`;
-          if (dateRange.trim() !== ' - ') {
-            pdf.text(dateRange, pageWidth - margin - 100, yPosition - 12);
-          }
-          
-          // Company
-          if (exp.company) {
-            yPosition = addText(exp.company, margin, yPosition, 11, 'italic');
-            yPosition += 5;
-          }
-          
-          // Description
-          if (exp.description) {
-            yPosition = addText(exp.description, margin, yPosition, 10, 'normal', usableWidth);
-          }
-          
-          yPosition += 15;
-        });
-      }
-
-      // Projects
-      if (data.projects && data.projects.length > 0) {
-        checkNewPage(80);
-        yPosition = addText('PROJECTS', margin, yPosition, 14, 'bold');
-        yPosition += 15;
-
-        data.projects.forEach((project: any) => {
-          checkNewPage(80);
-          
-          if (project.name) {
-            yPosition = addText(project.name, margin, yPosition, 12, 'bold');
-          }
-          
-          if (project.description) {
-            yPosition = addText(project.description, margin, yPosition, 10, 'normal', usableWidth);
-          }
-          
-          if (project.technologies) {
-            yPosition += 5;
-            yPosition = addText(`Technologies: ${project.technologies}`, margin, yPosition, 9, 'italic', usableWidth);
-          }
-          
-          yPosition += 15;
-        });
-      }
-
-      // Education
-      if (data.education && data.education.length > 0) {
-        checkNewPage(80);
-        yPosition = addText('EDUCATION', margin, yPosition, 14, 'bold');
-        yPosition += 15;
-
-        data.education.forEach((edu: any) => {
-          checkNewPage(60);
-          
-          if (edu.degree) {
-            yPosition = addText(edu.degree, margin, yPosition, 12, 'bold');
-          }
-          
-          if (edu.graduationDate) {
-            pdf.text(edu.current ? 'Currently Pursuing' : edu.graduationDate, pageWidth - margin - 100, yPosition - 12);
-          }
-          
-          if (edu.school) {
-            yPosition = addText(edu.school, margin, yPosition, 11, 'normal');
-          }
-          
-          yPosition += 15;
-        });
-      }
-
-      // Skills
-      if (data.skills && data.skills.length > 0) {
-        const skillsText = data.skills.filter((skill: string) => skill.trim()).join(', ');
-        if (skillsText) {
-          checkNewPage(60);
-          yPosition = addText('SKILLS', margin, yPosition, 14, 'bold');
-          yPosition += 10;
-          yPosition = addText(skillsText, margin, yPosition, 10, 'normal', usableWidth);
-        }
-      }
-
-      // Download the PDF
+      const pdf = await generatePDF(data);
       const fileName = `${data.personalInfo?.fullName?.replace(/\s+/g, '_') || 'Resume'}_Resume.pdf`;
       pdf.save(fileName);
-      
-      console.log('PDF generated successfully with proper formatting');
+      console.log('PDF generated successfully');
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('There was an error generating the PDF. Please try again.');
+    } finally {
+      setIsGeneratingPDF(false);
     }
   };
 
@@ -269,14 +104,15 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
             className="flex items-center space-x-2"
           >
             {isEditMode ? <Save className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
-            <span>{isEditMode ? 'Exit Edit Mode' : 'Edit Resume'}</span>
+            <span>{isEditMode ? 'Save Changes' : 'Edit Resume'}</span>
           </Button>
           <Button 
             onClick={handleDownload}
+            disabled={isGeneratingPDF}
             className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600"
           >
             <Download className="w-4 h-4" />
-            <span>Download PDF</span>
+            <span>{isGeneratingPDF ? 'Generating...' : 'Download PDF'}</span>
           </Button>
         </div>
       </div>
@@ -285,7 +121,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h4 className="font-medium text-blue-900 mb-2">✏️ Edit Mode Active</h4>
           <p className="text-sm text-blue-800">
-            Click on any text in the resume to edit it. Press Enter to save or Escape to cancel. Changes are saved automatically when you click outside the field.
+            Click on any text in the resume to edit it. The changes are saved automatically.
           </p>
         </div>
       )}
