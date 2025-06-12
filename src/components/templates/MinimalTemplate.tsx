@@ -44,6 +44,7 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
                 onSave={(value) => onUpdate?.('personalInfo', 'email', value)}
                 isEditing={isEditing}
                 className="inline-block"
+                placeholder="email@example.com"
               />
             )}
             {personalInfo?.phone && personalInfo?.email && <span>•</span>}
@@ -53,6 +54,7 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
                 onSave={(value) => onUpdate?.('personalInfo', 'phone', value)}
                 isEditing={isEditing}
                 className="inline-block"
+                placeholder="Phone number"
               />
             )}
             {personalInfo?.location && (personalInfo?.phone || personalInfo?.email) && <span>•</span>}
@@ -62,6 +64,7 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
                 onSave={(value) => onUpdate?.('personalInfo', 'location', value)}
                 isEditing={isEditing}
                 className="inline-block"
+                placeholder="City, State"
               />
             )}
           </div>
@@ -73,6 +76,7 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
                   onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
                   isEditing={isEditing}
                   className="inline-block"
+                  placeholder="LinkedIn URL"
                 />
               )}
               {personalInfo?.portfolio && personalInfo?.linkedIn && <span>•</span>}
@@ -82,6 +86,7 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
                   onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
                   isEditing={isEditing}
                   className="inline-block"
+                  placeholder="Portfolio URL"
                 />
               )}
             </div>
@@ -99,6 +104,7 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
               multiline
               isEditing={isEditing}
               className="inline-block w-full text-center"
+              placeholder="Professional summary"
             />
           </div>
         </section>
@@ -115,44 +121,49 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
               <div key={index} className="text-center page-break-inside-avoid mb-8">
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   <EditableText
-                    value={exp.jobTitle}
+                    value={exp.jobTitle || ''}
                     onSave={(value) => onUpdate?.('experience', 'jobTitle', value, index)}
                     isEditing={isEditing}
                     className="inline-block w-full text-center"
+                    placeholder="Job Title"
                   />
                 </h3>
                 <p className="text-gray-700 font-light mb-2">
                   <EditableText
-                    value={exp.company}
+                    value={exp.company || ''}
                     onSave={(value) => onUpdate?.('experience', 'company', value, index)}
                     isEditing={isEditing}
                     className="inline-block w-full text-center"
+                    placeholder="Company Name"
                   />
                 </p>
                 <p className="text-gray-600 text-sm mb-3">
                   <EditableText
-                    value={exp.startDate}
+                    value={exp.startDate || ''}
                     onSave={(value) => onUpdate?.('experience', 'startDate', value, index)}
                     isEditing={isEditing}
                     className="inline-block"
+                    placeholder="Start Date"
                   />
                   {' - '}
                   {exp.current ? 'Present' : (
                     <EditableText
-                      value={exp.endDate}
+                      value={exp.endDate || ''}
                       onSave={(value) => onUpdate?.('experience', 'endDate', value, index)}
                       isEditing={isEditing}
                       className="inline-block"
+                      placeholder="End Date"
                     />
                   )}
                 </p>
                 <div className="text-gray-700 leading-relaxed max-w-3xl mx-auto whitespace-pre-line">
                   <EditableText
-                    value={exp.description}
+                    value={exp.description || ''}
                     onSave={(value) => onUpdate?.('experience', 'description', value, index)}
                     multiline
                     isEditing={isEditing}
                     className="inline-block w-full text-center"
+                    placeholder="Job description and achievements"
                   />
                 </div>
               </div>
@@ -172,19 +183,21 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
               <div key={index} className="text-center page-break-inside-avoid">
                 <h3 className="text-lg font-medium text-gray-900">
                   <EditableText
-                    value={project.name}
+                    value={project.name || ''}
                     onSave={(value) => onUpdate?.('projects', 'name', value, index)}
                     isEditing={isEditing}
                     className="inline-block"
+                    placeholder="Project Name"
                   />
                 </h3>
                 <div className="text-gray-700 leading-relaxed max-w-3xl mx-auto whitespace-pre-line mb-2">
                   <EditableText
-                    value={project.description}
+                    value={project.description || ''}
                     onSave={(value) => onUpdate?.('projects', 'description', value, index)}
                     multiline
                     isEditing={isEditing}
                     className="inline-block w-full"
+                    placeholder="Project description"
                   />
                 </div>
                 {project.technologies && (
@@ -194,6 +207,7 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
                       onSave={(value) => onUpdate?.('projects', 'technologies', value, index)}
                       isEditing={isEditing}
                       className="inline-block"
+                      placeholder="Technologies used"
                     />
                   </p>
                 )}
@@ -205,26 +219,27 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
 
       {/* Skills & Education */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 page-break-inside-avoid">
-        {skills?.length > 0 && skills.some(skill => skill.trim()) && (
+        {skills?.length > 0 && skills.some(skill => skill && skill.trim()) && (
           <section>
             <h2 className="text-2xl font-thin text-gray-900 mb-6 text-center">
               SKILLS
             </h2>
             <div className="text-center">
               <p className="text-gray-700">
-                {skills.filter(skill => skill.trim()).map((skill, index) => (
+                {skills.filter(skill => skill && skill.trim()).map((skill, index) => (
                   <span key={index} className="inline-block">
                     <EditableText
-                      value={skill}
+                      value={skill || ''}
                       onSave={(value) => {
                         const updatedSkills = [...skills];
-                        updatedSkills[index] = value;
+                        updatedSkills[skills.indexOf(skill)] = value;
                         onUpdate?.('skills', '', updatedSkills.join(','));
                       }}
                       isEditing={isEditing}
                       className="inline-block"
+                      placeholder="Skill"
                     />
-                    {index < skills.filter(s => s.trim()).length - 1 && ' • '}
+                    {index < skills.filter(s => s && s.trim()).length - 1 && ' • '}
                   </span>
                 ))}
               </p>
@@ -242,27 +257,30 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
                 <div key={index} className="page-break-inside-avoid">
                   <h3 className="font-medium text-gray-900">
                     <EditableText
-                      value={edu.degree}
+                      value={edu.degree || ''}
                       onSave={(value) => onUpdate?.('education', 'degree', value, index)}
                       isEditing={isEditing}
                       className="inline-block"
+                      placeholder="Degree"
                     />
                   </h3>
                   <p className="text-gray-700 font-light">
                     <EditableText
-                      value={edu.school}
+                      value={edu.school || ''}
                       onSave={(value) => onUpdate?.('education', 'school', value, index)}
                       isEditing={isEditing}
                       className="inline-block"
+                      placeholder="School Name"
                     />
                   </p>
                   <p className="text-gray-600 text-sm">
                     {edu.current ? 'Currently Pursuing' : (
                       <EditableText
-                        value={edu.graduationDate}
+                        value={edu.graduationDate || ''}
                         onSave={(value) => onUpdate?.('education', 'graduationDate', value, index)}
                         isEditing={isEditing}
                         className="inline-block"
+                        placeholder="Graduation Date"
                       />
                     )}
                   </p>

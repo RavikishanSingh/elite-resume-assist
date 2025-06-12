@@ -27,16 +27,30 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   const handleUpdateData = (section: string, field: string, value: string, index?: number) => {
+    console.log('Updating data:', { section, field, value, index });
+    
     if (index !== undefined) {
-      const updatedSection = [...data[section]];
-      updatedSection[index] = { ...updatedSection[index], [field]: value };
+      // Handle array-based sections (experience, education, projects)
+      const updatedSection = [...(data[section] || [])];
+      if (updatedSection[index]) {
+        updatedSection[index] = { ...updatedSection[index], [field]: value };
+      }
       onUpdate(section, updatedSection);
     } else if (section === 'personalInfo') {
+      // Handle personalInfo object
       onUpdate(section, { ...data.personalInfo, [field]: value });
     } else if (section === 'skills') {
-      const updatedSkills = [...data.skills];
-      updatedSkills[index || 0] = value;
-      onUpdate(section, updatedSkills);
+      // Handle skills array
+      if (typeof value === 'string' && value.includes(',')) {
+        // If comma-separated string, split it
+        const skillsArray = value.split(',').map(skill => skill.trim()).filter(skill => skill);
+        onUpdate(section, skillsArray);
+      } else {
+        // Single skill update
+        const updatedSkills = [...(data.skills || [])];
+        updatedSkills[index || 0] = value;
+        onUpdate(section, updatedSkills);
+      }
     }
   };
 
@@ -100,11 +114,14 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
           </Button>
           <Button 
             variant={isEditMode ? "default" : "outline"}
-            onClick={() => setIsEditMode(!isEditMode)}
+            onClick={() => {
+              setIsEditMode(!isEditMode);
+              console.log('Edit mode toggled:', !isEditMode);
+            }}
             className="flex items-center space-x-2"
           >
             {isEditMode ? <Save className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
-            <span>{isEditMode ? 'Save Changes' : 'Edit Resume'}</span>
+            <span>{isEditMode ? 'Exit Edit Mode' : 'Edit Resume'}</span>
           </Button>
           <Button 
             onClick={handleDownload}
@@ -121,7 +138,8 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h4 className="font-medium text-blue-900 mb-2">✏️ Edit Mode Active</h4>
           <p className="text-sm text-blue-800">
-            Click on any text in the resume to edit it. The changes are saved automatically.
+            Click on any text in the resume to edit it. Press Enter to save, or Escape to cancel. 
+            For multi-line text, use Ctrl+Enter to save.
           </p>
         </div>
       )}
@@ -158,7 +176,11 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
               className={`bg-white overflow-hidden ${!isEditMode ? 'transform scale-75 origin-top' : ''} transition-transform`}
               style={{ minHeight: isEditMode ? 'auto' : '297mm' }}
             >
-              <SelectedTemplate data={data} onUpdate={handleUpdateData} isEditing={isEditMode} />
+              <SelectedTemplate 
+                data={data} 
+                onUpdate={handleUpdateData} 
+                isEditing={isEditMode} 
+              />
             </div>
           </CardContent>
         </Card>

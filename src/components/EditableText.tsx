@@ -32,13 +32,16 @@ const EditableText = ({
   useEffect(() => {
     if (isActiveEdit && inputRef.current) {
       inputRef.current.focus();
-      inputRef.current.select();
+      // Select all text when editing starts
+      if (inputRef.current.select) {
+        inputRef.current.select();
+      }
     }
   }, [isActiveEdit]);
 
   const handleSave = () => {
-    if (editValue !== value) {
-      onSave(editValue);
+    if (editValue.trim() !== value.trim()) {
+      onSave(editValue.trim());
     }
     setIsActiveEdit(false);
   };
@@ -52,6 +55,9 @@ const EditableText = ({
     if (e.key === 'Enter' && !multiline) {
       e.preventDefault();
       handleSave();
+    } else if (e.key === 'Enter' && multiline && e.ctrlKey) {
+      e.preventDefault();
+      handleSave();
     } else if (e.key === 'Escape') {
       handleCancel();
     }
@@ -59,7 +65,11 @@ const EditableText = ({
 
   // If not in editing mode, just show the text
   if (!isEditing) {
-    return <span className={className}>{value || placeholder}</span>;
+    return (
+      <span className={className}>
+        {value || placeholder}
+      </span>
+    );
   }
 
   // If in edit mode and currently editing this field
@@ -72,7 +82,7 @@ const EditableText = ({
         onChange={(e) => setEditValue(e.target.value)}
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
-        className={`${className} border-2 border-blue-500 bg-white min-w-[200px]`}
+        className={`${className} border-2 border-blue-500 bg-white min-w-[200px] focus:ring-2 focus:ring-blue-300`}
         placeholder={placeholder}
         rows={multiline ? 3 : undefined}
       />
@@ -82,11 +92,16 @@ const EditableText = ({
   // If in edit mode but not currently editing this field - show clickable text
   return (
     <div 
-      className={`${className} group cursor-pointer hover:bg-blue-50 rounded px-2 py-1 relative inline-block min-h-[1.5rem] border border-transparent hover:border-blue-300`}
+      className={`${className} group cursor-pointer hover:bg-blue-50 rounded px-2 py-1 relative inline-block min-h-[2rem] border border-transparent hover:border-blue-300 transition-all duration-200`}
       onClick={() => setIsActiveEdit(true)}
+      title="Click to edit"
     >
-      <span className="break-words select-none">{value || placeholder}</span>
-      <Edit className="w-3 h-3 absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 text-blue-600 bg-white rounded shadow-sm" />
+      <span className="break-words select-none">
+        {value || (
+          <span className="text-gray-400 italic">{placeholder}</span>
+        )}
+      </span>
+      <Edit className="w-3 h-3 absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 text-blue-600 bg-white rounded shadow-sm p-0.5" />
     </div>
   );
 };
