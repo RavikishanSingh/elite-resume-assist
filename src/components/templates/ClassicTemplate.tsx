@@ -1,3 +1,4 @@
+
 import { Mail, Phone, MapPin, Globe, Linkedin, ExternalLink, Github } from "lucide-react";
 import EditableText from "../EditableText";
 
@@ -243,14 +244,16 @@ const ClassicTemplate = ({ data, onUpdate, isEditing = false }: ClassicTemplateP
                           placeholder="Start Date"
                         />
                         {project.endDate && (
-                          <span> - </span>
-                          <EditableText
-                            value={project.endDate || ''}
-                            onSave={(value) => onUpdate?.('projects', 'endDate', value, index)}
-                            isEditing={isEditing}
-                            className="inline-block"
-                            placeholder="End Date"
-                          />
+                          <>
+                            <span> - </span>
+                            <EditableText
+                              value={project.endDate || ''}
+                              onSave={(value) => onUpdate?.('projects', 'endDate', value, index)}
+                              isEditing={isEditing}
+                              className="inline-block"
+                              placeholder="End Date"
+                            />
+                          </>
                         )}
                       </p>
                     </div>
