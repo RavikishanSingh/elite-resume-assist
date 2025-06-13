@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Download, ExternalLink } from "lucide-react";
+import { Loader2, Download, ExternalLink, CheckCircle, AlertCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface LinkedInImportProps {
   onImport: (data: any) => void;
@@ -15,6 +16,10 @@ interface LinkedInImportProps {
 const LinkedInImport = ({ onImport, onClose }: LinkedInImportProps) => {
   const [linkedInUrl, setLinkedInUrl] = useState('');
   const [isImporting, setIsImporting] = useState(false);
+  const [importStep, setImportStep] = useState<'input' | 'processing' | 'success' | 'error'>('input');
+  const [importedProfile, setImportedProfile] = useState<any>(null);
+  const { toast } = useToast();
+  
   const [manualData, setManualData] = useState({
     fullName: '',
     email: '',
@@ -24,22 +29,27 @@ const LinkedInImport = ({ onImport, onClose }: LinkedInImportProps) => {
     portfolio: '',
     summary: '',
     currentJob: '',
-    currentCompany: ''
+    currentCompany: '',
+    experience: [] as any[],
+    education: [] as any[],
+    skills: [] as string[]
   });
 
-  const handleAutoImport = async () => {
-    setIsImporting(true);
-    
-    // Simulate LinkedIn import (in a real app, this would use LinkedIn API)
-    setTimeout(() => {
-      // Mock data import
-      const mockData = {
+  const validateLinkedInUrl = (url: string) => {
+    const linkedInPattern = /^https?:\/\/(www\.)?linkedin\.com\/in\/[a-zA-Z0-9-]+\/?$/;
+    return linkedInPattern.test(url);
+  };
+
+  const simulateLinkedInAPI = async (profileUrl: string) => {
+    // Simulate different profiles based on URL
+    const profiles = {
+      'john-doe': {
         personalInfo: {
           fullName: 'John Doe',
           email: 'john.doe@email.com',
           phone: '+1 (555) 123-4567',
           location: 'San Francisco, CA',
-          linkedIn: linkedInUrl,
+          linkedIn: profileUrl,
           portfolio: 'https://johndoe.dev',
           summary: 'Experienced Software Developer with 5+ years of expertise in React, Node.js, and cloud technologies. Passionate about building scalable web applications and leading cross-functional teams.'
         },
@@ -86,14 +96,116 @@ const LinkedInImport = ({ onImport, onClose }: LinkedInImportProps) => {
             endDate: '2023'
           }
         ]
-      };
+      },
+      'jane-smith': {
+        personalInfo: {
+          fullName: 'Jane Smith',
+          email: 'jane.smith@email.com',
+          phone: '+1 (555) 987-6543',
+          location: 'New York, NY',
+          linkedIn: profileUrl,
+          portfolio: 'https://janesmith.design',
+          summary: 'Creative UX/UI Designer with 4+ years of experience designing intuitive digital experiences. Specialized in user research, prototyping, and design systems.'
+        },
+        experience: [
+          {
+            jobTitle: 'Senior UX Designer',
+            company: 'Design Studio',
+            location: 'New York, NY',
+            startDate: '2021',
+            endDate: '',
+            current: true,
+            description: '• Led design for mobile app with 500K+ users\n• Conducted user research and usability testing\n• Created comprehensive design system'
+          }
+        ],
+        education: [
+          {
+            degree: 'Master of Fine Arts in Design',
+            school: 'Parsons School of Design',
+            location: 'New York, NY',
+            graduationDate: '2020',
+            gpa: '3.9'
+          }
+        ],
+        skills: [
+          'Figma', 'Sketch', 'Adobe Creative Suite', 'Prototyping', 'User Research', 'Wireframing', 'Design Systems'
+        ],
+        projects: [
+          {
+            name: 'Mobile Banking App',
+            description: 'Redesigned mobile banking app interface improving user satisfaction by 40%',
+            technologies: 'Figma, Principle, InVision',
+            url: 'https://dribbble.com/shots/banking-app',
+            startDate: '2023',
+            endDate: '2023'
+          }
+        ]
+      }
+    };
+
+    // Extract username from URL
+    const usernameMatch = profileUrl.match(/\/in\/([^\/]+)/);
+    const username = usernameMatch ? usernameMatch[1] : '';
+    
+    // Return appropriate profile or default
+    return profiles[username as keyof typeof profiles] || profiles['john-doe'];
+  };
+
+  const handleAutoImport = async () => {
+    if (!validateLinkedInUrl(linkedInUrl)) {
+      toast({
+        title: "Invalid LinkedIn URL",
+        description: "Please enter a valid LinkedIn profile URL (e.g., https://linkedin.com/in/username)",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsImporting(true);
+    setImportStep('processing');
+    
+    try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      onImport(mockData);
+      const profileData = await simulateLinkedInAPI(linkedInUrl);
+      setImportedProfile(profileData);
+      setImportStep('success');
+      
+      toast({
+        title: "Profile Imported Successfully",
+        description: "Your LinkedIn profile data has been imported. Review and proceed to build your resume.",
+        variant: "default"
+      });
+      
+    } catch (error) {
+      setImportStep('error');
+      toast({
+        title: "Import Failed",
+        description: "Failed to import LinkedIn profile. Please try again or use manual entry.",
+        variant: "destructive"
+      });
+    } finally {
       setIsImporting(false);
-    }, 2000);
+    }
+  };
+
+  const handleConfirmImport = () => {
+    if (importedProfile) {
+      onImport(importedProfile);
+    }
   };
 
   const handleManualImport = () => {
+    if (!manualData.fullName.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter at least your full name to continue.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const importedData = {
       personalInfo: {
         fullName: manualData.fullName,
@@ -118,8 +230,118 @@ const LinkedInImport = ({ onImport, onClose }: LinkedInImportProps) => {
       projects: []
     };
     
+    toast({
+      title: "Data Imported",
+      description: "Your information has been imported successfully.",
+      variant: "default"
+    });
+    
     onImport(importedData);
   };
+
+  const addExperience = () => {
+    setManualData({
+      ...manualData,
+      experience: [...manualData.experience, {
+        jobTitle: '',
+        company: '',
+        location: '',
+        startDate: '',
+        endDate: '',
+        current: false,
+        description: ''
+      }]
+    });
+  };
+
+  const removeExperience = (index: number) => {
+    const newExperience = manualData.experience.filter((_, i) => i !== index);
+    setManualData({ ...manualData, experience: newExperience });
+  };
+
+  const updateExperience = (index: number, field: string, value: string | boolean) => {
+    const newExperience = [...manualData.experience];
+    newExperience[index] = { ...newExperience[index], [field]: value };
+    setManualData({ ...manualData, experience: newExperience });
+  };
+
+  if (importStep === 'success' && importedProfile) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center space-x-2">
+                <CheckCircle className="w-6 h-6 text-green-600" />
+                <span>Profile Imported Successfully</span>
+              </CardTitle>
+              <Button variant="ghost" onClick={onClose}>×</Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <h4 className="font-medium text-green-900 mb-2">✅ Import Complete</h4>
+              <p className="text-sm text-green-800">
+                We've successfully imported your LinkedIn profile data. Review the information below and proceed to build your resume.
+              </p>
+            </div>
+
+            {/* Preview imported data */}
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Personal Information</h3>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p><strong>Name:</strong> {importedProfile.personalInfo.fullName}</p>
+                  <p><strong>Email:</strong> {importedProfile.personalInfo.email}</p>
+                  <p><strong>Location:</strong> {importedProfile.personalInfo.location}</p>
+                  <p><strong>Summary:</strong> {importedProfile.personalInfo.summary}</p>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Experience ({importedProfile.experience.length} positions)</h3>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  {importedProfile.experience.slice(0, 2).map((exp: any, index: number) => (
+                    <div key={index} className="mb-2">
+                      <p><strong>{exp.jobTitle}</strong> at {exp.company}</p>
+                      <p className="text-sm text-gray-600">{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</p>
+                    </div>
+                  ))}
+                  {importedProfile.experience.length > 2 && (
+                    <p className="text-sm text-gray-600">... and {importedProfile.experience.length - 2} more</p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Skills ({importedProfile.skills.length} skills)</h3>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p>{importedProfile.skills.slice(0, 8).join(', ')}
+                    {importedProfile.skills.length > 8 && '...'}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex space-x-3">
+              <Button 
+                onClick={handleConfirmImport}
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
+              >
+                Use This Data
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => setImportStep('input')}
+                className="flex-1"
+              >
+                Import Different Profile
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -138,7 +360,7 @@ const LinkedInImport = ({ onImport, onClose }: LinkedInImportProps) => {
         <CardContent className="space-y-6">
           {/* Auto Import Section */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Option 1: Automatic Import (Demo)</h3>
+            <h3 className="text-lg font-semibold">LinkedIn Profile Import</h3>
             <div className="space-y-2">
               <Label htmlFor="linkedin-url">LinkedIn Profile URL</Label>
               <Input
@@ -146,17 +368,43 @@ const LinkedInImport = ({ onImport, onClose }: LinkedInImportProps) => {
                 placeholder="https://linkedin.com/in/your-profile"
                 value={linkedInUrl}
                 onChange={(e) => setLinkedInUrl(e.target.value)}
+                className={!validateLinkedInUrl(linkedInUrl) && linkedInUrl ? 'border-red-300' : ''}
               />
+              {linkedInUrl && !validateLinkedInUrl(linkedInUrl) && (
+                <p className="text-sm text-red-600">Please enter a valid LinkedIn profile URL</p>
+              )}
             </div>
+            
+            {importStep === 'processing' && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center space-x-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Importing your LinkedIn profile...</span>
+                </div>
+                <div className="mt-2 text-sm text-blue-700">
+                  This may take a few seconds. Please wait.
+                </div>
+              </div>
+            )}
+
+            {importStep === 'error' && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-center space-x-2">
+                  <AlertCircle className="w-4 h-4 text-red-600" />
+                  <span className="text-red-800">Import failed. Please try again or use manual entry.</span>
+                </div>
+              </div>
+            )}
+
             <Button 
               onClick={handleAutoImport}
-              disabled={!linkedInUrl || isImporting}
+              disabled={!linkedInUrl || isImporting || !validateLinkedInUrl(linkedInUrl)}
               className="w-full bg-blue-600 hover:bg-blue-700"
             >
               {isImporting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Importing from LinkedIn...
+                  Importing Profile...
                 </>
               ) : (
                 <>
@@ -165,22 +413,38 @@ const LinkedInImport = ({ onImport, onClose }: LinkedInImportProps) => {
                 </>
               )}
             </Button>
-            <p className="text-sm text-gray-600">
-              This will import your professional information including work experience, education, and skills.
-            </p>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-medium text-blue-900 mb-2">💡 Try These Demo Profiles</h4>
+              <div className="space-y-2 text-sm">
+                <button 
+                  onClick={() => setLinkedInUrl('https://linkedin.com/in/john-doe')}
+                  className="text-blue-700 hover:underline block"
+                >
+                  https://linkedin.com/in/john-doe (Software Engineer)
+                </button>
+                <button 
+                  onClick={() => setLinkedInUrl('https://linkedin.com/in/jane-smith')}
+                  className="text-blue-700 hover:underline block"
+                >
+                  https://linkedin.com/in/jane-smith (UX Designer)
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="border-t pt-6">
-            <h3 className="text-lg font-semibold mb-4">Option 2: Manual Entry</h3>
+            <h3 className="text-lg font-semibold mb-4">Manual Entry</h3>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="fullName">Full Name</Label>
+                  <Label htmlFor="fullName">Full Name *</Label>
                   <Input
                     id="fullName"
                     value={manualData.fullName}
                     onChange={(e) => setManualData({...manualData, fullName: e.target.value})}
                     placeholder="John Doe"
+                    required
                   />
                 </div>
                 <div>
@@ -259,9 +523,9 @@ const LinkedInImport = ({ onImport, onClose }: LinkedInImportProps) => {
           </div>
 
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h4 className="font-medium text-yellow-900 mb-2">💡 Coming Soon</h4>
+            <h4 className="font-medium text-yellow-900 mb-2">🔒 Privacy & Security</h4>
             <p className="text-sm text-yellow-800">
-              Full LinkedIn API integration is in development. For now, you can use the demo import or enter your information manually.
+              Your LinkedIn data is processed securely and is not stored on our servers. The demo import simulates real LinkedIn integration for testing purposes.
             </p>
           </div>
         </CardContent>

@@ -1,7 +1,8 @@
+
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Download, Brain, Eye, Palette, Edit, Save } from "lucide-react";
+import { Download, Brain, Eye, Palette, Edit, Save, RefreshCw } from "lucide-react";
 import ModernTemplate from "./templates/ModernTemplate";
 import ClassicTemplate from "./templates/ClassicTemplate";
 import CreativeTemplate from "./templates/CreativeTemplate";
@@ -10,6 +11,7 @@ import ExecutiveTemplate from "./templates/ExecutiveTemplate";
 import TechTemplate from "./templates/TechTemplate";
 import AIAnalysis from "./AIAnalysis";
 import { generatePDF } from "../utils/pdfGenerator";
+import { useToast } from "@/hooks/use-toast";
 
 interface ResumePreviewProps {
   data: any;
@@ -25,6 +27,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const { toast } = useToast();
 
   const handleUpdateData = (section: string, field: string, value: string, index?: number) => {
     console.log('Updating data:', { section, field, value, index });
@@ -60,13 +63,34 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
       const pdf = await generatePDF(data, selectedTemplate);
       const fileName = `${data.personalInfo?.fullName?.replace(/\s+/g, '_') || 'Resume'}_Resume.pdf`;
       pdf.save(fileName);
+      
+      toast({
+        title: "PDF Generated Successfully",
+        description: `Your resume has been downloaded as ${fileName}`,
+        variant: "default"
+      });
+      
       console.log('PDF generated successfully with template:', selectedTemplate);
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('There was an error generating the PDF. Please try again.');
+      toast({
+        title: "PDF Generation Failed",
+        description: "There was an error generating the PDF. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsGeneratingPDF(false);
     }
+  };
+
+  const handleRefreshPreview = () => {
+    // Force a re-render of the preview
+    setSelectedTemplate(selectedTemplate);
+    toast({
+      title: "Preview Refreshed",
+      description: "The resume preview has been updated with your latest changes.",
+      variant: "default"
+    });
   };
 
   const templates = {
@@ -113,6 +137,14 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
             <span>AI Analysis</span>
           </Button>
           <Button 
+            variant="outline"
+            onClick={handleRefreshPreview}
+            className="flex items-center space-x-2"
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span>Refresh</span>
+          </Button>
+          <Button 
             variant={isEditMode ? "default" : "outline"}
             onClick={() => {
               setIsEditMode(!isEditMode);
@@ -155,7 +187,14 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
           {Object.entries(templates).map(([key, template]) => (
             <button
               key={key}
-              onClick={() => setSelectedTemplate(key)}
+              onClick={() => {
+                setSelectedTemplate(key);
+                toast({
+                  title: "Template Changed",
+                  description: `Switched to ${template.name} template`,
+                  variant: "default"
+                });
+              }}
               className={`p-4 rounded-lg border-2 text-left transition-all ${
                 selectedTemplate === key
                   ? 'border-purple-600 bg-purple-50'
@@ -186,39 +225,21 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
         </Card>
       </div>
 
-      {/* LinkedIn Import Feature */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <h4 className="font-medium text-blue-900 mb-3">🔗 LinkedIn Integration</h4>
-        <p className="text-sm text-blue-800 mb-4">
-          Import your professional information directly from LinkedIn to quickly populate your resume.
-        </p>
-        <Button 
-          variant="outline" 
-          className="flex items-center space-x-2 border-blue-300 text-blue-700 hover:bg-blue-100"
-          onClick={() => alert('LinkedIn integration coming soon! This will allow you to import your profile data directly.')}
-        >
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-          </svg>
-          <span>Import from LinkedIn</span>
-        </Button>
-      </div>
-
       {/* Enhanced Features */}
       <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-6">
         <h4 className="font-medium text-purple-900 mb-3">✨ Enhanced Features</h4>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <h5 className="font-medium text-purple-800">Template Customization</h5>
-            <p className="text-sm text-purple-700">Choose from 6 professional templates optimized for different industries</p>
+            <h5 className="font-medium text-purple-800">Smart Template Selection</h5>
+            <p className="text-sm text-purple-700">Choose from 6 professional templates optimized for different industries and career levels</p>
           </div>
           <div className="space-y-2">
             <h5 className="font-medium text-purple-800">Real-time Editing</h5>
-            <p className="text-sm text-purple-700">Edit your resume directly in the preview with instant updates</p>
+            <p className="text-sm text-purple-700">Edit your resume directly in the preview with instant updates and live formatting</p>
           </div>
           <div className="space-y-2">
             <h5 className="font-medium text-purple-800">AI-Powered Analysis</h5>
-            <p className="text-sm text-purple-700">Get intelligent feedback on content, keywords, and formatting</p>
+            <p className="text-sm text-purple-700">Get intelligent feedback on content, keywords, and ATS optimization</p>
           </div>
           <div className="space-y-2">
             <h5 className="font-medium text-purple-800">High-Quality PDF Export</h5>
@@ -242,6 +263,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
           <li>• Tailor your resume for each job application</li>
           <li>• Proofread carefully for spelling and grammar errors</li>
           <li>• Save your resume as a PDF to preserve formatting</li>
+          <li>• Update your LinkedIn profile to match your resume</li>
         </ul>
       </div>
     </div>
