@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,14 +6,17 @@ import { ArrowRight, CheckCircle, Star, Users, FileText, Brain } from "lucide-re
 import ResumeBuilder from "@/components/ResumeBuilder";
 import SignInModal from "@/components/auth/SignInModal";
 import ResumeManager from "@/components/resume/ResumeManager";
+import LinkedInImport from "@/components/LinkedInImport";
 import { generatePDF } from "@/utils/pdfGenerator";
 
 const Index = () => {
   const [showBuilder, setShowBuilder] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
+  const [showLinkedInImport, setShowLinkedInImport] = useState(false);
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [userName, setUserName] = useState('');
   const [showResumes, setShowResumes] = useState(false);
+  const [importedData, setImportedData] = useState(null);
 
   const handleSignIn = (email: string, password: string) => {
     // Simple mock authentication
@@ -30,12 +34,21 @@ const Index = () => {
 
   const handleCreateNewResume = () => {
     setShowResumes(false);
+    setImportedData(null);
+    setShowBuilder(true);
+  };
+
+  const handleLinkedInImport = (data: any) => {
+    console.log('LinkedIn data imported:', data);
+    setImportedData(data);
+    setShowLinkedInImport(false);
     setShowBuilder(true);
   };
 
   const handleEditResume = (resume: any) => {
     // Load resume data and open builder
     setShowResumes(false);
+    setImportedData(resume.data);
     setShowBuilder(true);
   };
 
@@ -50,13 +63,17 @@ const Index = () => {
   };
 
   if (showBuilder) {
-    return <ResumeBuilder onBack={() => {
-      setShowBuilder(false);
-      // Only show resumes if user is signed in
-      if (isSignedIn) {
-        setShowResumes(true);
-      }
-    }} />;
+    return <ResumeBuilder 
+      onBack={() => {
+        setShowBuilder(false);
+        setImportedData(null);
+        // Only show resumes if user is signed in
+        if (isSignedIn) {
+          setShowResumes(true);
+        }
+      }}
+      initialData={importedData}
+    />;
   }
 
   if (showResumes && isSignedIn) {
@@ -132,7 +149,7 @@ const Index = () => {
             Build Your Perfect Resume with AI
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Create professional, ATS-friendly resumes in minutes. Get AI-powered feedback and customize for any job role.
+            Create professional, ATS-friendly resumes in minutes. Import from LinkedIn or build from scratch with AI-powered feedback.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button 
@@ -146,14 +163,17 @@ const Index = () => {
             <Button 
               variant="outline" 
               size="lg" 
-              className="text-lg px-8 py-6"
-              onClick={() => setShowBuilder(true)}
+              className="text-lg px-8 py-6 border-blue-200 text-blue-700 hover:bg-blue-50"
+              onClick={() => setShowLinkedInImport(true)}
             >
-              View Templates
+              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              </svg>
+              Import from LinkedIn
             </Button>
           </div>
 
-          {/* Social Proof */}
+          {/* Enhanced Social Proof */}
           <div className="flex items-center justify-center space-x-8 text-sm text-gray-500 mb-16">
             <div className="flex items-center space-x-1">
               <Users className="w-4 h-4" />
@@ -167,18 +187,24 @@ const Index = () => {
               <CheckCircle className="w-4 h-4 text-green-500" />
               <span>ATS-friendly</span>
             </div>
+            <div className="flex items-center space-x-1">
+              <svg className="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              </svg>
+              <span>LinkedIn Ready</span>
+            </div>
           </div>
 
           {/* Feature highlight for no account needed */}
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-8 max-w-2xl mx-auto">
             <p className="text-green-800 font-medium">
-              ✨ No account required to start building! Create your resume instantly and sign up later to save it.
+              ✨ No account required to start building! Create your resume instantly or import from LinkedIn.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Enhanced Features Section */}
       <section className="container mx-auto px-4 py-20">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
@@ -194,11 +220,13 @@ const Index = () => {
             <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm">
               <CardHeader className="pb-4">
                 <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mb-4">
-                  <FileText className="w-6 h-6 text-white" />
+                  <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                  </svg>
                 </div>
-                <CardTitle className="text-xl">Smart Form Builder</CardTitle>
+                <CardTitle className="text-xl">LinkedIn Integration</CardTitle>
                 <CardDescription className="text-gray-600">
-                  Intuitive step-by-step form that guides you through every section of your resume.
+                  Import your professional information directly from LinkedIn to quickly populate your resume.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -222,7 +250,7 @@ const Index = () => {
                 </div>
                 <CardTitle className="text-xl">Professional Templates</CardTitle>
                 <CardDescription className="text-gray-600">
-                  Choose from modern, ATS-friendly templates designed by industry experts.
+                  Choose from 6 modern, ATS-friendly templates with real-time editing capabilities.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -230,7 +258,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* Enhanced CTA Section */}
       <section className="container mx-auto px-4 py-20">
         <div className="max-w-4xl mx-auto text-center">
           <Card className="border-0 shadow-2xl bg-gradient-to-r from-blue-600 to-purple-600 text-white overflow-hidden">
@@ -241,15 +269,28 @@ const Index = () => {
               <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
                 Join thousands of professionals who've landed their dream jobs with our AI-powered resume builder.
               </p>
-              <Button 
-                size="lg" 
-                variant="secondary"
-                className="text-lg px-8 py-6 bg-white text-blue-600 hover:bg-gray-50 shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => setShowBuilder(true)}
-              >
-                Get Started Now - It's Free
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  size="lg" 
+                  variant="secondary"
+                  className="text-lg px-8 py-6 bg-white text-blue-600 hover:bg-gray-50 shadow-lg hover:shadow-xl transition-all duration-300"
+                  onClick={() => setShowBuilder(true)}
+                >
+                  Start From Scratch
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  className="text-lg px-8 py-6 border-white text-white hover:bg-white hover:text-blue-600 transition-all duration-300"
+                  onClick={() => setShowLinkedInImport(true)}
+                >
+                  <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                  </svg>
+                  Import from LinkedIn
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -267,6 +308,13 @@ const Index = () => {
         onClose={() => setShowSignIn(false)}
         onSignIn={handleSignIn}
       />
+
+      {showLinkedInImport && (
+        <LinkedInImport
+          onImport={handleLinkedInImport}
+          onClose={() => setShowLinkedInImport(false)}
+        />
+      )}
     </div>
   );
 };
