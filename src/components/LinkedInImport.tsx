@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -175,7 +176,7 @@ const LinkedInImport = ({ onImport, onClose }: LinkedInImportProps) => {
       
       toast({
         title: "Profile Imported Successfully",
-        description: "Your LinkedIn profile data has been imported. Review and proceed to build your resume.",
+        description: "Your LinkedIn profile data has been imported. Click 'Use This Data' to proceed.",
         variant: "default"
       });
       
@@ -198,7 +199,15 @@ const LinkedInImport = ({ onImport, onClose }: LinkedInImportProps) => {
       
       // Ensure proper data structure for the resume builder
       const formattedData = {
-        personalInfo: importedProfile.personalInfo || {},
+        personalInfo: {
+          fullName: importedProfile.personalInfo?.fullName || '',
+          email: importedProfile.personalInfo?.email || '',
+          phone: importedProfile.personalInfo?.phone || '',
+          location: importedProfile.personalInfo?.location || '',
+          linkedIn: importedProfile.personalInfo?.linkedIn || '',
+          portfolio: importedProfile.personalInfo?.portfolio || '',
+          summary: importedProfile.personalInfo?.summary || ''
+        },
         experience: importedProfile.experience || [],
         education: importedProfile.education || [],
         projects: importedProfile.projects || [],
@@ -206,9 +215,8 @@ const LinkedInImport = ({ onImport, onClose }: LinkedInImportProps) => {
         summary: importedProfile.personalInfo?.summary || ''
       };
       
-      console.log('Formatted data being sent:', formattedData);
+      console.log('Formatted data being sent to parent:', formattedData);
       onImport(formattedData);
-      onClose();
     }
   };
 
@@ -246,6 +254,8 @@ const LinkedInImport = ({ onImport, onClose }: LinkedInImportProps) => {
       projects: []
     };
     
+    console.log('Manual data being sent to parent:', importedData);
+    
     toast({
       title: "Data Imported",
       description: "Your information has been imported successfully.",
@@ -253,32 +263,6 @@ const LinkedInImport = ({ onImport, onClose }: LinkedInImportProps) => {
     });
     
     onImport(importedData);
-  };
-
-  const addExperience = () => {
-    setManualData({
-      ...manualData,
-      experience: [...manualData.experience, {
-        jobTitle: '',
-        company: '',
-        location: '',
-        startDate: '',
-        endDate: '',
-        current: false,
-        description: ''
-      }]
-    });
-  };
-
-  const removeExperience = (index: number) => {
-    const newExperience = manualData.experience.filter((_, i) => i !== index);
-    setManualData({ ...manualData, experience: newExperience });
-  };
-
-  const updateExperience = (index: number, field: string, value: string | boolean) => {
-    const newExperience = [...manualData.experience];
-    newExperience[index] = { ...newExperience[index], [field]: value };
-    setManualData({ ...manualData, experience: newExperience });
   };
 
   if (importStep === 'success' && importedProfile) {
@@ -307,33 +291,33 @@ const LinkedInImport = ({ onImport, onClose }: LinkedInImportProps) => {
               <div>
                 <h3 className="font-semibold text-lg mb-2">Personal Information</h3>
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <p><strong>Name:</strong> {importedProfile.personalInfo.fullName}</p>
-                  <p><strong>Email:</strong> {importedProfile.personalInfo.email}</p>
-                  <p><strong>Location:</strong> {importedProfile.personalInfo.location}</p>
-                  <p><strong>Summary:</strong> {importedProfile.personalInfo.summary}</p>
+                  <p><strong>Name:</strong> {importedProfile.personalInfo?.fullName}</p>
+                  <p><strong>Email:</strong> {importedProfile.personalInfo?.email}</p>
+                  <p><strong>Location:</strong> {importedProfile.personalInfo?.location}</p>
+                  <p><strong>Summary:</strong> {importedProfile.personalInfo?.summary}</p>
                 </div>
               </div>
 
               <div>
-                <h3 className="font-semibold text-lg mb-2">Experience ({importedProfile.experience.length} positions)</h3>
+                <h3 className="font-semibold text-lg mb-2">Experience ({importedProfile.experience?.length || 0} positions)</h3>
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  {importedProfile.experience.slice(0, 2).map((exp: any, index: number) => (
+                  {importedProfile.experience?.slice(0, 2).map((exp: any, index: number) => (
                     <div key={index} className="mb-2">
                       <p><strong>{exp.jobTitle}</strong> at {exp.company}</p>
                       <p className="text-sm text-gray-600">{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</p>
                     </div>
                   ))}
-                  {importedProfile.experience.length > 2 && (
+                  {importedProfile.experience?.length > 2 && (
                     <p className="text-sm text-gray-600">... and {importedProfile.experience.length - 2} more</p>
                   )}
                 </div>
               </div>
 
               <div>
-                <h3 className="font-semibold text-lg mb-2">Skills ({importedProfile.skills.length} skills)</h3>
+                <h3 className="font-semibold text-lg mb-2">Skills ({importedProfile.skills?.length || 0} skills)</h3>
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <p>{importedProfile.skills.slice(0, 8).join(', ')}
-                    {importedProfile.skills.length > 8 && '...'}</p>
+                  <p>{importedProfile.skills?.slice(0, 8).join(', ')}
+                    {importedProfile.skills?.length > 8 && '...'}</p>
                 </div>
               </div>
             </div>
