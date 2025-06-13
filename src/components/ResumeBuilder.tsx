@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -13,9 +13,10 @@ import ResumePreview from "./ResumePreview";
 
 interface ResumeBuilderProps {
   onBack: () => void;
+  initialData?: any;
 }
 
-const ResumeBuilder = ({ onBack }: ResumeBuilderProps) => {
+const ResumeBuilder = ({ onBack, initialData }: ResumeBuilderProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [resumeData, setResumeData] = useState({
     personalInfo: {},
@@ -25,6 +26,16 @@ const ResumeBuilder = ({ onBack }: ResumeBuilderProps) => {
     skills: [],
     summary: ''
   });
+
+  // Load initial data if provided (from LinkedIn import)
+  useEffect(() => {
+    if (initialData) {
+      setResumeData(prev => ({
+        ...prev,
+        ...initialData
+      }));
+    }
+  }, [initialData]);
 
   const steps = [
     { title: "Personal Info", component: PersonalInfoForm },
