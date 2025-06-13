@@ -39,6 +39,12 @@ const Index = () => {
 
   const handleLinkedInImport = (data: any) => {
     console.log('LinkedIn data imported in Index:', data);
+    console.log('Data structure:', JSON.stringify(data, null, 2));
+    
+    // Clear any existing data first
+    setImportedData(null);
+    
+    // Set the new imported data
     setImportedData(data);
     setShowLinkedInImport(false);
     setShowBuilder(true);

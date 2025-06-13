@@ -195,7 +195,19 @@ const LinkedInImport = ({ onImport, onClose }: LinkedInImportProps) => {
   const handleConfirmImport = () => {
     if (importedProfile) {
       console.log('Confirming LinkedIn import with data:', importedProfile);
-      onImport(importedProfile);
+      
+      // Ensure proper data structure for the resume builder
+      const formattedData = {
+        personalInfo: importedProfile.personalInfo || {},
+        experience: importedProfile.experience || [],
+        education: importedProfile.education || [],
+        projects: importedProfile.projects || [],
+        skills: importedProfile.skills || [],
+        summary: importedProfile.personalInfo?.summary || ''
+      };
+      
+      console.log('Formatted data being sent:', formattedData);
+      onImport(formattedData);
       onClose();
     }
   };
@@ -335,7 +347,10 @@ const LinkedInImport = ({ onImport, onClose }: LinkedInImportProps) => {
               </Button>
               <Button 
                 variant="outline"
-                onClick={() => setImportStep('input')}
+                onClick={() => {
+                  setImportStep('input');
+                  setImportedProfile(null);
+                }}
                 className="flex-1"
               >
                 Import Different Profile
