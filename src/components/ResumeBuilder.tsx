@@ -30,10 +30,18 @@ const ResumeBuilder = ({ onBack, initialData }: ResumeBuilderProps) => {
   // Load initial data if provided (from LinkedIn import)
   useEffect(() => {
     if (initialData) {
+      console.log('Loading LinkedIn imported data into resume builder:', initialData);
+      
       setResumeData(prev => ({
-        ...prev,
-        ...initialData
+        personalInfo: initialData.personalInfo || prev.personalInfo,
+        experience: initialData.experience || prev.experience,
+        education: initialData.education || prev.education,
+        projects: initialData.projects || prev.projects,
+        skills: initialData.skills || prev.skills,
+        summary: initialData.personalInfo?.summary || prev.summary
       }));
+      
+      console.log('Resume data updated with imported data');
     }
   }, [initialData]);
 
@@ -61,6 +69,7 @@ const ResumeBuilder = ({ onBack, initialData }: ResumeBuilderProps) => {
   };
 
   const updateResumeData = (section: string, data: any) => {
+    console.log('Updating resume data:', { section, data });
     setResumeData(prev => ({
       ...prev,
       [section]: data

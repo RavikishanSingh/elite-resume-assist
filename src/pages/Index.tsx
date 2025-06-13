@@ -38,7 +38,7 @@ const Index = () => {
   };
 
   const handleLinkedInImport = (data: any) => {
-    console.log('LinkedIn data imported:', data);
+    console.log('LinkedIn data imported in Index:', data);
     setImportedData(data);
     setShowLinkedInImport(false);
     setShowBuilder(true);

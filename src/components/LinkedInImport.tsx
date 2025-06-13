@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -169,6 +168,8 @@ const LinkedInImport = ({ onImport, onClose }: LinkedInImportProps) => {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       const profileData = await simulateLinkedInAPI(linkedInUrl);
+      console.log('LinkedIn profile data retrieved:', profileData);
+      
       setImportedProfile(profileData);
       setImportStep('success');
       
@@ -179,6 +180,7 @@ const LinkedInImport = ({ onImport, onClose }: LinkedInImportProps) => {
       });
       
     } catch (error) {
+      console.error('LinkedIn import error:', error);
       setImportStep('error');
       toast({
         title: "Import Failed",
@@ -192,7 +194,9 @@ const LinkedInImport = ({ onImport, onClose }: LinkedInImportProps) => {
 
   const handleConfirmImport = () => {
     if (importedProfile) {
+      console.log('Confirming LinkedIn import with data:', importedProfile);
       onImport(importedProfile);
+      onClose();
     }
   };
 
