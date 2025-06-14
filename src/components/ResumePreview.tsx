@@ -60,7 +60,8 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
     if (isGeneratingPDF) return;
     
     setIsGeneratingPDF(true);
-    console.log('=== Starting Alternative PDF Download Process ===');
+    console.log('=== Starting Template-Based PDF Download ===');
+    console.log('Selected template:', selectedTemplate);
     
     try {
       // Validate data
@@ -68,7 +69,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
         throw new Error('Please fill in at least your name before downloading');
       }
 
-      console.log('Generating PDF with alternative method...');
+      console.log('Generating template-based PDF...');
       const pdf = await generatePDF(data, selectedTemplate);
       
       if (!pdf) {
@@ -78,17 +79,18 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
       // Generate filename
       const name = data.personalInfo?.fullName || 'Resume';
       const sanitizedName = name.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+      const templateSuffix = selectedTemplate.charAt(0).toUpperCase() + selectedTemplate.slice(1);
       const date = new Date().toISOString().split('T')[0];
-      const filename = `${sanitizedName}_Resume_${date}.pdf`;
+      const filename = `${sanitizedName}_Resume_${templateSuffix}_${date}.pdf`;
       
       // Download the PDF
       pdf.save(filename);
       
-      console.log(`PDF saved as: ${filename}`);
+      console.log(`Template-based PDF saved as: ${filename}`);
       
       toast({
         title: "Success!",
-        description: `Resume downloaded as ${filename}`,
+        description: `Resume downloaded as ${filename} using ${templateSuffix} template`,
         duration: 3000
       });
       
@@ -108,7 +110,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
       });
     } finally {
       setIsGeneratingPDF(false);
-      console.log('=== PDF Download Process Complete ===');
+      console.log('=== Template-Based PDF Download Complete ===');
     }
   };
 
@@ -269,15 +271,15 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
 
       {/* Enhanced Features */}
       <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-6">
-        <h4 className="font-medium text-purple-900 mb-3">✨ Enhanced PDF Generation</h4>
+        <h4 className="font-medium text-purple-900 mb-3">✨ Template-Based PDF Generation</h4>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <h5 className="font-medium text-purple-800">Professional Formatting</h5>
-            <p className="text-sm text-purple-700">Clean, ATS-friendly PDF with perfect A4 dimensions and professional styling</p>
+            <h5 className="font-medium text-purple-800">Perfect Template Matching</h5>
+            <p className="text-sm text-purple-700">PDF output now perfectly matches your selected template design with accurate colors, spacing, and layout</p>
           </div>
           <div className="space-y-2">
-            <h5 className="font-medium text-purple-800">Reliable Generation</h5>
-            <p className="text-sm text-purple-700">Alternative PDF method ensures consistent results with proper content and sizing</p>
+            <h5 className="font-medium text-purple-800">Professional A4 Format</h5>
+            <p className="text-sm text-purple-700">Standard A4 size (210×297mm) with proper margins and typography for professional presentation</p>
           </div>
         </div>
       </div>
