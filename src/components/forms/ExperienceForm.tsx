@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2 } from "lucide-react";
+import AIWritingAssistant from "../AIWritingAssistant";
 
 interface Experience {
   id: string;
@@ -74,6 +73,16 @@ const ExperienceForm = ({ data, onUpdate, onNext }: ExperienceFormProps) => {
     e.preventDefault();
     onNext();
   };
+
+  // Prepare context for AI writing assistant
+  const getAIContext = (experience: Experience) => ({
+    fullName: data?.personalInfo?.fullName,
+    jobTitle: experience.jobTitle,
+    company: experience.company,
+    experience: data?.experience || [],
+    skills: data?.skills || [],
+    education: data?.education || []
+  });
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -180,20 +189,15 @@ const ExperienceForm = ({ data, onUpdate, onNext }: ExperienceFormProps) => {
             </div>
 
             <div>
-              <Label className="text-sm font-medium text-gray-700">
+              <Label className="text-sm font-medium text-gray-700 mb-3 block">
                 Job Description *
               </Label>
-              <Textarea
+              <AIWritingAssistant
                 value={experience.description}
-                onChange={(e) => updateExperience(experience.id, 'description', e.target.value)}
+                onChange={(value) => updateExperience(experience.id, 'description', value)}
                 placeholder="• Developed and maintained web applications using React and Node.js&#10;• Collaborated with cross-functional teams to deliver features on time&#10;• Improved application performance by 30% through code optimization"
-                rows={4}
-                required
-                className="mt-1"
+                userContext={getAIContext(experience)}
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Use bullet points to describe your key achievements and responsibilities.
-              </p>
             </div>
           </CardContent>
         </Card>

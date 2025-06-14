@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2, ExternalLink } from "lucide-react";
+import AIWritingAssistant from "../AIWritingAssistant";
 
 interface ProjectsFormProps {
   data: any;
@@ -59,6 +58,16 @@ const ProjectsForm = ({ data, onUpdate, onNext, onPrevious }: ProjectsFormProps)
     e.preventDefault();
     onNext();
   };
+
+  // Prepare context for AI writing assistant
+  const getAIContext = (project: any) => ({
+    fullName: data?.personalInfo?.fullName,
+    projectName: project.name,
+    technologies: project.technologies,
+    experience: data?.experience || [],
+    skills: data?.skills || [],
+    education: data?.education || []
+  });
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -117,21 +126,15 @@ const ProjectsForm = ({ data, onUpdate, onNext, onPrevious }: ProjectsFormProps)
           </div>
 
           <div className="mt-6">
-            <Label htmlFor={`description-${index}`} className="text-sm font-medium text-gray-700">
+            <Label className="text-sm font-medium text-gray-700 mb-3 block">
               Project Description *
             </Label>
-            <Textarea
-              id={`description-${index}`}
+            <AIWritingAssistant
               value={project.description}
-              onChange={(e) => updateProject(index, 'description', e.target.value)}
+              onChange={(value) => updateProject(index, 'description', value)}
               placeholder="Describe what you built, your role, challenges overcome, and impact..."
-              rows={4}
-              required
-              className="mt-1"
+              userContext={getAIContext(project)}
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Tip: Include your specific contributions, technologies used, and measurable outcomes.
-            </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 mt-6">
