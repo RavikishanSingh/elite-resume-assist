@@ -1,3 +1,4 @@
+
 import html2canvas from 'html2canvas';
 
 export const generatePDF = async (data: any, templateName: string = 'modern') => {
@@ -8,84 +9,96 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
   try {
     // Dynamic import of jsPDF
     const { default: jsPDF } = await import('jspdf');
+    console.log('jsPDF imported successfully');
 
-    // First, try to find the resume preview element
+    // Basic validation
+    if (!data || !data.personalInfo?.fullName) {
+      console.log('Insufficient data, using fallback PDF');
+      return await generateFallbackPDF(data);
+    }
+
+    // Try to find the resume preview element
     const resumeElement = document.getElementById('resume-preview');
     
     if (!resumeElement) {
-      console.error('Resume preview element not found, using fallback');
+      console.log('Resume preview element not found, using fallback');
       return await generateFallbackPDF(data);
     }
 
-    console.log('Resume element found, preparing for capture...');
+    console.log('Resume element found, checking visibility...');
     
-    // Wait for any pending renders
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Make sure the element is visible and has content
+    // Ensure element is visible and properly sized
     const rect = resumeElement.getBoundingClientRect();
-    console.log('Element dimensions:', rect.width, 'x', rect.height);
+    console.log('Element rect:', rect);
     
     if (rect.width === 0 || rect.height === 0) {
-      console.error('Element has no dimensions, using fallback');
+      console.log('Element has zero dimensions, using fallback');
       return await generateFallbackPDF(data);
     }
 
-    // Ensure element is fully visible with proper styling
+    // Force element to be visible with proper styling
+    const originalStyles = {
+      display: resumeElement.style.display,
+      visibility: resumeElement.style.visibility,
+      opacity: resumeElement.style.opacity,
+      transform: resumeElement.style.transform,
+      position: resumeElement.style.position
+    };
+
+    // Apply capture-friendly styles
     resumeElement.style.display = 'block';
     resumeElement.style.visibility = 'visible';
     resumeElement.style.opacity = '1';
+    resumeElement.style.transform = 'none';
     resumeElement.style.position = 'relative';
-    resumeElement.style.zIndex = '1';
-    resumeElement.style.transform = 'scale(1)'; // Remove any scaling
-    resumeElement.style.transformOrigin = 'top left';
 
-    // Force a reflow
-    resumeElement.offsetHeight;
-    
-    // Wait a bit more for styles to apply
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Wait for styles to apply
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     console.log('Capturing element with html2canvas...');
     
-    // Capture with html2canvas with proper settings for resume
+    // Capture with optimized settings
     const canvas = await html2canvas(resumeElement, {
-      scale: 3, // Higher scale for crisp text
+      scale: 2,
       useCORS: true,
       allowTaint: false,
       backgroundColor: '#ffffff',
-      logging: true,
-      width: 794, // A4 width at 96 DPI
-      height: 1123, // A4 height at 96 DPI
+      logging: false,
+      width: Math.floor(rect.width),
+      height: Math.floor(rect.height),
       scrollX: 0,
       scrollY: 0,
-      windowWidth: 794,
-      windowHeight: 1123,
-      removeContainer: true,
-      ignoreElements: (element) => {
-        return element.classList.contains('ignore-pdf') || false;
+      foreignObjectRendering: true,
+      onclone: (clonedDoc) => {
+        const clonedElement = clonedDoc.getElementById('resume-preview');
+        if (clonedElement) {
+          clonedElement.style.transform = 'none';
+          clonedElement.style.scale = '1';
+        }
       }
     });
 
-    console.log('Canvas created successfully:', canvas.width, 'x', canvas.height);
+    // Restore original styles
+    Object.assign(resumeElement.style, originalStyles);
 
-    // Validate canvas
+    console.log('Canvas created:', canvas.width, 'x', canvas.height);
+
     if (!canvas || canvas.width === 0 || canvas.height === 0) {
-      console.error('Canvas is invalid, using fallback');
+      console.log('Invalid canvas, using fallback');
       return await generateFallbackPDF(data);
     }
 
-    // Get image data with high quality
-    const imageData = canvas.toDataURL('image/jpeg', 0.98);
+    // Get image data
+    const imageData = canvas.toDataURL('image/png', 1.0);
     
     if (!imageData || imageData === 'data:,' || imageData.length < 100) {
-      console.error('Invalid image data, using fallback');
+      console.log('Invalid image data, using fallback');
       return await generateFallbackPDF(data);
     }
 
-    console.log('Image data generated, creating PDF...');
+    console.log('Creating PDF document...');
 
-    // Create PDF with proper A4 dimensions (210 x 297 mm)
+    // Create PDF with A4 dimensions
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
@@ -93,20 +106,39 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       compress: true
     });
 
-    // Standard A4 dimensions in mm
+    // A4 dimensions in mm
     const pageWidth = 210;
     const pageHeight = 297;
     
-    console.log(`Adding image to PDF with A4 dimensions: ${pageWidth}mm x ${pageHeight}mm`);
+    // Calculate aspect ratio and fit image properly
+    const canvasAspectRatio = canvas.width / canvas.height;
+    const pageAspectRatio = pageWidth / pageHeight;
     
-    // Add image to fill the entire A4 page
-    pdf.addImage(imageData, 'JPEG', 0, 0, pageWidth, pageHeight, '', 'FAST');
+    let imgWidth = pageWidth;
+    let imgHeight = pageHeight;
     
-    console.log('PDF generated successfully with proper A4 sizing!');
+    if (canvasAspectRatio > pageAspectRatio) {
+      // Canvas is wider, fit to width
+      imgHeight = pageWidth / canvasAspectRatio;
+    } else {
+      // Canvas is taller, fit to height
+      imgWidth = pageHeight * canvasAspectRatio;
+    }
+    
+    // Center the image on the page
+    const x = (pageWidth - imgWidth) / 2;
+    const y = (pageHeight - imgHeight) / 2;
+    
+    console.log(`Adding image to PDF: ${imgWidth}mm x ${imgHeight}mm at (${x}, ${y})`);
+    
+    pdf.addImage(imageData, 'PNG', x, y, imgWidth, imgHeight, '', 'FAST');
+    
+    console.log('PDF generated successfully!');
     return pdf;
 
   } catch (error) {
     console.error('Error in PDF generation:', error);
+    console.log('Falling back to text-based PDF');
     return await generateFallbackPDF(data);
   }
 };
@@ -130,7 +162,7 @@ const generateFallbackPDF = async (data: any) => {
     let currentY = margin;
 
     const addText = (text: string, fontSize: number = 11, fontStyle: string = 'normal') => {
-      if (!text) return;
+      if (!text || text.trim() === '') return;
       
       pdf.setFontSize(fontSize);
       pdf.setFont('helvetica', fontStyle);
@@ -161,10 +193,10 @@ const generateFallbackPDF = async (data: any) => {
 
     // Header
     if (data.personalInfo?.fullName) {
-      pdf.setFontSize(18);
+      pdf.setFontSize(20);
       pdf.setFont('helvetica', 'bold');
       pdf.text(data.personalInfo.fullName, margin, currentY);
-      currentY += 10;
+      currentY += 12;
     }
 
     // Contact Information
@@ -252,6 +284,6 @@ const generateFallbackPDF = async (data: any) => {
     
   } catch (error) {
     console.error('Error generating fallback PDF:', error);
-    throw new Error('Failed to generate PDF');
+    throw new Error('Failed to generate PDF: ' + error.message);
   }
 };
