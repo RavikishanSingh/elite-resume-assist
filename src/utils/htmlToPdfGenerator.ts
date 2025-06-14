@@ -22,17 +22,17 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     // Set up the resume element for optimal PDF capture
     const originalStyle = resumeElement.style.cssText;
     
-    // Apply professional PDF styling
+    // Apply professional PDF styling with improved page break handling
     resumeElement.style.cssText = `
       width: 210mm !important;
       min-height: 297mm !important;
       max-width: 210mm !important;
-      padding: 20mm !important;
+      padding: 15mm 20mm !important;
       margin: 0 !important;
       background: white !important;
       font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
       font-size: 11pt !important;
-      line-height: 1.4 !important;
+      line-height: 1.5 !important;
       color: #2d3748 !important;
       box-sizing: border-box !important;
       transform: none !important;
@@ -41,8 +41,28 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       page-break-inside: avoid !important;
     `;
 
+    // Improve page break handling for all sections
+    const sections = resumeElement.querySelectorAll('section, .experience-item, .project-item, .education-item');
+    sections.forEach(section => {
+      const element = section as HTMLElement;
+      element.style.pageBreakInside = 'avoid';
+      element.style.breakInside = 'avoid';
+      element.style.orphans = '3';
+      element.style.widows = '3';
+      element.style.marginBottom = '1.5rem';
+    });
+
+    // Ensure headers don't get separated from content
+    const headers = resumeElement.querySelectorAll('h1, h2, h3, h4');
+    headers.forEach(header => {
+      const element = header as HTMLElement;
+      element.style.pageBreakAfter = 'avoid';
+      element.style.breakAfter = 'avoid';
+      element.style.orphans = '3';
+    });
+
     // Wait for fonts and layout to settle
-    await new Promise(resolve => setTimeout(resolve, 800));
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     console.log('Capturing high-quality resume...');
 
@@ -65,13 +85,14 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
           // Ensure all text is readable and properly styled
           clonedElement.style.fontFamily = 'Inter, Segoe UI, Tahoma, Geneva, Verdana, sans-serif';
           clonedElement.style.fontSize = '11pt';
-          clonedElement.style.lineHeight = '1.4';
+          clonedElement.style.lineHeight = '1.5';
           
           // Fix any layout issues in the clone
-          const sections = clonedElement.querySelectorAll('section, div');
-          sections.forEach(section => {
+          const clonedSections = clonedElement.querySelectorAll('section, div');
+          clonedSections.forEach(section => {
             const element = section as HTMLElement;
             element.style.pageBreakInside = 'avoid';
+            element.style.breakInside = 'avoid';
             element.style.orphans = '3';
             element.style.widows = '3';
           });
@@ -89,27 +110,31 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       compress: true
     });
 
-    // A4 dimensions in mm
+    // A4 dimensions in mm with professional margins
     const pdfWidth = 210;
     const pdfHeight = 297;
+    const topMargin = 20; // Top margin for subsequent pages
+    const bottomMargin = 15;
+    const effectiveHeight = pdfHeight - topMargin - bottomMargin;
+    
     const pageHeight = canvas.height * (pdfWidth / canvas.width);
 
     console.log(`Canvas dimensions: ${canvas.width}x${canvas.height}`);
     console.log(`Calculated PDF height: ${pageHeight}mm`);
 
     // Calculate number of pages needed
-    const totalPages = Math.ceil(pageHeight / pdfHeight);
+    const totalPages = Math.ceil(pageHeight / effectiveHeight);
     console.log(`Total pages needed: ${totalPages}`);
 
-    // Add pages to PDF
+    // Add pages to PDF with proper margins
     for (let page = 0; page < totalPages; page++) {
       if (page > 0) {
         pdf.addPage();
       }
 
       // Calculate the portion of canvas to include in this page
-      const startY = page * pdfHeight;
-      const endY = Math.min((page + 1) * pdfHeight, pageHeight);
+      const startY = page * effectiveHeight;
+      const endY = Math.min((page + 1) * effectiveHeight, pageHeight);
       const currentPageHeight = endY - startY;
 
       // Create a canvas for this page
@@ -123,6 +148,10 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
         pageCanvas.width = canvas.width;
         pageCanvas.height = sourceHeight;
 
+        // Fill with white background
+        pageCtx.fillStyle = '#ffffff';
+        pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+
         // Draw the portion of the original canvas
         pageCtx.drawImage(
           canvas,
@@ -133,20 +162,23 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
         // Convert to image and add to PDF
         const imgData = pageCanvas.toDataURL('image/jpeg', 0.95);
         
-        // Calculate dimensions to fit page perfectly
+        // Calculate dimensions to fit page with proper margins
         const imgWidth = pdfWidth;
         const imgHeight = currentPageHeight;
 
-        pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight, undefined, 'FAST');
+        // Add top margin for pages after the first
+        const yPosition = page === 0 ? 0 : topMargin;
 
-        console.log(`Added page ${page + 1}/${totalPages}`);
+        pdf.addImage(imgData, 'JPEG', 0, yPosition, imgWidth, imgHeight, undefined, 'FAST');
+
+        console.log(`Added page ${page + 1}/${totalPages} with ${page === 0 ? 'no' : topMargin + 'mm'} top margin`);
       }
     }
 
     // Restore original styling
     resumeElement.style.cssText = originalStyle;
 
-    // Add metadata - removed invalid 'producer' property
+    // Add metadata
     pdf.setProperties({
       title: `${data.personalInfo?.fullName || 'Resume'} - Professional Resume`,
       subject: 'Professional Resume',
@@ -154,7 +186,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       creator: 'Professional Resume Builder'
     });
 
-    console.log('Multi-page PDF generation completed successfully');
+    console.log('Professional multi-page PDF generation completed successfully');
     return pdf;
 
   } catch (error) {
