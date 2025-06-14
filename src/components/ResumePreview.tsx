@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -61,7 +60,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
     if (isGeneratingPDF) return;
     
     setIsGeneratingPDF(true);
-    console.log('=== Starting Perfect Template PDF Download ===');
+    console.log('=== Starting Professional Multi-Page PDF Download ===');
     console.log('Selected template:', selectedTemplate);
     
     try {
@@ -70,40 +69,47 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
         throw new Error('Please fill in at least your name before downloading');
       }
 
-      console.log('Generating perfect template-matched PDF...');
+      console.log('Generating professional multi-page PDF...');
       
-      // Wait a moment for UI to settle
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Show progress to user
+      toast({
+        title: "Preparing PDF...",
+        description: "Optimizing layout for professional multi-page output",
+        duration: 2000
+      });
+
+      // Wait for UI to settle and ensure proper rendering
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Use the HTML-to-PDF generator for perfect matching
+      // Use the enhanced HTML-to-PDF generator
       const pdf = await generatePDFFromHTML(data, selectedTemplate);
       
       if (!pdf) {
         throw new Error('PDF generation returned null');
       }
 
-      // Generate filename
+      // Generate professional filename
       const name = data.personalInfo?.fullName || 'Resume';
       const sanitizedName = name.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
       const templateSuffix = selectedTemplate.charAt(0).toUpperCase() + selectedTemplate.slice(1);
       const date = new Date().toISOString().split('T')[0];
-      const filename = `${sanitizedName}_Resume_${templateSuffix}_${date}.pdf`;
+      const filename = `${sanitizedName}_Professional_Resume_${templateSuffix}_${date}.pdf`;
       
       // Download the PDF
       pdf.save(filename);
       
-      console.log(`Perfect template PDF saved as: ${filename}`);
+      console.log(`Professional PDF saved as: ${filename}`);
       
       toast({
-        title: "Success!",
-        description: `Resume downloaded as ${filename} with pixel-perfect ${templateSuffix} template design`,
-        duration: 3000
+        title: "Success! 🎉",
+        description: `Professional multi-page resume downloaded as ${filename}`,
+        duration: 4000
       });
       
     } catch (error) {
       console.error('PDF download error:', error);
       
-      let errorMessage = 'Failed to generate PDF. Please try again.';
+      let errorMessage = 'Failed to generate professional PDF. Please try again.';
       if (error instanceof Error) {
         errorMessage = error.message;
       }
@@ -116,7 +122,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
       });
     } finally {
       setIsGeneratingPDF(false);
-      console.log('=== Perfect Template PDF Download Complete ===');
+      console.log('=== Professional PDF Download Complete ===');
     }
   };
 
@@ -163,7 +169,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-2xl font-bold text-gray-900">Resume Preview</h3>
+        <h3 className="text-2xl font-bold text-gray-900">Professional Resume Preview</h3>
         <div className="flex space-x-3">
           <Button 
             variant="outline" 
@@ -198,7 +204,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
             className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50"
           >
             <Download className="w-4 h-4" />
-            <span>{isGeneratingPDF ? 'Capturing Template...' : 'Download PDF'}</span>
+            <span>{isGeneratingPDF ? 'Creating Professional PDF...' : 'Download Professional PDF'}</span>
           </Button>
         </div>
       </div>
@@ -217,7 +223,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
       <div className="bg-white p-6 rounded-lg border-2 border-gray-200">
         <div className="flex items-center space-x-2 mb-4">
           <Palette className="w-5 h-5 text-purple-600" />
-          <h4 className="text-lg font-semibold text-gray-900">Choose Your Template</h4>
+          <h4 className="text-lg font-semibold text-gray-900">Choose Your Professional Template</h4>
         </div>
         
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
@@ -243,26 +249,27 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
           ))}
         </div>
 
-        {/* Template Preview */}
+        {/* Enhanced Template Preview */}
         <Card className="border-2 border-gray-200">
           <CardContent className="p-0">
             <div 
               id="resume-preview" 
-              className="bg-white mx-auto"
+              className="bg-white mx-auto shadow-lg"
               style={{ 
-                width: '794px',
-                minHeight: '1123px',
+                width: '210mm',
+                minHeight: '297mm',
                 maxWidth: '100%',
-                transform: 'scale(0.7)',
+                transform: 'scale(0.65)',
                 transformOrigin: 'top center',
                 backgroundColor: '#ffffff',
-                fontFamily: 'Arial, sans-serif',
-                fontSize: '14px',
+                fontFamily: 'Inter, Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+                fontSize: '11pt',
                 lineHeight: '1.4',
-                color: '#000000',
-                border: '1px solid #ddd',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                padding: '40px'
+                color: '#2d3748',
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                padding: '20mm',
+                boxSizing: 'border-box'
               }}
             >
               <SelectedTemplate 
@@ -277,35 +284,29 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
 
       {/* Enhanced Features */}
       <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
-        <h4 className="font-medium text-green-900 mb-3">🎯 Pixel-Perfect PDF Generation</h4>
+        <h4 className="font-medium text-green-900 mb-3">🎯 Professional Multi-Page PDF Generation</h4>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <h5 className="font-medium text-green-800">HTML-to-Canvas Technology</h5>
-            <p className="text-sm text-green-700">Using advanced HTML-to-Canvas conversion to capture your resume exactly as you see it - every color, font, spacing, and design element perfectly preserved</p>
+            <h5 className="font-medium text-green-800">Advanced HTML-to-Canvas Technology</h5>
+            <p className="text-sm text-green-700">High-resolution capture (3x scale) ensuring crisp text and perfect formatting. Automatic multi-page handling for longer resumes while maintaining professional layout standards.</p>
           </div>
           <div className="space-y-2">
-            <h5 className="font-medium text-green-800">What You See Is What You Get</h5>
-            <p className="text-sm text-green-700">The PDF output will be an exact visual match of your template preview - no more layout differences or styling inconsistencies</p>
+            <h5 className="font-medium text-green-800">Professional Standards</h5>
+            <p className="text-sm text-green-700">A4 format (210×297mm) with optimal margins, professional typography (Inter font family), and proper page breaks for hiring manager readability.</p>
           </div>
         </div>
       </div>
 
+      {/* Professional Tips */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="font-medium text-blue-900 mb-2">📄 Professional A4 Format</h4>
-        <p className="text-sm text-blue-800">
-          Your resume is formatted to A4 standard size (210×297mm / 8.27×11.69 inches) with perfect template preservation for professional presentation.
-        </p>
-      </div>
-
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="font-medium text-blue-900 mb-2">💡 Resume Tips for Success</h4>
+        <h4 className="font-medium text-blue-900 mb-2">📋 Professional Resume Excellence</h4>
         <ul className="text-sm text-blue-800 space-y-1">
-          <li>• Keep your resume to 1-2 pages maximum</li>
-          <li>• Use action verbs and quantify your achievements</li>
-          <li>• Tailor your resume for each job application</li>
-          <li>• Proofread carefully for spelling and grammar errors</li>
-          <li>• Save your resume as a PDF to preserve formatting</li>
-          <li>• Update your LinkedIn profile to match your resume</li>
+          <li>• Keep content concise and impactful with quantified achievements</li>
+          <li>• Use professional language and industry-relevant keywords</li>
+          <li>• Maintain consistent formatting and proper spacing throughout</li>
+          <li>• Ensure contact information is current and professional</li>
+          <li>• Multi-page resumes are acceptable for experienced professionals</li>
+          <li>• Always save and send as PDF to preserve formatting</li>
         </ul>
       </div>
     </div>

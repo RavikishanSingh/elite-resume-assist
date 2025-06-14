@@ -1,4 +1,3 @@
-
 import { Mail, Phone, MapPin, Globe, Linkedin } from "lucide-react";
 import EditableText from "../EditableText";
 
@@ -12,116 +11,118 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
   const { personalInfo, experience, education, skills, projects } = data;
 
   return (
-    <div className="max-w-4xl mx-auto bg-white p-8 shadow-lg min-h-[297mm]">
-      {/* Enhanced Header with Better Layout */}
-      <header className="border-b-4 border-blue-600 pb-6 mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          <EditableText
-            value={personalInfo?.fullName || ''}
-            onSave={(value) => onUpdate?.('personalInfo', 'fullName', value)}
-            placeholder="Your Name"
-            isEditing={isEditing}
-            className="inline-block"
-          />
-        </h1>
-        
-        {/* Enhanced Contact Info Grid */}
-        <div className="grid grid-cols-2 gap-4 text-gray-600">
-          {personalInfo?.email && (
-            <div className="flex items-center space-x-3">
-              <Mail className="w-4 h-4 flex-shrink-0" />
-              <EditableText
-                value={personalInfo.email}
-                onSave={(value) => onUpdate?.('personalInfo', 'email', value)}
-                isEditing={isEditing}
-                className="inline-block"
-                placeholder="email@example.com"
-              />
-            </div>
-          )}
-          {personalInfo?.phone && (
-            <div className="flex items-center space-x-3">
-              <Phone className="w-4 h-4 flex-shrink-0" />
-              <EditableText
-                value={personalInfo.phone}
-                onSave={(value) => onUpdate?.('personalInfo', 'phone', value)}
-                isEditing={isEditing}
-                className="inline-block"
-                placeholder="Phone number"
-              />
-            </div>
-          )}
-          {personalInfo?.location && (
-            <div className="flex items-center space-x-3">
-              <MapPin className="w-4 h-4 flex-shrink-0" />
-              <EditableText
-                value={personalInfo.location}
-                onSave={(value) => onUpdate?.('personalInfo', 'location', value)}
-                isEditing={isEditing}
-                className="inline-block"
-                placeholder="City, State"
-              />
-            </div>
-          )}
-          {personalInfo?.linkedIn && (
-            <div className="flex items-center space-x-3">
-              <Linkedin className="w-4 h-4 flex-shrink-0" />
-              <EditableText
-                value={personalInfo.linkedIn}
-                onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
-                isEditing={isEditing}
-                className="inline-block"
-                placeholder="LinkedIn URL"
-              />
-            </div>
-          )}
-          {personalInfo?.portfolio && (
-            <div className="flex items-center space-x-3">
-              <Globe className="w-4 h-4 flex-shrink-0" />
-              <EditableText
-                value={personalInfo.portfolio}
-                onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
-                isEditing={isEditing}
-                className="inline-block"
-                placeholder="Portfolio URL"
-              />
-            </div>
-          )}
+    <div className="w-full bg-white text-gray-800" style={{ fontFamily: 'Inter, Segoe UI, Tahoma, Geneva, Verdana, sans-serif' }}>
+      {/* Professional Header */}
+      <header className="border-b-3 border-blue-600 pb-6 mb-8">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-gray-900 mb-3 tracking-tight">
+            <EditableText
+              value={personalInfo?.fullName || ''}
+              onSave={(value) => onUpdate?.('personalInfo', 'fullName', value)}
+              placeholder="Your Full Name"
+              isEditing={isEditing}
+              className="inline-block"
+            />
+          </h1>
+          
+          <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-600">
+            {personalInfo?.email && (
+              <div className="flex items-center space-x-2">
+                <Mail className="w-4 h-4 text-blue-600" />
+                <EditableText
+                  value={personalInfo.email}
+                  onSave={(value) => onUpdate?.('personalInfo', 'email', value)}
+                  isEditing={isEditing}
+                  className="inline-block"
+                  placeholder="email@example.com"
+                />
+              </div>
+            )}
+            {personalInfo?.phone && (
+              <div className="flex items-center space-x-2">
+                <Phone className="w-4 h-4 text-blue-600" />
+                <EditableText
+                  value={personalInfo.phone}
+                  onSave={(value) => onUpdate?.('personalInfo', 'phone', value)}
+                  isEditing={isEditing}
+                  className="inline-block"
+                  placeholder="(555) 123-4567"
+                />
+              </div>
+            )}
+            {personalInfo?.location && (
+              <div className="flex items-center space-x-2">
+                <MapPin className="w-4 h-4 text-blue-600" />
+                <EditableText
+                  value={personalInfo.location}
+                  onSave={(value) => onUpdate?.('personalInfo', 'location', value)}
+                  isEditing={isEditing}
+                  className="inline-block"
+                  placeholder="City, State"
+                />
+              </div>
+            )}
+            {personalInfo?.linkedIn && (
+              <div className="flex items-center space-x-2">
+                <Linkedin className="w-4 h-4 text-blue-600" />
+                <EditableText
+                  value={personalInfo.linkedIn}
+                  onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
+                  isEditing={isEditing}
+                  className="inline-block"
+                  placeholder="linkedin.com/in/username"
+                />
+              </div>
+            )}
+            {personalInfo?.portfolio && (
+              <div className="flex items-center space-x-2">
+                <Globe className="w-4 h-4 text-blue-600" />
+                <EditableText
+                  value={personalInfo.portfolio}
+                  onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
+                  isEditing={isEditing}
+                  className="inline-block"
+                  placeholder="portfolio.com"
+                />
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
-      {/* Enhanced Summary Section */}
+      {/* Professional Summary */}
       {personalInfo?.summary && (
         <section className="mb-8">
-          <h2 className="text-2xl font-bold text-blue-600 mb-4 border-l-4 border-blue-600 pl-4">
+          <h2 className="text-xl font-semibold text-blue-600 mb-4 flex items-center">
+            <div className="w-2 h-6 bg-blue-600 mr-3"></div>
             Professional Summary
           </h2>
-          <div className="text-gray-700 leading-relaxed">
+          <div className="text-gray-700 leading-relaxed pl-5">
             <EditableText
               value={personalInfo.summary}
               onSave={(value) => onUpdate?.('personalInfo', 'summary', value)}
               multiline
               isEditing={isEditing}
               className="inline-block w-full"
-              placeholder="Professional summary"
+              placeholder="Professional summary highlighting your key qualifications and career objectives"
             />
           </div>
         </section>
       )}
 
-      {/* Enhanced Experience Section */}
+      {/* Professional Experience */}
       {experience?.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-2xl font-bold text-blue-600 mb-6 border-l-4 border-blue-600 pl-4">
+          <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center">
+            <div className="w-2 h-6 bg-blue-600 mr-3"></div>
             Professional Experience
           </h2>
-          <div className="space-y-6">
+          <div className="space-y-6 pl-5">
             {experience.map((exp: any, index: number) => (
-              <div key={index} className="border-l-2 border-gray-200 pl-6 relative">
-                <div className="absolute w-3 h-3 bg-blue-600 rounded-full -left-2 top-1"></div>
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-grow">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-1">
+              <div key={index} className="relative">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900">
                       <EditableText
                         value={exp.jobTitle || ''}
                         onSave={(value) => onUpdate?.('experience', 'jobTitle', value, index)}
@@ -130,7 +131,7 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
                         placeholder="Job Title"
                       />
                     </h3>
-                    <p className="text-lg text-blue-600 font-medium">
+                    <p className="text-blue-600 font-medium">
                       <EditableText
                         value={exp.company || ''}
                         onSave={(value) => onUpdate?.('experience', 'company', value, index)}
@@ -140,8 +141,8 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
                       />
                     </p>
                   </div>
-                  <div className="text-right text-gray-600 ml-4">
-                    <p className="font-medium whitespace-nowrap">
+                  <div className="text-right text-gray-600 text-sm">
+                    <p className="font-medium">
                       <EditableText
                         value={exp.startDate || ''}
                         onSave={(value) => onUpdate?.('experience', 'startDate', value, index)}
@@ -149,7 +150,7 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
                         className="inline-block"
                         placeholder="Start Date"
                       />
-                      {' - '}
+                      {' – '}
                       {exp.current ? 'Present' : (
                         <EditableText
                           value={exp.endDate || ''}
@@ -162,14 +163,14 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
                     </p>
                   </div>
                 </div>
-                <div className="text-gray-700 leading-relaxed whitespace-pre-line">
+                <div className="text-gray-700 leading-relaxed whitespace-pre-line text-sm">
                   <EditableText
                     value={exp.description || ''}
                     onSave={(value) => onUpdate?.('experience', 'description', value, index)}
                     multiline
                     isEditing={isEditing}
                     className="inline-block w-full"
-                    placeholder="Job description"
+                    placeholder="• Key achievement or responsibility&#10;• Quantified result or impact&#10;• Relevant skill or technology used"
                   />
                 </div>
               </div>
@@ -178,17 +179,49 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
         </section>
       )}
 
-      {/* Enhanced Projects Section */}
+      {/* Skills */}
+      {skills?.length > 0 && (
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold text-blue-600 mb-4 flex items-center">
+            <div className="w-2 h-6 bg-blue-600 mr-3"></div>
+            Core Competencies
+          </h2>
+          <div className="pl-5">
+            <div className="flex flex-wrap gap-2">
+              {skills.map((skill: string, index: number) => (
+                <span
+                  key={index}
+                  className="px-3 py-2 bg-blue-50 text-blue-800 rounded-lg text-sm font-medium border border-blue-200"
+                >
+                  <EditableText
+                    value={skill || ''}
+                    onSave={(value) => {
+                      const updatedSkills = [...skills];
+                      updatedSkills[index] = value;
+                      onUpdate?.('skills', '', updatedSkills.join(','));
+                    }}
+                    isEditing={isEditing}
+                    className="inline-block"
+                    placeholder="Skill"
+                  />
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Projects */}
       {projects?.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-2xl font-bold text-blue-600 mb-6 border-l-4 border-blue-600 pl-4">
-            Projects
+          <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center">
+            <div className="w-2 h-6 bg-blue-600 mr-3"></div>
+            Key Projects
           </h2>
-          <div className="space-y-6">
+          <div className="space-y-4 pl-5">
             {projects.map((project: any, index: number) => (
-              <div key={index} className="border-l-2 border-gray-200 pl-6 relative">
-                <div className="absolute w-3 h-3 bg-blue-600 rounded-full -left-2 top-1"></div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <div key={index}>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   <EditableText
                     value={project.name || ''}
                     onSave={(value) => onUpdate?.('projects', 'name', value, index)}
@@ -197,27 +230,20 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
                     placeholder="Project Name"
                   />
                 </h3>
-                <div className="text-gray-700 leading-relaxed whitespace-pre-line mb-3">
+                <div className="text-gray-700 leading-relaxed whitespace-pre-line text-sm mb-2">
                   <EditableText
                     value={project.description || ''}
                     onSave={(value) => onUpdate?.('projects', 'description', value, index)}
                     multiline
                     isEditing={isEditing}
                     className="inline-block w-full"
-                    placeholder="Project description"
+                    placeholder="Project description and key achievements"
                   />
                 </div>
                 {project.technologies && (
-                  <div className="flex flex-wrap gap-2">
-                    {project.technologies.split(',').map((tech: string, i: number) => (
-                      <span
-                        key={i}
-                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
-                      >
-                        {tech.trim()}
-                      </span>
-                    ))}
-                  </div>
+                  <p className="text-blue-600 font-medium text-sm">
+                    <strong>Technologies:</strong> {project.technologies}
+                  </p>
                 )}
               </div>
             ))}
@@ -225,79 +251,51 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
         </section>
       )}
 
-      {/* Enhanced Education Section */}
+      {/* Education */}
       {education?.length > 0 && (
-        <section className="mb-8">
-          <h2 className="text-2xl font-bold text-blue-600 mb-6 border-l-4 border-blue-600 pl-4">
+        <section className="mb-6">
+          <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center">
+            <div className="w-2 h-6 bg-blue-600 mr-3"></div>
             Education
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-4 pl-5">
             {education.map((edu: any, index: number) => (
-              <div key={index} className="border-l-2 border-gray-200 pl-6 relative">
-                <div className="absolute w-3 h-3 bg-blue-600 rounded-full -left-2 top-1"></div>
-                <div className="flex justify-between items-start">
-                  <div className="flex-grow">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                      <EditableText
-                        value={edu.degree || ''}
-                        onSave={(value) => onUpdate?.('education', 'degree', value, index)}
-                        isEditing={isEditing}
-                        className="inline-block"
-                        placeholder="Degree"
-                      />
-                    </h3>
-                    <p className="text-blue-600 font-medium">
-                      <EditableText
-                        value={edu.school || ''}
-                        onSave={(value) => onUpdate?.('education', 'school', value, index)}
-                        isEditing={isEditing}
-                        className="inline-block"
-                        placeholder="School Name"
-                      />
-                    </p>
-                  </div>
-                  <div className="text-gray-600 ml-4">
-                    <p className="font-medium whitespace-nowrap">
-                      <EditableText
-                        value={edu.graduationDate || ''}
-                        onSave={(value) => onUpdate?.('education', 'graduationDate', value, index)}
-                        isEditing={isEditing}
-                        className="inline-block"
-                        placeholder="Graduation Date"
-                      />
-                    </p>
-                  </div>
+              <div key={index} className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    <EditableText
+                      value={edu.degree || ''}
+                      onSave={(value) => onUpdate?.('education', 'degree', value, index)}
+                      isEditing={isEditing}
+                      className="inline-block"
+                      placeholder="Degree"
+                    />
+                  </h3>
+                  <p className="text-blue-600 font-medium">
+                    <EditableText
+                      value={edu.school || ''}
+                      onSave={(value) => onUpdate?.('education', 'school', value, index)}
+                      isEditing={isEditing}
+                      className="inline-block"
+                      placeholder="Institution Name"
+                    />
+                  </p>
+                  {edu.gpa && (
+                    <p className="text-gray-600 text-sm">GPA: {edu.gpa}</p>
+                  )}
+                </div>
+                <div className="text-right text-gray-600 text-sm">
+                  <p className="font-medium">
+                    <EditableText
+                      value={edu.graduationDate || ''}
+                      onSave={(value) => onUpdate?.('education', 'graduationDate', value, index)}
+                      isEditing={isEditing}
+                      className="inline-block"
+                      placeholder="Graduation Date"
+                    />
+                  </p>
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Enhanced Skills Section */}
-      {skills?.length > 0 && (
-        <section className="mb-8">
-          <h2 className="text-2xl font-bold text-blue-600 mb-6 border-l-4 border-blue-600 pl-4">
-            Skills
-          </h2>
-          <div className="flex flex-wrap gap-3">
-            {skills.map((skill: string, index: number) => (
-              <span
-                key={index}
-                className="px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
-              >
-                <EditableText
-                  value={skill || ''}
-                  onSave={(value) => {
-                    const updatedSkills = [...skills];
-                    updatedSkills[index] = value;
-                    onUpdate?.('skills', '', updatedSkills.join(','));
-                  }}
-                  isEditing={isEditing}
-                  className="inline-block"
-                  placeholder="Skill"
-                />
-              </span>
             ))}
           </div>
         </section>
