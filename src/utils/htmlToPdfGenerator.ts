@@ -146,13 +146,12 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     // Restore original styling
     resumeElement.style.cssText = originalStyle;
 
-    // Add metadata
+    // Add metadata - removed invalid 'producer' property
     pdf.setProperties({
       title: `${data.personalInfo?.fullName || 'Resume'} - Professional Resume`,
       subject: 'Professional Resume',
       author: data.personalInfo?.fullName || 'Resume Builder',
-      creator: 'Professional Resume Builder',
-      producer: 'Advanced PDF Generator'
+      creator: 'Professional Resume Builder'
     });
 
     console.log('Multi-page PDF generation completed successfully');
