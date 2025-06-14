@@ -19,29 +19,24 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
 
     console.log('Preparing resume for multi-page capture...');
 
-    // Set up the resume element for optimal PDF capture
+    // Store original styles to restore later
     const originalStyle = resumeElement.style.cssText;
+    const originalWidth = resumeElement.offsetWidth;
+    const originalHeight = resumeElement.offsetHeight;
     
-    // Apply professional PDF styling with improved page break handling
+    console.log(`Original preview dimensions: ${originalWidth}x${originalHeight}px`);
+
+    // Apply minimal styling changes to ensure PDF quality without changing size
     resumeElement.style.cssText = `
-      width: 210mm !important;
-      min-height: 297mm !important;
-      max-width: 210mm !important;
-      padding: 15mm 20mm !important;
-      margin: 0 !important;
+      ${originalStyle}
       background: white !important;
-      font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-      font-size: 11pt !important;
-      line-height: 1.5 !important;
-      color: #2d3748 !important;
-      box-sizing: border-box !important;
-      transform: none !important;
       box-shadow: none !important;
       border: none !important;
+      transform: none !important;
       page-break-inside: avoid !important;
     `;
 
-    // Improve page break handling for all sections
+    // Improve page break handling for all sections without changing layout
     const sections = resumeElement.querySelectorAll('section, .experience-item, .project-item, .education-item');
     sections.forEach(section => {
       const element = section as HTMLElement;
@@ -49,7 +44,6 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       element.style.breakInside = 'avoid';
       element.style.orphans = '3';
       element.style.widows = '3';
-      element.style.marginBottom = '1.5rem';
     });
 
     // Ensure headers don't get separated from content
@@ -61,31 +55,36 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       element.style.orphans = '3';
     });
 
-    // Wait for fonts and layout to settle
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Wait for layout to settle
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-    console.log('Capturing high-quality resume...');
+    console.log('Capturing resume at original preview size...');
 
-    // Configure html2canvas for professional quality
+    // Get the actual rendered dimensions
+    const actualWidth = resumeElement.offsetWidth;
+    const actualHeight = resumeElement.scrollHeight;
+    
+    console.log(`Actual capture dimensions: ${actualWidth}x${actualHeight}px`);
+
+    // Configure html2canvas to capture at exact preview size
     const canvas = await html2canvas(resumeElement, {
-      scale: 3, // High resolution for crisp text
+      scale: 2, // High quality but not too high to avoid memory issues
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
-      width: 794, // A4 width at 96 DPI
-      height: Math.max(1123, resumeElement.scrollHeight), // Dynamic height
+      width: actualWidth,
+      height: actualHeight,
       scrollX: 0,
       scrollY: 0,
-      windowWidth: 794,
-      windowHeight: Math.max(1123, resumeElement.scrollHeight),
+      windowWidth: actualWidth,
+      windowHeight: actualHeight,
       logging: false,
       onclone: (clonedDoc) => {
         const clonedElement = clonedDoc.getElementById('resume-preview');
         if (clonedElement) {
-          // Ensure all text is readable and properly styled
-          clonedElement.style.fontFamily = 'Inter, Segoe UI, Tahoma, Geneva, Verdana, sans-serif';
-          clonedElement.style.fontSize = '11pt';
-          clonedElement.style.lineHeight = '1.5';
+          // Preserve exact styling in clone
+          clonedElement.style.width = `${actualWidth}px`;
+          clonedElement.style.minHeight = `${actualHeight}px`;
           
           // Fix any layout issues in the clone
           const clonedSections = clonedElement.querySelectorAll('section, div');
@@ -110,23 +109,26 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       compress: true
     });
 
-    // A4 dimensions in mm with professional margins
+    // A4 dimensions in mm
     const pdfWidth = 210;
     const pdfHeight = 297;
-    const topMargin = 20; // Top margin for subsequent pages
+    const topMargin = 15; // Professional top margin for subsequent pages
     const bottomMargin = 15;
     const effectiveHeight = pdfHeight - topMargin - bottomMargin;
     
-    const pageHeight = canvas.height * (pdfWidth / canvas.width);
+    // Calculate scaling to fit A4 while maintaining aspect ratio
+    const canvasAspectRatio = canvas.height / canvas.width;
+    const scaledWidth = pdfWidth;
+    const scaledHeight = scaledWidth * canvasAspectRatio;
 
     console.log(`Canvas dimensions: ${canvas.width}x${canvas.height}`);
-    console.log(`Calculated PDF height: ${pageHeight}mm`);
+    console.log(`Scaled PDF dimensions: ${scaledWidth}x${scaledHeight}mm`);
 
     // Calculate number of pages needed
-    const totalPages = Math.ceil(pageHeight / effectiveHeight);
+    const totalPages = Math.ceil(scaledHeight / effectiveHeight);
     console.log(`Total pages needed: ${totalPages}`);
 
-    // Add pages to PDF with proper margins
+    // Add pages to PDF with proper spacing
     for (let page = 0; page < totalPages; page++) {
       if (page > 0) {
         pdf.addPage();
@@ -134,7 +136,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
 
       // Calculate the portion of canvas to include in this page
       const startY = page * effectiveHeight;
-      const endY = Math.min((page + 1) * effectiveHeight, pageHeight);
+      const endY = Math.min((page + 1) * effectiveHeight, scaledHeight);
       const currentPageHeight = endY - startY;
 
       // Create a canvas for this page
@@ -142,8 +144,8 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       const pageCtx = pageCanvas.getContext('2d');
       
       if (pageCtx) {
-        const sourceHeight = (currentPageHeight * canvas.height) / pageHeight;
-        const sourceY = (startY * canvas.height) / pageHeight;
+        const sourceHeight = (currentPageHeight * canvas.height) / scaledHeight;
+        const sourceY = (startY * canvas.height) / scaledHeight;
 
         pageCanvas.width = canvas.width;
         pageCanvas.height = sourceHeight;
@@ -160,18 +162,16 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
         );
 
         // Convert to image and add to PDF
-        const imgData = pageCanvas.toDataURL('image/jpeg', 0.95);
+        const imgData = pageCanvas.toDataURL('image/jpeg', 0.92);
         
-        // Calculate dimensions to fit page with proper margins
-        const imgWidth = pdfWidth;
-        const imgHeight = currentPageHeight;
-
-        // Add top margin for pages after the first
+        // Position on page with appropriate margins
         const yPosition = page === 0 ? 0 : topMargin;
+        const availableHeight = page === 0 ? effectiveHeight + topMargin : effectiveHeight;
+        const finalHeight = Math.min(currentPageHeight, availableHeight);
 
-        pdf.addImage(imgData, 'JPEG', 0, yPosition, imgWidth, imgHeight, undefined, 'FAST');
+        pdf.addImage(imgData, 'JPEG', 0, yPosition, scaledWidth, finalHeight, undefined, 'FAST');
 
-        console.log(`Added page ${page + 1}/${totalPages} with ${page === 0 ? 'no' : topMargin + 'mm'} top margin`);
+        console.log(`Added page ${page + 1}/${totalPages} - Height: ${finalHeight}mm, Y-position: ${yPosition}mm`);
       }
     }
 
