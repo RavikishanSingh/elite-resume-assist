@@ -2,7 +2,7 @@
 import jsPDF from 'jspdf';
 
 export const generatePDF = async (data: any, templateName: string = 'modern') => {
-  console.log('=== Starting Template-Based PDF Generation ===');
+  console.log('=== Starting Template-Accurate PDF Generation ===');
   console.log('Data received:', data);
   console.log('Template:', templateName);
 
@@ -13,7 +13,7 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       throw new Error('Please fill in at least your name before downloading');
     }
 
-    console.log('Creating PDF document with template-based rendering...');
+    console.log('Creating PDF document with template-accurate rendering...');
 
     // Create PDF with A4 dimensions
     const pdf = new jsPDF({
@@ -36,6 +36,7 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       const fontStyle = options.fontStyle || 'normal';
       const maxWidth = options.maxWidth || (pageWidth - 2 * margin);
       const color = options.color || '#000000';
+      const align = options.align || 'left';
       
       pdf.setFontSize(fontSize);
       pdf.setFont('helvetica', fontStyle);
@@ -58,56 +59,79 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
         y = margin;
       }
       
-      pdf.text(lines, x, y);
+      // Handle text alignment
+      if (align === 'center') {
+        lines.forEach((line: string, index: number) => {
+          const textWidth = pdf.getTextWidth(line);
+          pdf.text(line, (pageWidth - textWidth) / 2, y + (index * fontSize * 0.35));
+        });
+      } else if (align === 'right') {
+        lines.forEach((line: string, index: number) => {
+          const textWidth = pdf.getTextWidth(line);
+          pdf.text(line, pageWidth - margin - textWidth, y + (index * fontSize * 0.35));
+        });
+      } else {
+        pdf.text(lines, x, y);
+      }
+      
       return y + (lines.length * fontSize * 0.35) + 2;
     };
 
-    const addLine = (x1: number, y1: number, x2: number, y2: number, color: string = '#000000') => {
+    const addLine = (x1: number, y1: number, x2: number, y2: number, color: string = '#000000', width: number = 0.5) => {
       const r = parseInt(color.substr(1, 2), 16);
       const g = parseInt(color.substr(3, 2), 16);
       const b = parseInt(color.substr(5, 2), 16);
       pdf.setDrawColor(r, g, b);
-      pdf.setLineWidth(0.5);
+      pdf.setLineWidth(width);
       pdf.line(x1, y1, x2, y2);
     };
 
-    const addSection = (title: string, y: number, color: string = '#2563eb') => {
-      y += 8;
-      y = addText(title, margin, y, { fontSize: 14, fontStyle: 'bold', color });
-      addLine(margin, y + 1, pageWidth - margin, y + 1, color);
+    const addSection = (title: string, y: number, color: string = '#2563eb', options: any = {}) => {
+      y += options.spacing || 8;
+      y = addText(title, margin, y, { 
+        fontSize: options.fontSize || 14, 
+        fontStyle: 'bold', 
+        color,
+        align: options.align || 'left'
+      });
+      
+      if (!options.noLine) {
+        addLine(margin, y + 1, pageWidth - margin, y + 1, color);
+      }
+      
       return y + 6;
     };
 
     // Template-specific rendering
     if (templateName === 'modern') {
-      // Modern Template Styling
+      console.log('Rendering Modern template...');
       
-      // Header with blue accent
+      // Modern Template - Blue accent, clean layout
       currentY = addText(data.personalInfo?.fullName || '', margin, currentY, {
         fontSize: 24,
         fontStyle: 'bold',
         color: '#1f2937'
       });
       
-      // Add blue line under name
-      addLine(margin, currentY, pageWidth - margin, currentY, '#2563eb');
-      currentY += 6;
+      // Blue accent line
+      addLine(margin, currentY, pageWidth - margin, currentY, '#2563eb', 2);
+      currentY += 8;
 
-      // Contact information in a row
+      // Contact information in a clean row
       const contactInfo = [];
       if (data.personalInfo?.email) contactInfo.push(`✉ ${data.personalInfo.email}`);
       if (data.personalInfo?.phone) contactInfo.push(`📞 ${data.personalInfo.phone}`);
       if (data.personalInfo?.location) contactInfo.push(`📍 ${data.personalInfo.location}`);
       
       if (contactInfo.length > 0) {
-        currentY = addText(contactInfo.join(' | '), margin, currentY, {
+        currentY = addText(contactInfo.join(' • '), margin, currentY, {
           fontSize: 9,
           color: '#6b7280'
         });
-        currentY += 4;
+        currentY += 6;
       }
 
-      // Professional Summary with blue accent
+      // Professional Summary
       if (data.personalInfo?.summary) {
         currentY = addSection('PROFESSIONAL SUMMARY', currentY, '#2563eb');
         currentY = addText(data.personalInfo.summary, margin, currentY, {
@@ -120,44 +144,40 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       if (data.experience?.length > 0) {
         currentY = addSection('PROFESSIONAL EXPERIENCE', currentY, '#2563eb');
         
-        data.experience.forEach((exp: any, index: number) => {
+        data.experience.forEach((exp: any) => {
           if (exp.jobTitle && exp.company) {
-            // Job title
             currentY = addText(exp.jobTitle, margin, currentY, {
               fontSize: 12,
               fontStyle: 'bold',
               color: '#1f2937'
             });
             
-            // Company and dates on same line
             const companyDateText = `${exp.company} | ${exp.startDate || ''} - ${exp.current ? 'Present' : exp.endDate || ''}`;
             currentY = addText(companyDateText, margin, currentY, {
               fontSize: 10,
               color: '#2563eb'
             });
             
-            // Description
             if (exp.description) {
               currentY = addText(exp.description, margin + 5, currentY, {
                 fontSize: 9,
                 color: '#4b5563'
               });
             }
-            
             currentY += 4;
           }
         });
       }
 
     } else if (templateName === 'creative') {
-      // Creative Template with Purple Gradient Effect
+      console.log('Rendering Creative template...');
       
-      // Simulate gradient header with purple background
+      // Creative Template - Purple gradient header effect
       pdf.setFillColor(147, 51, 234); // Purple
-      pdf.rect(margin, currentY - 5, pageWidth - 2 * margin, 25, 'F');
+      pdf.rect(0, 0, pageWidth, 35, 'F');
       
       // White text on purple background
-      currentY = addText(data.personalInfo?.fullName || '', margin + 5, currentY + 10, {
+      currentY = addText(data.personalInfo?.fullName || '', margin, currentY + 15, {
         fontSize: 22,
         fontStyle: 'bold',
         color: '#ffffff'
@@ -170,22 +190,22 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       if (data.personalInfo?.location) contactInfo.push(data.personalInfo.location);
       
       if (contactInfo.length > 0) {
-        currentY = addText(contactInfo.join(' | '), margin + 5, currentY, {
+        currentY = addText(contactInfo.join(' • '), margin, currentY, {
           fontSize: 8,
           color: '#ffffff'
         });
       }
       
-      currentY += 15;
+      currentY = 50; // Move below header
 
-      // Two-column layout simulation
+      // Two-column layout simulation for Creative
       const leftColumnWidth = (pageWidth - 3 * margin) * 0.35;
       const rightColumnX = margin + leftColumnWidth + 10;
       
-      // Left column - Skills and Summary
+      // Left column - About Me and Skills
       let leftY = currentY;
       if (data.personalInfo?.summary) {
-        leftY = addSection('ABOUT ME', leftY, '#9333ea');
+        leftY = addSection('ABOUT ME', leftY, '#9333ea', { fontSize: 12 });
         leftY = addText(data.personalInfo.summary, margin, leftY, {
           fontSize: 9,
           maxWidth: leftColumnWidth,
@@ -194,21 +214,23 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       }
       
       if (data.skills?.length > 0) {
-        leftY += 5;
-        leftY = addSection('SKILLS', leftY, '#9333ea');
+        leftY += 8;
+        leftY = addSection('SKILLS', leftY, '#9333ea', { fontSize: 12 });
         data.skills.forEach((skill: string) => {
-          leftY = addText(`• ${skill}`, margin, leftY, {
-            fontSize: 9,
-            maxWidth: leftColumnWidth,
-            color: '#7c3aed'
-          });
+          if (skill && skill.trim()) {
+            leftY = addText(`• ${skill}`, margin, leftY, {
+              fontSize: 9,
+              maxWidth: leftColumnWidth,
+              color: '#7c3aed'
+            });
+          }
         });
       }
       
-      // Right column - Experience
+      // Right column - Experience and Projects
       let rightY = currentY;
       if (data.experience?.length > 0) {
-        rightY = addSection('EXPERIENCE', rightY, '#9333ea');
+        rightY = addSection('EXPERIENCE', rightY, '#9333ea', { fontSize: 12 });
         
         data.experience.forEach((exp: any) => {
           if (exp.jobTitle && exp.company) {
@@ -238,9 +260,9 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       }
 
     } else if (templateName === 'executive') {
-      // Executive Template - Clean and Professional
+      console.log('Rendering Executive template...');
       
-      // Name with underline
+      // Executive Template - Professional with bold lines
       currentY = addText(data.personalInfo?.fullName || '', margin, currentY, {
         fontSize: 26,
         fontStyle: 'bold',
@@ -248,74 +270,236 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       });
       
       // Heavy underline
-      pdf.setLineWidth(2);
-      addLine(margin, currentY, pageWidth - margin, currentY, '#1f2937');
-      currentY += 8;
+      addLine(margin, currentY + 2, pageWidth - margin, currentY + 2, '#1f2937', 3);
+      currentY += 10;
 
-      // Contact information
+      // Contact information - split left/right
       if (data.personalInfo?.email || data.personalInfo?.phone) {
-        const leftContact = data.personalInfo?.email ? `Email: ${data.personalInfo.email}` : '';
-        const rightContact = data.personalInfo?.phone ? `Phone: ${data.personalInfo.phone}` : '';
-        
-        if (leftContact) {
-          currentY = addText(leftContact, margin, currentY, {
+        if (data.personalInfo?.email) {
+          addText(`Email: ${data.personalInfo.email}`, margin, currentY, {
             fontSize: 10,
             color: '#4b5563'
           });
         }
         
-        if (rightContact) {
-          pdf.text(rightContact, pageWidth - margin - pdf.getTextWidth(rightContact), currentY - 4);
+        if (data.personalInfo?.phone) {
+          const phoneText = `Phone: ${data.personalInfo.phone}`;
+          addText(phoneText, pageWidth - margin, currentY, {
+            fontSize: 10,
+            color: '#4b5563',
+            align: 'right'
+          });
         }
         
-        currentY += 4;
+        currentY += 8;
       }
 
       // Executive Summary
       if (data.personalInfo?.summary) {
-        currentY = addSection('EXECUTIVE SUMMARY', currentY, '#1f2937');
+        currentY = addSection('EXECUTIVE SUMMARY', currentY, '#1f2937', { fontSize: 16 });
         currentY = addText(data.personalInfo.summary, margin, currentY, {
           fontSize: 11,
           color: '#374151'
         });
       }
 
-    } else {
-      // Default/Classic Template
+      // Professional Experience
+      if (data.experience?.length > 0) {
+        currentY = addSection('PROFESSIONAL EXPERIENCE', currentY, '#1f2937', { fontSize: 16 });
+        
+        data.experience.forEach((exp: any) => {
+          if (exp.jobTitle && exp.company) {
+            // Job title and dates on same line
+            addText(exp.jobTitle, margin, currentY, {
+              fontSize: 12,
+              fontStyle: 'bold',
+              color: '#1f2937'
+            });
+            
+            const dateText = `${exp.startDate || ''} - ${exp.current ? 'Present' : exp.endDate || ''}`;
+            addText(dateText, pageWidth - margin, currentY, {
+              fontSize: 10,
+              color: '#6b7280',
+              align: 'right'
+            });
+            
+            currentY += 6;
+            
+            currentY = addText(exp.company, margin, currentY, {
+              fontSize: 11,
+              fontStyle: 'bold',
+              color: '#1f2937'
+            });
+            
+            if (exp.description) {
+              currentY = addText(exp.description, margin + 5, currentY, {
+                fontSize: 10,
+                color: '#4b5563'
+              });
+            }
+            currentY += 6;
+          }
+        });
+      }
+
+    } else if (templateName === 'classic') {
+      console.log('Rendering Classic template...');
       
-      // Centered header
+      // Classic Template - Centered header with traditional styling
       const nameWidth = pdf.getTextWidth(data.personalInfo?.fullName || '');
       currentY = addText(data.personalInfo?.fullName || '', (pageWidth - nameWidth) / 2, currentY, {
         fontSize: 22,
         fontStyle: 'bold',
-        color: '#1f2937'
+        color: '#1f2937',
+        align: 'center'
       });
       
-      // Centered contact
+      // Contact info centered
       const contactInfo = [];
       if (data.personalInfo?.email) contactInfo.push(data.personalInfo.email);
       if (data.personalInfo?.phone) contactInfo.push(data.personalInfo.phone);
       if (data.personalInfo?.location) contactInfo.push(data.personalInfo.location);
       
       if (contactInfo.length > 0) {
-        const contactText = contactInfo.join(' | ');
-        const contactWidth = pdf.getTextWidth(contactText);
-        currentY = addText(contactText, (pageWidth - contactWidth) / 2, currentY, {
+        currentY = addText(contactInfo.join(' • '), pageWidth / 2, currentY, {
           fontSize: 10,
-          color: '#6b7280'
+          color: '#6b7280',
+          align: 'center'
         });
       }
       
-      addLine(margin, currentY + 2, pageWidth - margin, currentY + 2, '#d1d5db');
+      // Traditional line separator
+      addLine(margin, currentY + 3, pageWidth - margin, currentY + 3, '#d1d5db');
+      currentY += 10;
+
+      // Professional Summary
+      if (data.personalInfo?.summary) {
+        currentY = addSection('PROFESSIONAL SUMMARY', currentY, '#1f2937', { fontSize: 14 });
+        currentY = addText(data.personalInfo.summary, margin, currentY, {
+          fontSize: 10,
+          color: '#374151'
+        });
+      }
+
+    } else if (templateName === 'minimal') {
+      console.log('Rendering Minimal template...');
+      
+      // Minimal Template - Clean, centered, lots of whitespace
+      currentY = addText(data.personalInfo?.fullName || '', pageWidth / 2, currentY, {
+        fontSize: 28,
+        fontStyle: 'normal',
+        color: '#1f2937',
+        align: 'center'
+      });
+      
+      currentY += 4;
+      
+      // Contact info in minimal style
+      const contactInfo = [];
+      if (data.personalInfo?.email) contactInfo.push(data.personalInfo.email);
+      if (data.personalInfo?.phone) contactInfo.push(data.personalInfo.phone);
+      if (data.personalInfo?.location) contactInfo.push(data.personalInfo.location);
+      
+      if (contactInfo.length > 0) {
+        currentY = addText(contactInfo.join(' • '), pageWidth / 2, currentY, {
+          fontSize: 9,
+          color: '#6b7280',
+          align: 'center'
+        });
+      }
+      
       currentY += 8;
+
+      // Summary in italics, centered
+      if (data.personalInfo?.summary) {
+        currentY = addText(data.personalInfo.summary, pageWidth / 2, currentY, {
+          fontSize: 10,
+          color: '#374151',
+          align: 'center'
+        });
+        currentY += 8;
+      }
+
+      // Experience section - minimal style
+      if (data.experience?.length > 0) {
+        currentY = addSection('EXPERIENCE', currentY, '#1f2937', { 
+          fontSize: 16, 
+          align: 'center',
+          noLine: true 
+        });
+        
+        data.experience.forEach((exp: any) => {
+          if (exp.jobTitle && exp.company) {
+            currentY = addText(exp.jobTitle, pageWidth / 2, currentY, {
+              fontSize: 12,
+              fontStyle: 'bold',
+              color: '#1f2937',
+              align: 'center'
+            });
+            
+            currentY = addText(exp.company, pageWidth / 2, currentY, {
+              fontSize: 10,
+              color: '#6b7280',
+              align: 'center'
+            });
+            
+            const dateText = `${exp.startDate || ''} - ${exp.current ? 'Present' : exp.endDate || ''}`;
+            currentY = addText(dateText, pageWidth / 2, currentY, {
+              fontSize: 9,
+              color: '#9ca3af',
+              align: 'center'
+            });
+            
+            if (exp.description) {
+              currentY = addText(exp.description, margin, currentY, {
+                fontSize: 9,
+                color: '#4b5563'
+              });
+            }
+            currentY += 8;
+          }
+        });
+      }
+
+    } else {
+      // Tech Template or fallback
+      console.log('Rendering Tech template...');
+      
+      // Tech Template - Monospace feel, structured
+      currentY = addText(data.personalInfo?.fullName || '', margin, currentY, {
+        fontSize: 24,
+        fontStyle: 'bold',
+        color: '#1f2937'
+      });
+      
+      addLine(margin, currentY, pageWidth - margin, currentY, '#10b981', 2);
+      currentY += 8;
+
+      // Contact in tech style
+      if (data.personalInfo?.email) {
+        currentY = addText(`> ${data.personalInfo.email}`, margin, currentY, {
+          fontSize: 9,
+          color: '#059669'
+        });
+      }
+      
+      if (data.personalInfo?.phone) {
+        currentY = addText(`> ${data.personalInfo.phone}`, margin, currentY, {
+          fontSize: 9,
+          color: '#059669'
+        });
+      }
+      
+      currentY += 4;
     }
 
-    // Common sections for all templates (if not already added)
-    if (templateName !== 'creative') {
-      // Skills
-      if (data.skills?.length > 0) {
-        currentY = addSection('SKILLS', currentY);
-        const skillsText = Array.isArray(data.skills) ? data.skills.join(' • ') : data.skills;
+    // Common sections for templates that don't override them
+    if (!['creative', 'minimal'].includes(templateName)) {
+      // Skills section
+      if (data.skills?.length > 0 && data.skills.some((skill: string) => skill && skill.trim())) {
+        const validSkills = data.skills.filter((skill: string) => skill && skill.trim());
+        currentY = addSection('SKILLS', currentY, templateName === 'tech' ? '#10b981' : '#2563eb');
+        const skillsText = validSkills.join(' • ');
         currentY = addText(skillsText, margin, currentY, {
           fontSize: 10,
           color: '#374151'
@@ -324,7 +508,7 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
 
       // Education
       if (data.education?.length > 0) {
-        currentY = addSection('EDUCATION', currentY);
+        currentY = addSection('EDUCATION', currentY, templateName === 'tech' ? '#10b981' : '#2563eb');
         
         data.education.forEach((edu: any) => {
           if (edu.degree && edu.school) {
@@ -347,7 +531,7 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
 
       // Projects
       if (data.projects?.length > 0) {
-        currentY = addSection('PROJECTS', currentY);
+        currentY = addSection('PROJECTS', currentY, templateName === 'tech' ? '#10b981' : '#2563eb');
         
         data.projects.forEach((project: any) => {
           if (project.name) {
@@ -376,11 +560,11 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       }
     }
 
-    console.log('Template-based PDF generated successfully!');
+    console.log(`Template-accurate PDF generated successfully for ${templateName} template!`);
     return pdf;
 
   } catch (error) {
-    console.error('Error in template-based PDF generation:', error);
+    console.error('Error in template-accurate PDF generation:', error);
     throw new Error('Failed to generate PDF: ' + (error as Error).message);
   }
 };
