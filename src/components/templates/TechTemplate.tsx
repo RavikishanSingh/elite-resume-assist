@@ -1,4 +1,5 @@
-import { Mail, Phone, MapPin, Globe, Linkedin, Github, ExternalLink } from "lucide-react";
+
+import { Mail, Phone, MapPin, Globe, Linkedin, Github } from "lucide-react";
 import EditableText from "../EditableText";
 
 interface TechTemplateProps {
@@ -87,8 +88,8 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
         </div>
       </header>
 
-      {/* Left Sidebar */}
       <div className="grid grid-cols-3 gap-6">
+        {/* Left Sidebar */}
         <div className="col-span-1 space-y-6">
           {/* Tech Stack */}
           {skills?.length > 0 && (
@@ -150,29 +151,15 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
               <div className="space-y-4">
                 {projects.map((project: any, index: number) => (
                   <div key={index} className="bg-gray-800 border border-gray-700 p-4 rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-bold text-white">
-                        <EditableText
-                          value={project.name || ''}
-                          onSave={(value) => onUpdate?.('projects', 'name', value, index)}
-                          isEditing={isEditing}
-                          className="inline-block"
-                          placeholder="Project Name"
-                        />
-                      </h3>
-                      <div className="flex space-x-2">
-                        {project.url && (
-                          <a href={project.url} target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300">
-                            <ExternalLink className="w-4 h-4" />
-                          </a>
-                        )}
-                        {project.github && (
-                          <a href={project.github} target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300">
-                            <Github className="w-4 h-4" />
-                          </a>
-                        )}
-                      </div>
-                    </div>
+                    <h3 className="font-bold text-white">
+                      <EditableText
+                        value={project.name || ''}
+                        onSave={(value) => onUpdate?.('projects', 'name', value, index)}
+                        isEditing={isEditing}
+                        className="inline-block"
+                        placeholder="Project Name"
+                      />
+                    </h3>
                     <div className="text-gray-300 text-sm mb-2 whitespace-pre-line">
                       <EditableText
                         value={project.description || ''}

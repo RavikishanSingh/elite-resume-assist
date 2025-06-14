@@ -13,7 +13,7 @@ const ExecutiveTemplate = ({ data, onUpdate, isEditing = false }: ExecutiveTempl
 
   return (
     <div className="max-w-4xl mx-auto bg-white p-8 shadow-lg min-h-[297mm]">
-      {/* Header with Executive Style */}
+      {/* Header */}
       <header className="border-b-4 border-gray-800 pb-6 mb-8">
         <div className="flex justify-between items-start">
           <div>
@@ -233,13 +233,7 @@ const ExecutiveTemplate = ({ data, onUpdate, isEditing = false }: ExecutiveTempl
                 </div>
                 {project.technologies && (
                   <p className="text-gray-600 mt-2 font-medium">
-                    Technologies: <EditableText
-                      value={project.technologies || ''}
-                      onSave={(value) => onUpdate?.('projects', 'technologies', value, index)}
-                      isEditing={isEditing}
-                      className="inline-block"
-                      placeholder="Technologies used"
-                    />
+                    Technologies: {project.technologies}
                   </p>
                 )}
               </div>

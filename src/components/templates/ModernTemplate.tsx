@@ -1,5 +1,5 @@
 
-import { Mail, Phone, MapPin, Globe, Linkedin, ExternalLink, Github } from "lucide-react";
+import { Mail, Phone, MapPin, Globe, Linkedin } from "lucide-react";
 import EditableText from "../EditableText";
 
 interface ModernTemplateProps {
@@ -137,17 +137,6 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
                         placeholder="Company Name"
                       />
                     </p>
-                    {exp.location && (
-                      <p className="text-gray-600">
-                        <EditableText
-                          value={exp.location}
-                          onSave={(value) => onUpdate?.('experience', 'location', value, index)}
-                          isEditing={isEditing}
-                          className="inline-block"
-                          placeholder="Location"
-                        />
-                      </p>
-                    )}
                   </div>
                   <div className="text-right text-gray-600">
                     <p className="font-medium">
@@ -178,7 +167,7 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
                     multiline
                     isEditing={isEditing}
                     className="inline-block w-full"
-                    placeholder="Job description and achievements"
+                    placeholder="Job description"
                   />
                 </div>
               </div>
@@ -197,40 +186,15 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
             {projects.map((project: any, index: number) => (
               <div key={index} className="border-l-2 border-gray-200 pl-6 relative">
                 <div className="absolute w-3 h-3 bg-blue-600 rounded-full -left-2 top-1"></div>
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900">
-                      <EditableText
-                        value={project.name || ''}
-                        onSave={(value) => onUpdate?.('projects', 'name', value, index)}
-                        isEditing={isEditing}
-                        className="inline-block"
-                        placeholder="Project Name"
-                      />
-                    </h3>
-                    <div className="flex space-x-4 mt-1">
-                      {project.url && (
-                        <div className="flex items-center space-x-1 text-blue-600">
-                          <ExternalLink className="w-3 h-3" />
-                          <span className="text-sm">Live Demo</span>
-                        </div>
-                      )}
-                      {project.github && (
-                        <div className="flex items-center space-x-1 text-blue-600">
-                          <Github className="w-3 h-3" />
-                          <span className="text-sm">GitHub</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  {(project.startDate || project.endDate) && (
-                    <div className="text-right text-gray-600">
-                      <p className="font-medium text-sm">
-                        {project.startDate} {project.endDate && `- ${project.endDate}`}
-                      </p>
-                    </div>
-                  )}
-                </div>
+                <h3 className="text-xl font-semibold text-gray-900">
+                  <EditableText
+                    value={project.name || ''}
+                    onSave={(value) => onUpdate?.('projects', 'name', value, index)}
+                    isEditing={isEditing}
+                    className="inline-block"
+                    placeholder="Project Name"
+                  />
+                </h3>
                 <div className="text-gray-700 leading-relaxed whitespace-pre-line mb-2">
                   <EditableText
                     value={project.description || ''}
@@ -289,28 +253,6 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
                         placeholder="School Name"
                       />
                     </p>
-                    {edu.location && (
-                      <p className="text-gray-600">
-                        <EditableText
-                          value={edu.location}
-                          onSave={(value) => onUpdate?.('education', 'location', value, index)}
-                          isEditing={isEditing}
-                          className="inline-block"
-                          placeholder="Location"
-                        />
-                      </p>
-                    )}
-                    {edu.gpa && (
-                      <p className="text-gray-600">
-                        GPA: <EditableText
-                          value={edu.gpa}
-                          onSave={(value) => onUpdate?.('education', 'gpa', value, index)}
-                          isEditing={isEditing}
-                          className="inline-block"
-                          placeholder="GPA"
-                        />
-                      </p>
-                    )}
                   </div>
                   <div className="text-gray-600">
                     <p className="font-medium">
