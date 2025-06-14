@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,7 +10,7 @@ import MinimalTemplate from "./templates/MinimalTemplate";
 import ExecutiveTemplate from "./templates/ExecutiveTemplate";
 import TechTemplate from "./templates/TechTemplate";
 import AIAnalysis from "./AIAnalysis";
-import { generatePDF } from "../utils/pdfGenerator";
+import { generatePDFFromHTML } from "../utils/htmlToPdfGenerator";
 import { useToast } from "@/hooks/use-toast";
 
 interface ResumePreviewProps {
@@ -60,7 +61,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
     if (isGeneratingPDF) return;
     
     setIsGeneratingPDF(true);
-    console.log('=== Starting Template-Accurate PDF Download ===');
+    console.log('=== Starting Perfect Template PDF Download ===');
     console.log('Selected template:', selectedTemplate);
     
     try {
@@ -69,10 +70,13 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
         throw new Error('Please fill in at least your name before downloading');
       }
 
-      console.log('Generating template-accurate PDF...');
+      console.log('Generating perfect template-matched PDF...');
       
-      // Use the template-accurate PDF generator
-      const pdf = await generatePDF(data, selectedTemplate);
+      // Wait a moment for UI to settle
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Use the HTML-to-PDF generator for perfect matching
+      const pdf = await generatePDFFromHTML(data, selectedTemplate);
       
       if (!pdf) {
         throw new Error('PDF generation returned null');
@@ -88,11 +92,11 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
       // Download the PDF
       pdf.save(filename);
       
-      console.log(`Template-accurate PDF saved as: ${filename}`);
+      console.log(`Perfect template PDF saved as: ${filename}`);
       
       toast({
         title: "Success!",
-        description: `Resume downloaded as ${filename} with perfect ${templateSuffix} template matching`,
+        description: `Resume downloaded as ${filename} with pixel-perfect ${templateSuffix} template design`,
         duration: 3000
       });
       
@@ -112,7 +116,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
       });
     } finally {
       setIsGeneratingPDF(false);
-      console.log('=== Template-Accurate PDF Download Complete ===');
+      console.log('=== Perfect Template PDF Download Complete ===');
     }
   };
 
@@ -194,7 +198,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
             className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50"
           >
             <Download className="w-4 h-4" />
-            <span>{isGeneratingPDF ? 'Generating Perfect PDF...' : 'Download PDF'}</span>
+            <span>{isGeneratingPDF ? 'Capturing Template...' : 'Download PDF'}</span>
           </Button>
         </div>
       </div>
@@ -224,7 +228,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
                 setSelectedTemplate(key);
                 toast({
                   title: "Template Changed",
-                  description: `Switched to ${template.name} template - PDF will match this design perfectly`,
+                  description: `Switched to ${template.name} template - PDF will capture this design perfectly`,
                 });
               }}
               className={`p-4 rounded-lg border-2 text-left transition-all ${
@@ -272,31 +276,24 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
       </div>
 
       {/* Enhanced Features */}
-      <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-6">
-        <h4 className="font-medium text-purple-900 mb-3">✨ Perfect Template Matching</h4>
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
+        <h4 className="font-medium text-green-900 mb-3">🎯 Pixel-Perfect PDF Generation</h4>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <h5 className="font-medium text-purple-800">Pixel-Perfect PDF Output</h5>
-            <p className="text-sm text-purple-700">PDF now perfectly matches your selected template with accurate colors, fonts, spacing, and layout - exactly as you see in the preview</p>
+            <h5 className="font-medium text-green-800">HTML-to-Canvas Technology</h5>
+            <p className="text-sm text-green-700">Using advanced HTML-to-Canvas conversion to capture your resume exactly as you see it - every color, font, spacing, and design element perfectly preserved</p>
           </div>
           <div className="space-y-2">
-            <h5 className="font-medium text-purple-800">Template-Specific Styling</h5>
-            <p className="text-sm text-purple-700">Each template has its own unique PDF rendering: Creative uses purple gradients, Executive has bold lines, Minimal is centered, and more</p>
+            <h5 className="font-medium text-green-800">What You See Is What You Get</h5>
+            <p className="text-sm text-green-700">The PDF output will be an exact visual match of your template preview - no more layout differences or styling inconsistencies</p>
           </div>
         </div>
-      </div>
-
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-        <h4 className="font-medium text-green-900 mb-2">🎉 Your Resume is Ready!</h4>
-        <p className="text-sm text-green-800">
-          Your professional resume has been generated with {Object.keys(templates).length} template options. The PDF download now perfectly matches your selected template design.
-        </p>
       </div>
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h4 className="font-medium text-blue-900 mb-2">📄 Professional A4 Format</h4>
         <p className="text-sm text-blue-800">
-          Your resume is formatted to A4 standard size (210×297mm / 8.27×11.69 inches) with template-accurate styling for professional presentation.
+          Your resume is formatted to A4 standard size (210×297mm / 8.27×11.69 inches) with perfect template preservation for professional presentation.
         </p>
       </div>
 
