@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, CheckCircle, Star, Users, FileText, Brain, Sparkles, Zap, Shield, Globe } from "lucide-react";
@@ -7,15 +7,19 @@ import SignInModal from "@/components/auth/SignInModal";
 import ResumeManager from "@/components/resume/ResumeManager";
 import LinkedInImport from "@/components/LinkedInImport";
 import { generatePDF } from "@/utils/pdfGenerator";
+import { useAuth } from '@/components/auth/AuthProvider';
+import RealLinkedInImport from '@/components/linkedin/RealLinkedInImport';
 
 const Index = () => {
   const [showBuilder, setShowBuilder] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
   const [showLinkedInImport, setShowLinkedInImport] = useState(false);
+  const [showRealLinkedInImport, setShowRealLinkedInImport] = useState(false);
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [userName, setUserName] = useState('');
   const [showResumes, setShowResumes] = useState(false);
   const [importedData, setImportedData] = useState<any>(null);
+  const { user, signOut, loading } = useAuth();
 
   const handleSignIn = (email: string, password: string) => {
     // Simple mock authentication
@@ -50,6 +54,13 @@ const Index = () => {
     console.log('Successfully imported LinkedIn profile data');
   };
 
+  const handleRealLinkedInImport = (data: any) => {
+    console.log('Real LinkedIn data imported:', data);
+    setImportedData(data);
+    setShowRealLinkedInImport(false);
+    setShowBuilder(true);
+  };
+
   const handleEditResume = (resume: any) => {
     // Load resume data and open builder
     setShowResumes(false);
@@ -67,6 +78,17 @@ const Index = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (showBuilder) {
     return <ResumeBuilder 
       onBack={() => {
@@ -83,7 +105,7 @@ const Index = () => {
 
   if (showResumes && isSignedIn) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <header className="container mx-auto px-4 py-6">
           <nav className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -133,18 +155,18 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              {isSignedIn ? (
+              {user ? (
                 <>
-                  <span className="text-gray-600 font-medium">Welcome, {userName}!</span>
+                  <span className="text-gray-600 font-medium">Welcome, {user.email?.split('@')[0]}!</span>
                   <Button variant="outline" onClick={() => setShowResumes(true)} className="hover:bg-blue-50">
                     My Resumes
                   </Button>
-                  <Button variant="outline" onClick={handleSignOut}>
+                  <Button variant="outline" onClick={signOut}>
                     Sign Out
                   </Button>
                 </>
               ) : (
-                <Button variant="outline" onClick={() => setShowSignIn(true)} className="hover:bg-blue-50">
+                <Button variant="outline" onClick={() => window.location.href = '/auth'} className="hover:bg-blue-50">
                   Sign In
                 </Button>
               )}
@@ -196,12 +218,12 @@ const Index = () => {
                 variant="outline" 
                 size="lg" 
                 className="text-lg px-10 py-6 border-2 border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => setShowLinkedInImport(true)}
+                onClick={() => user ? setShowRealLinkedInImport(true) : window.location.href = '/auth'}
               >
                 <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                 </svg>
-                Import from LinkedIn
+                {user ? 'Import from LinkedIn' : 'Sign In to Import'}
               </Button>
             </div>
 
@@ -284,7 +306,7 @@ const Index = () => {
             <Button 
               size="lg" 
               onClick={() => setShowLinkedInImport(true)}
-              className="text-lg px-10 py-6 bg-white text-blue-600 hover:bg-gray-50 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
+              className="text-lg px-10 py-6 bg-white text-blue-600 hover:bg-gray-50 shadow-2xl hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
               <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
@@ -441,6 +463,13 @@ const Index = () => {
         <LinkedInImport
           onImport={handleLinkedInImport}
           onClose={() => setShowLinkedInImport(false)}
+        />
+      )}
+
+      {showRealLinkedInImport && (
+        <RealLinkedInImport
+          onImportSuccess={handleRealLinkedInImport}
+          onClose={() => setShowRealLinkedInImport(false)}
         />
       )}
     </div>
