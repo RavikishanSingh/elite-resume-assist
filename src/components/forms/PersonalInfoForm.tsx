@@ -4,17 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { CheckCircle } from "lucide-react";
 
 interface PersonalInfoFormProps {
-  data: any; // Should ideally be a more specific type
+  data: any;
   onUpdate: (section: string, data: any) => void;
   onNext: () => void;
-  onPrevious: () => void; // This prop is declared but not used in the provided code
-  isLastStep: boolean; // This prop is declared but not used
-  isFirstStep: boolean; // This prop is declared but not used
+  onPrevious: () => void;
+  isLastStep: boolean;
+  isFirstStep: boolean;
 }
 
 const PersonalInfoForm = ({ data, onUpdate, onNext }: PersonalInfoFormProps) => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState(() => {
     const defaults = {
       fullName: '',
@@ -25,31 +28,32 @@ const PersonalInfoForm = ({ data, onUpdate, onNext }: PersonalInfoFormProps) => 
       portfolio: '',
       summary: '',
     };
-    // Initialize with defaults, then merge data from props if available
     return { ...defaults, ...(data?.personalInfo || {}) };
   });
 
-  // Effect to update formData when `data` prop (and specifically data.personalInfo) changes
+  const [savedFields, setSavedFields] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     if (data && data.personalInfo) {
       const defaults = {
         fullName: '', email: '', phone: '', location: '',
         linkedIn: '', portfolio: '', summary: ''
       };
-      // Merge current form data with new data from props to preserve any intermediate edits
-      // and ensure all default keys are present.
-      // The order is: defaults, then existing data, then new data from props.
       setFormData(prevFormData => ({
         ...defaults,
         ...prevFormData,
         ...data.personalInfo
       }));
     }
-  }, [data]); // React to changes in the 'data' prop object
+  }, [data]);
 
-  // Effect to call onUpdate whenever formData changes locally
+  // Auto-save with debounce
   useEffect(() => {
-    onUpdate('personalInfo', formData);
+    const timer = setTimeout(() => {
+      onUpdate('personalInfo', formData);
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, [formData, onUpdate]);
 
   const handleChange = (field: string, value: string) => {
@@ -57,124 +61,204 @@ const PersonalInfoForm = ({ data, onUpdate, onNext }: PersonalInfoFormProps) => 
       ...prev,
       [field]: value
     }));
+
+    // Show saved indicator
+    setSavedFields(prev => new Set(prev).add(field));
+    setTimeout(() => {
+      setSavedFields(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(field);
+        return newSet;
+      });
+    }, 2000);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onNext();
+    
+    // Validate required fields
+    const requiredFields = ['fullName', 'email', 'phone', 'location'];
+    const missingFields = requiredFields.filter(field => !formData[field].trim());
+    
+    if (missingFields.length > 0) {
+      toast({
+        title: "Please fill in required fields",
+        description: `Missing: ${missingFields.join(', ')}`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Information saved!",
+      description: "Moving to experience section...",
+    });
+    
+    setTimeout(() => onNext(), 500);
+  };
+
+  const getFieldIcon = (field: string) => {
+    if (savedFields.has(field)) {
+      return <CheckCircle className="w-4 h-4 text-green-500" />;
+    }
+    return null;
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid md:grid-cols-2 gap-6">
-        <div>
-          <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">
-            Full Name *
-          </Label>
-          <Input
-            id="fullName"
-            value={formData.fullName}
-            onChange={(e) => handleChange('fullName', e.target.value)}
-            placeholder="John Doe"
-            required
-            className="mt-1"
-          />
-        </div>
-        <div>
-          <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-            Email Address *
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            value={formData.email}
-            onChange={(e) => handleChange('email', e.target.value)}
-            placeholder="john@example.com"
-            required
-            className="mt-1"
-          />
-        </div>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        <div>
-          <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
-            Phone Number *
-          </Label>
-          <Input
-            id="phone"
-            value={formData.phone}
-            onChange={(e) => handleChange('phone', e.target.value)}
-            placeholder="+1 (555) 123-4567"
-            required
-            className="mt-1"
-          />
-        </div>
-        <div>
-          <Label htmlFor="location" className="text-sm font-medium text-gray-700">
-            Location *
-          </Label>
-          <Input
-            id="location"
-            value={formData.location}
-            onChange={(e) => handleChange('location', e.target.value)}
-            placeholder="New York, NY"
-            required
-            className="mt-1"
-          />
-        </div>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        <div>
-          <Label htmlFor="linkedIn" className="text-sm font-medium text-gray-700">
-            LinkedIn Profile
-          </Label>
-          <Input
-            id="linkedIn"
-            value={formData.linkedIn}
-            onChange={(e) => handleChange('linkedIn', e.target.value)}
-            placeholder="linkedin.com/in/johndoe"
-            className="mt-1"
-          />
-        </div>
-        <div>
-          <Label htmlFor="portfolio" className="text-sm font-medium text-gray-700">
-            Portfolio/Website
-          </Label>
-          <Input
-            id="portfolio"
-            value={formData.portfolio}
-            onChange={(e) => handleChange('portfolio', e.target.value)}
-            placeholder="johndoe.com"
-            className="mt-1"
-          />
-        </div>
-      </div>
-
-      <div>
-        <Label htmlFor="summary" className="text-sm font-medium text-gray-700">
-          Professional Summary
-        </Label>
-        <Textarea
-          id="summary"
-          value={formData.summary}
-          onChange={(e) => handleChange('summary', e.target.value)}
-          placeholder="Write a brief summary of your professional background, key skills, and career objectives..."
-          rows={4}
-          className="mt-1"
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          2-3 sentences highlighting your expertise and what you bring to potential employers.
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <p className="text-sm text-blue-800">
+          ✨ <strong>Auto-save enabled:</strong> Your information is automatically saved as you type!
         </p>
       </div>
 
-      <div className="flex justify-end pt-6">
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="relative">
+          <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">
+            Full Name *
+          </Label>
+          <div className="relative">
+            <Input
+              id="fullName"
+              value={formData.fullName}
+              onChange={(e) => handleChange('fullName', e.target.value)}
+              placeholder="e.g., John Doe"
+              required
+              className="mt-1 pr-8"
+            />
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+              {getFieldIcon('fullName')}
+            </div>
+          </div>
+        </div>
+        <div className="relative">
+          <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+            Email Address *
+          </Label>
+          <div className="relative">
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleChange('email', e.target.value)}
+              placeholder="e.g., john@example.com"
+              required
+              className="mt-1 pr-8"
+            />
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+              {getFieldIcon('email')}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="relative">
+          <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+            Phone Number *
+          </Label>
+          <div className="relative">
+            <Input
+              id="phone"
+              value={formData.phone}
+              onChange={(e) => handleChange('phone', e.target.value)}
+              placeholder="e.g., +1 (555) 123-4567"
+              required
+              className="mt-1 pr-8"
+            />
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+              {getFieldIcon('phone')}
+            </div>
+          </div>
+        </div>
+        <div className="relative">
+          <Label htmlFor="location" className="text-sm font-medium text-gray-700">
+            Location *
+          </Label>
+          <div className="relative">
+            <Input
+              id="location"
+              value={formData.location}
+              onChange={(e) => handleChange('location', e.target.value)}
+              placeholder="e.g., New York, NY"
+              required
+              className="mt-1 pr-8"
+            />
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+              {getFieldIcon('location')}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="relative">
+          <Label htmlFor="linkedIn" className="text-sm font-medium text-gray-700">
+            LinkedIn Profile (Optional)
+          </Label>
+          <div className="relative">
+            <Input
+              id="linkedIn"
+              value={formData.linkedIn}
+              onChange={(e) => handleChange('linkedIn', e.target.value)}
+              placeholder="e.g., linkedin.com/in/johndoe"
+              className="mt-1 pr-8"
+            />
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+              {getFieldIcon('linkedIn')}
+            </div>
+          </div>
+        </div>
+        <div className="relative">
+          <Label htmlFor="portfolio" className="text-sm font-medium text-gray-700">
+            Portfolio/Website (Optional)
+          </Label>
+          <div className="relative">
+            <Input
+              id="portfolio"
+              value={formData.portfolio}
+              onChange={(e) => handleChange('portfolio', e.target.value)}
+              placeholder="e.g., johndoe.com"
+              className="mt-1 pr-8"
+            />
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+              {getFieldIcon('portfolio')}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="relative">
+        <Label htmlFor="summary" className="text-sm font-medium text-gray-700">
+          Professional Summary (Optional but Recommended)
+        </Label>
+        <div className="relative">
+          <Textarea
+            id="summary"
+            value={formData.summary}
+            onChange={(e) => handleChange('summary', e.target.value)}
+            placeholder="Write a brief summary of your professional background, key skills, and career objectives..."
+            rows={4}
+            className="mt-1 pr-8"
+          />
+          <div className="absolute right-2 top-3">
+            {getFieldIcon('summary')}
+          </div>
+        </div>
+        <p className="text-xs text-gray-500 mt-1">
+          💡 Tip: 2-3 sentences highlighting your expertise and what you bring to potential employers.
+        </p>
+      </div>
+
+      <div className="flex justify-between pt-6">
+        <div className="text-sm text-gray-600">
+          * Required fields
+        </div>
         <Button 
           type="submit" 
-          className="bg-gradient-to-r from-blue-600 to-purple-600 px-8"
+          className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
         >
-          Continue to Experience
+          Continue to Experience →
         </Button>
       </div>
     </form>
