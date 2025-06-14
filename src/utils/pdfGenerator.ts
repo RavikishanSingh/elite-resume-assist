@@ -8,63 +8,80 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
     // Try to capture the resume preview element
     const resumeElement = document.getElementById('resume-preview');
     if (resumeElement) {
+      console.log('Found resume element, generating PDF...');
+      
       // Ensure the element is visible and properly styled
       const originalDisplay = resumeElement.style.display;
       const originalTransform = resumeElement.style.transform;
       const originalScale = resumeElement.style.scale;
+      const originalOverflow = resumeElement.style.overflow;
       
       // Temporarily reset any transformations for better capture
       resumeElement.style.display = 'block';
       resumeElement.style.transform = 'none';
       resumeElement.style.scale = '1';
+      resumeElement.style.overflow = 'visible';
       
-      // Wait for any pending renders
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Force a reflow to ensure styles are applied
+      resumeElement.offsetHeight;
+      
+      // Wait for any pending renders and fonts to load
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       // Use html2canvas with optimized settings
       const canvas = await html2canvas(resumeElement, {
-        scale: 2, // High quality but manageable
+        scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
         imageTimeout: 0,
-        removeContainer: true,
+        removeContainer: false,
         foreignObjectRendering: true,
-        width: 794, // A4 width in pixels at 96 DPI
-        height: 1123, // A4 height in pixels at 96 DPI
-        windowWidth: 794,
-        windowHeight: 1123,
+        width: resumeElement.scrollWidth,
+        height: resumeElement.scrollHeight,
+        windowWidth: resumeElement.scrollWidth,
+        windowHeight: resumeElement.scrollHeight,
         scrollX: 0,
-        scrollY: 0
+        scrollY: 0,
+        x: 0,
+        y: 0
       });
+      
+      console.log('Canvas created with dimensions:', canvas.width, 'x', canvas.height);
       
       // Restore original styles
       resumeElement.style.display = originalDisplay;
       resumeElement.style.transform = originalTransform;
       resumeElement.style.scale = originalScale;
+      resumeElement.style.overflow = originalOverflow;
       
       const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF('p', 'pt', 'a4');
       
       const pageWidth = 595.28; // A4 width in points
       const pageHeight = 841.89; // A4 height in points
-      const margin = 0; // No margin for full page
+      const margin = 20;
       
-      // Calculate dimensions to fit the page perfectly
-      const imgWidth = pageWidth;
+      // Calculate dimensions to fit the page with margins
+      const availableWidth = pageWidth - (2 * margin);
+      const availableHeight = pageHeight - (2 * margin);
+      
+      const imgWidth = availableWidth;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
+      console.log('PDF dimensions:', imgWidth, 'x', imgHeight);
+      
       // If content fits on one page
-      if (imgHeight <= pageHeight) {
-        pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight, undefined, 'FAST');
+      if (imgHeight <= availableHeight) {
+        pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
       } else {
-        // Handle multi-page content by splitting the canvas
+        // Handle multi-page content
         let yOffset = 0;
         let pageNumber = 0;
-        const pixelsPerPage = (canvas.height * pageHeight) / imgHeight;
+        const pixelsPerPage = (canvas.height * availableHeight) / imgHeight;
         
-        while (yOffset < canvas.height) {
+        while (yOffset < canvas.height && pageNumber < 10) {
           if (pageNumber > 0) {
             pdf.addPage();
           }
@@ -83,30 +100,30 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
             // Draw the section of the original canvas onto the page canvas
             pageCtx.drawImage(
               canvas,
-              0, yOffset, // source x, y
-              canvas.width, sectionHeight, // source width, height
-              0, 0, // destination x, y
-              canvas.width, sectionHeight // destination width, height
+              0, yOffset,
+              canvas.width, sectionHeight,
+              0, 0,
+              canvas.width, sectionHeight
             );
             
             // Convert page canvas to image and add to PDF
             const pageImgData = pageCanvas.toDataURL('image/png', 1.0);
             const scaledHeight = (sectionHeight * imgWidth) / canvas.width;
             
-            pdf.addImage(pageImgData, 'PNG', margin, margin, imgWidth, scaledHeight, undefined, 'FAST');
+            pdf.addImage(pageImgData, 'PNG', margin, margin, imgWidth, scaledHeight);
+            
+            console.log(`Added page ${pageNumber + 1} with height ${scaledHeight}`);
           }
           
           yOffset += pixelsPerPage;
           pageNumber++;
-          
-          // Safety break to prevent infinite loops
-          if (pageNumber > 5) break;
         }
       }
       
+      console.log('PDF generation completed successfully');
       return pdf;
     } else {
-      console.error('Resume preview element not found');
+      console.error('Resume preview element not found, falling back to text PDF');
       return generateTextPDF(data);
     }
   } catch (error) {

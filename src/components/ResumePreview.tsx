@@ -59,35 +59,59 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
 
   const handleDownload = async () => {
     setIsGeneratingPDF(true);
+    console.log('Starting PDF generation...');
+    
     try {
-      // Ensure we're not in edit mode for PDF generation
+      // Temporarily exit edit mode for better PDF capture
       const wasInEditMode = isEditMode;
       if (isEditMode) {
+        console.log('Exiting edit mode for PDF generation');
         setIsEditMode(false);
         // Wait for the component to re-render without edit mode
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+
+      // Ensure the preview is properly visible
+      const resumeElement = document.getElementById('resume-preview');
+      if (resumeElement) {
+        console.log('Resume element found, forcing visibility');
+        resumeElement.style.visibility = 'visible';
+        resumeElement.style.opacity = '1';
+        
+        // Force a reflow
+        resumeElement.offsetHeight;
+        
+        // Wait a bit more for any animations to complete
         await new Promise(resolve => setTimeout(resolve, 200));
       }
 
+      console.log('Generating PDF with data:', data);
       const pdf = await generatePDF(data, selectedTemplate);
-      const fileName = `${data.personalInfo?.fullName?.replace(/\s+/g, '_') || 'Resume'}_Resume.pdf`;
-      pdf.save(fileName);
+      
+      if (pdf) {
+        const fileName = `${data.personalInfo?.fullName?.replace(/\s+/g, '_') || 'Resume'}_Resume.pdf`;
+        console.log('Saving PDF as:', fileName);
+        pdf.save(fileName);
+        
+        toast({
+          title: "PDF Generated Successfully",
+          description: `Your resume has been downloaded as ${fileName}`,
+          variant: "default"
+        });
+      } else {
+        throw new Error('PDF generation failed');
+      }
       
       // Restore edit mode if it was active
       if (wasInEditMode) {
+        console.log('Restoring edit mode');
         setIsEditMode(true);
       }
       
-      toast({
-        title: "PDF Generated Successfully",
-        description: `Your resume has been downloaded as ${fileName}`,
-        variant: "default"
-      });
-      
-      console.log('PDF generated successfully with template:', selectedTemplate);
     } catch (error) {
       console.error('Error generating PDF:', error);
       toast({
-        title: "PDF Generation Failed",
+        title: "PDF Generation Failed", 
         description: "There was an error generating the PDF. Please try again.",
         variant: "destructive"
       });
@@ -166,15 +190,15 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
             className="flex items-center space-x-2"
           >
             {isEditMode ? <Save className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
-            <span>{isEditMode ? 'Exit Edit Mode' : 'Edit Resume'}</span>
+            <span>{isEditMode ? 'Save & Exit' : 'Edit Resume'}</span>
           </Button>
           <Button 
             onClick={handleDownload}
             disabled={isGeneratingPDF}
-            className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600"
+            className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
           >
             <Download className="w-4 h-4" />
-            <span>{isGeneratingPDF ? 'Generating...' : 'Download PDF'}</span>
+            <span>{isGeneratingPDF ? 'Generating PDF...' : 'Download PDF'}</span>
           </Button>
         </div>
       </div>
@@ -225,11 +249,14 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
           <CardContent className="p-0">
             <div 
               id="resume-preview" 
-              className={`bg-white overflow-hidden print:scale-100 ${!isEditMode ? 'transform scale-75 origin-top' : ''} transition-transform`}
+              className={`bg-white overflow-visible print:scale-100 ${!isEditMode ? 'transform scale-75 origin-top' : ''} transition-transform`}
               style={{ 
-                minHeight: isEditMode ? 'auto' : '1123px', 
-                width: isEditMode ? 'auto' : '794px',
-                maxWidth: '100%'
+                minHeight: '1123px',
+                width: '794px',
+                maxWidth: '100%',
+                margin: '0 auto',
+                visibility: 'visible',
+                opacity: 1
               }}
             >
               <SelectedTemplate 
