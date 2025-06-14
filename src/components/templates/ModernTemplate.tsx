@@ -13,10 +13,10 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
 
   return (
     <div className="w-full bg-white text-gray-800" style={{ fontFamily: 'Inter, Segoe UI, Tahoma, Geneva, Verdana, sans-serif' }}>
-      {/* Professional Header with Better Spacing */}
-      <header className="border-b-3 border-blue-600 pb-8 mb-10" style={{ pageBreakInside: 'avoid' }}>
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6 tracking-tight">
+      {/* Professional Header with Improved Spacing and Line Separator */}
+      <header className="pb-8 mb-10" style={{ pageBreakInside: 'avoid' }}>
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-8 tracking-tight">
             <EditableText
               value={personalInfo?.fullName || ''}
               onSave={(value) => onUpdate?.('personalInfo', 'fullName', value)}
@@ -26,75 +26,89 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
             />
           </h1>
           
-          <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-600 px-4">
+          {/* Primary Contact Information - Better Spaced */}
+          <div className="flex flex-wrap justify-center items-center gap-12 text-base text-gray-600 mb-6 px-4">
             {personalInfo?.email && (
-              <div className="flex items-center space-x-3 px-2 py-1">
-                <Mail className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                <EditableText
-                  value={personalInfo.email}
-                  onSave={(value) => onUpdate?.('personalInfo', 'email', value)}
-                  isEditing={isEditing}
-                  className="inline-block"
-                  placeholder="email@example.com"
-                />
+              <div className="flex items-center space-x-3 min-w-0">
+                <Mail className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                <span className="truncate">
+                  <EditableText
+                    value={personalInfo.email}
+                    onSave={(value) => onUpdate?.('personalInfo', 'email', value)}
+                    isEditing={isEditing}
+                    className="inline-block"
+                    placeholder="email@example.com"
+                  />
+                </span>
               </div>
             )}
             {personalInfo?.phone && (
-              <div className="flex items-center space-x-3 px-2 py-1">
-                <Phone className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                <EditableText
-                  value={personalInfo.phone}
-                  onSave={(value) => onUpdate?.('personalInfo', 'phone', value)}
-                  isEditing={isEditing}
-                  className="inline-block"
-                  placeholder="(555) 123-4567"
-                />
+              <div className="flex items-center space-x-3 min-w-0">
+                <Phone className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                <span className="truncate">
+                  <EditableText
+                    value={personalInfo.phone}
+                    onSave={(value) => onUpdate?.('personalInfo', 'phone', value)}
+                    isEditing={isEditing}
+                    className="inline-block"
+                    placeholder="(555) 123-4567"
+                  />
+                </span>
               </div>
             )}
             {personalInfo?.location && (
-              <div className="flex items-center space-x-3 px-2 py-1">
-                <MapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                <EditableText
-                  value={personalInfo.location}
-                  onSave={(value) => onUpdate?.('personalInfo', 'location', value)}
-                  isEditing={isEditing}
-                  className="inline-block"
-                  placeholder="City, State"
-                />
+              <div className="flex items-center space-x-3 min-w-0">
+                <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                <span className="truncate">
+                  <EditableText
+                    value={personalInfo.location}
+                    onSave={(value) => onUpdate?.('personalInfo', 'location', value)}
+                    isEditing={isEditing}
+                    className="inline-block"
+                    placeholder="City, State"
+                  />
+                </span>
               </div>
             )}
           </div>
           
-          {/* Second row for web links with better spacing */}
+          {/* Secondary Contact Information - Web Links with Better Spacing */}
           {(personalInfo?.linkedIn || personalInfo?.portfolio) && (
-            <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-600 mt-4 px-4">
+            <div className="flex flex-wrap justify-center items-center gap-12 text-base text-gray-600 mb-8 px-4">
               {personalInfo?.linkedIn && (
-                <div className="flex items-center space-x-3 px-2 py-1">
-                  <Linkedin className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                  <EditableText
-                    value={personalInfo.linkedIn}
-                    onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
-                    isEditing={isEditing}
-                    className="inline-block"
-                    placeholder="linkedin.com/in/username"
-                  />
+                <div className="flex items-center space-x-3 min-w-0">
+                  <Linkedin className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                  <span className="truncate">
+                    <EditableText
+                      value={personalInfo.linkedIn}
+                      onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
+                      isEditing={isEditing}
+                      className="inline-block"
+                      placeholder="linkedin.com/in/username"
+                    />
+                  </span>
                 </div>
               )}
               {personalInfo?.portfolio && (
-                <div className="flex items-center space-x-3 px-2 py-1">
-                  <Globe className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                  <EditableText
-                    value={personalInfo.portfolio}
-                    onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
-                    isEditing={isEditing}
-                    className="inline-block"
-                    placeholder="portfolio.com"
-                  />
+                <div className="flex items-center space-x-3 min-w-0">
+                  <Globe className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                  <span className="truncate">
+                    <EditableText
+                      value={personalInfo.portfolio}
+                      onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
+                      isEditing={isEditing}
+                      className="inline-block"
+                      placeholder="portfolio.com"
+                    />
+                  </span>
                 </div>
               )}
             </div>
           )}
         </div>
+        
+        {/* Header End Line Separator */}
+        <div className="w-full h-1 bg-gradient-to-r from-blue-600 to-purple-600"></div>
       </header>
 
       {/* Professional Summary */}
