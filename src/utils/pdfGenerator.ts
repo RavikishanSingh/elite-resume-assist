@@ -1,4 +1,3 @@
-
 import html2canvas from 'html2canvas';
 
 export const generatePDF = async (data: any, templateName: string = 'modern') => {
@@ -32,12 +31,14 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       return await generateFallbackPDF(data);
     }
 
-    // Ensure element is fully visible
+    // Ensure element is fully visible with proper styling
     resumeElement.style.display = 'block';
     resumeElement.style.visibility = 'visible';
     resumeElement.style.opacity = '1';
     resumeElement.style.position = 'relative';
     resumeElement.style.zIndex = '1';
+    resumeElement.style.transform = 'scale(1)'; // Remove any scaling
+    resumeElement.style.transformOrigin = 'top left';
 
     // Force a reflow
     resumeElement.offsetHeight;
@@ -47,21 +48,21 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
 
     console.log('Capturing element with html2canvas...');
     
-    // Capture with html2canvas
+    // Capture with html2canvas with proper settings for resume
     const canvas = await html2canvas(resumeElement, {
-      scale: 2, // Higher scale for better quality
+      scale: 3, // Higher scale for crisp text
       useCORS: true,
       allowTaint: false,
       backgroundColor: '#ffffff',
       logging: true,
-      width: resumeElement.scrollWidth,
-      height: resumeElement.scrollHeight,
+      width: 794, // A4 width at 96 DPI
+      height: 1123, // A4 height at 96 DPI
       scrollX: 0,
       scrollY: 0,
-      windowWidth: resumeElement.scrollWidth,
-      windowHeight: resumeElement.scrollHeight,
+      windowWidth: 794,
+      windowHeight: 1123,
+      removeContainer: true,
       ignoreElements: (element) => {
-        // Ignore any overlay elements that might interfere
         return element.classList.contains('ignore-pdf') || false;
       }
     });
@@ -74,15 +75,8 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       return await generateFallbackPDF(data);
     }
 
-    // Check if canvas has content
-    const context = canvas.getContext('2d');
-    if (!context) {
-      console.error('Cannot get canvas context, using fallback');
-      return await generateFallbackPDF(data);
-    }
-
-    // Get image data
-    const imageData = canvas.toDataURL('image/jpeg', 0.95);
+    // Get image data with high quality
+    const imageData = canvas.toDataURL('image/jpeg', 0.98);
     
     if (!imageData || imageData === 'data:,' || imageData.length < 100) {
       console.error('Invalid image data, using fallback');
@@ -91,48 +85,24 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
 
     console.log('Image data generated, creating PDF...');
 
-    // Create PDF with A4 dimensions
+    // Create PDF with proper A4 dimensions (210 x 297 mm)
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
-      format: 'a4'
+      format: 'a4',
+      compress: true
     });
 
-    // A4 dimensions in mm
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 10;
-
-    // Calculate image dimensions to fit page with margin
-    const maxWidth = pageWidth - (2 * margin);
-    const maxHeight = pageHeight - (2 * margin);
+    // Standard A4 dimensions in mm
+    const pageWidth = 210;
+    const pageHeight = 297;
     
-    // Calculate aspect ratios
-    const canvasRatio = canvas.width / canvas.height;
-    const pageRatio = maxWidth / maxHeight;
+    console.log(`Adding image to PDF with A4 dimensions: ${pageWidth}mm x ${pageHeight}mm`);
     
-    let imgWidth, imgHeight;
+    // Add image to fill the entire A4 page
+    pdf.addImage(imageData, 'JPEG', 0, 0, pageWidth, pageHeight, '', 'FAST');
     
-    if (canvasRatio > pageRatio) {
-      // Image is wider than page ratio
-      imgWidth = maxWidth;
-      imgHeight = maxWidth / canvasRatio;
-    } else {
-      // Image is taller than page ratio
-      imgHeight = maxHeight;
-      imgWidth = maxHeight * canvasRatio;
-    }
-    
-    // Center the image
-    const x = (pageWidth - imgWidth) / 2;
-    const y = (pageHeight - imgHeight) / 2;
-    
-    console.log(`Adding image to PDF at position (${x}, ${y}) with size ${imgWidth}x${imgHeight}`);
-    
-    // Add image to PDF
-    pdf.addImage(imageData, 'JPEG', x, y, imgWidth, imgHeight);
-    
-    console.log('PDF generated successfully!');
+    console.log('PDF generated successfully with proper A4 sizing!');
     return pdf;
 
   } catch (error) {

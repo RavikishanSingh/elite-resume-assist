@@ -68,43 +68,60 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
         throw new Error('Please fill in at least your name before downloading');
       }
 
-      // Temporarily exit edit mode for cleaner PDF
+      // Temporarily exit edit mode and reset scaling for cleaner PDF
       const wasEditMode = isEditMode;
       if (isEditMode) {
         setIsEditMode(false);
         console.log('Temporarily disabled edit mode for PDF generation');
       }
 
-      // Give time for the UI to update
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Reset the resume preview element to standard size for PDF capture
+      const resumeElement = document.getElementById('resume-preview');
+      if (resumeElement) {
+        // Temporarily reset transform for PDF generation
+        const originalTransform = resumeElement.style.transform;
+        resumeElement.style.transform = 'scale(1)';
+        resumeElement.style.width = '210mm';
+        resumeElement.style.minHeight = '297mm';
+        resumeElement.style.maxWidth = '210mm';
+        
+        // Give time for the UI to update with proper sizing
+        await new Promise(resolve => setTimeout(resolve, 1200));
 
-      console.log('Generating PDF...');
-      const pdf = await generatePDF(data, selectedTemplate);
-      
-      if (!pdf) {
-        throw new Error('PDF generation failed');
-      }
+        console.log('Generating PDF with proper A4 dimensions...');
+        const pdf = await generatePDF(data, selectedTemplate);
+        
+        // Restore original transform
+        resumeElement.style.transform = originalTransform;
+        resumeElement.style.width = '';
+        resumeElement.style.minHeight = '';
+        resumeElement.style.maxWidth = '';
+        
+        if (!pdf) {
+          throw new Error('PDF generation failed');
+        }
 
-      // Generate filename
-      const name = data.personalInfo?.fullName || 'Resume';
-      const sanitizedName = name.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
-      const date = new Date().toISOString().split('T')[0];
-      const filename = `${sanitizedName}_Resume_${date}.pdf`;
-      
-      // Download the PDF
-      pdf.save(filename);
-      
-      console.log(`PDF saved as: ${filename}`);
-      
-      toast({
-        title: "Success!",
-        description: `Resume downloaded as ${filename}`,
-        duration: 5000
-      });
+        // Generate filename
+        const name = data.personalInfo?.fullName || 'Resume';
+        const sanitizedName = name.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+        const date = new Date().toISOString().split('T')[0];
+        const filename = `${sanitizedName}_Resume_${date}.pdf`;
+        
+        // Download the PDF
+        pdf.save(filename);
+        
+        console.log(`PDF saved as: ${filename}`);
+        
+        toast({
+          title: "Success!",
+          description: `Resume downloaded as ${filename} (A4 Standard Size)`,
+          duration: 5000
+        });
 
-      // Restore edit mode if it was active
-      if (wasEditMode) {
-        setTimeout(() => setIsEditMode(true), 500);
+        // Restore edit mode if it was active
+        if (wasEditMode) {
+          setTimeout(() => setIsEditMode(true), 500);
+        }
       }
       
     } catch (error) {
@@ -205,7 +222,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
             className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50"
           >
             <Download className="w-4 h-4" />
-            <span>{isGeneratingPDF ? 'Generating PDF...' : 'Download PDF'}</span>
+            <span>{isGeneratingPDF ? 'Generating A4 PDF...' : 'Download A4 PDF'}</span>
           </Button>
         </div>
       </div>
@@ -261,17 +278,18 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
                 minHeight: '297mm',
                 maxWidth: '100%',
                 margin: '0 auto',
-                transform: 'scale(0.65)',
+                transform: 'scale(0.6)',
                 transformOrigin: 'top center',
                 backgroundColor: '#ffffff',
                 boxSizing: 'border-box',
                 fontFamily: 'Arial, sans-serif',
-                fontSize: '12px',
-                lineHeight: '1.5',
+                fontSize: '14px',
+                lineHeight: '1.4',
                 color: '#000000',
                 border: '1px solid #ddd',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                overflow: 'visible'
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                overflow: 'visible',
+                padding: '20mm'
               }}
             >
               <SelectedTemplate 
@@ -301,8 +319,8 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
             <p className="text-sm text-purple-700">Get intelligent feedback on content, keywords, and ATS optimization</p>
           </div>
           <div className="space-y-2">
-            <h5 className="font-medium text-purple-800">High-Quality PDF Export</h5>
-            <p className="text-sm text-purple-700">Generate pixel-perfect PDFs that preserve your chosen template styling</p>
+            <h5 className="font-medium text-purple-800">A4 Standard PDF Export</h5>
+            <p className="text-sm text-purple-700">Generate pixel-perfect A4 PDFs (210×297mm / 8.27×11.69 inches) that preserve your chosen template styling</p>
           </div>
         </div>
       </div>
@@ -310,7 +328,14 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
         <h4 className="font-medium text-green-900 mb-2">🎉 Your Resume is Ready!</h4>
         <p className="text-sm text-green-800">
-          Your professional resume has been generated with {Object.keys(templates).length} template options. You can download it as a PDF or get AI-powered feedback to make it even better.
+          Your professional resume has been generated with {Object.keys(templates).length} template options. Download it as a standard A4 PDF for professional use.
+        </p>
+      </div>
+
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h4 className="font-medium text-blue-900 mb-2">📄 Standard A4 Format</h4>
+        <p className="text-sm text-blue-800">
+          Your resume is now formatted to A4 standard size (210×297mm / 8.27×11.69 inches) - the most widely accepted resume format globally.
         </p>
       </div>
 
