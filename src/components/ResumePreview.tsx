@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -59,60 +58,67 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
 
   const handleDownload = async () => {
     setIsGeneratingPDF(true);
-    console.log('Starting PDF generation...');
+    console.log('Starting PDF download process...');
     
     try {
-      // Temporarily exit edit mode for better PDF capture
+      // Exit edit mode temporarily for cleaner PDF capture
       const wasInEditMode = isEditMode;
       if (isEditMode) {
-        console.log('Exiting edit mode for PDF generation');
+        console.log('Temporarily exiting edit mode for PDF generation');
         setIsEditMode(false);
-        // Wait for the component to re-render without edit mode
-        await new Promise(resolve => setTimeout(resolve, 300));
+        // Wait for UI to update
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
 
-      // Ensure the preview is properly visible
+      // Ensure resume element is ready
       const resumeElement = document.getElementById('resume-preview');
-      if (resumeElement) {
-        console.log('Resume element found, forcing visibility');
-        resumeElement.style.visibility = 'visible';
-        resumeElement.style.opacity = '1';
-        
-        // Force a reflow
-        resumeElement.offsetHeight;
-        
-        // Wait a bit more for any animations to complete
-        await new Promise(resolve => setTimeout(resolve, 200));
+      if (!resumeElement) {
+        throw new Error('Resume preview element not found');
       }
 
-      console.log('Generating PDF with data:', data);
+      // Make sure element is visible and properly sized
+      resumeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      
+      // Wait for scroll to complete
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      console.log('Calling generatePDF function...');
       const pdf = await generatePDF(data, selectedTemplate);
       
-      if (pdf) {
-        const fileName = `${data.personalInfo?.fullName?.replace(/\s+/g, '_') || 'Resume'}_Resume.pdf`;
-        console.log('Saving PDF as:', fileName);
-        pdf.save(fileName);
-        
-        toast({
-          title: "PDF Generated Successfully",
-          description: `Your resume has been downloaded as ${fileName}`,
-          variant: "default"
-        });
-      } else {
-        throw new Error('PDF generation failed');
+      if (!pdf) {
+        throw new Error('PDF generation returned null');
       }
+
+      // Generate filename
+      const fileName = data.personalInfo?.fullName 
+        ? `${data.personalInfo.fullName.replace(/[^a-zA-Z0-9]/g, '_')}_Resume.pdf`
+        : 'Resume.pdf';
+      
+      console.log('Saving PDF as:', fileName);
+      pdf.save(fileName);
+      
+      toast({
+        title: "Success!",
+        description: `Your resume has been downloaded as ${fileName}`,
+        variant: "default"
+      });
       
       // Restore edit mode if it was active
       if (wasInEditMode) {
-        console.log('Restoring edit mode');
-        setIsEditMode(true);
+        setTimeout(() => setIsEditMode(true), 100);
       }
       
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      console.error('PDF generation failed:', error);
+      
+      let errorMessage = 'There was an error generating the PDF. Please try again.';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "PDF Generation Failed", 
-        description: "There was an error generating the PDF. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -195,7 +201,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
           <Button 
             onClick={handleDownload}
             disabled={isGeneratingPDF}
-            className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50"
           >
             <Download className="w-4 h-4" />
             <span>{isGeneratingPDF ? 'Generating PDF...' : 'Download PDF'}</span>
@@ -249,14 +255,15 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
           <CardContent className="p-0">
             <div 
               id="resume-preview" 
-              className={`bg-white overflow-visible print:scale-100 ${!isEditMode ? 'transform scale-75 origin-top' : ''} transition-transform`}
+              className={`bg-white overflow-visible print:scale-100 ${!isEditMode ? 'transform scale-75 origin-top' : ''} transition-transform duration-300`}
               style={{ 
                 minHeight: '1123px',
                 width: '794px',
                 maxWidth: '100%',
                 margin: '0 auto',
                 visibility: 'visible',
-                opacity: 1
+                opacity: 1,
+                position: 'relative'
               }}
             >
               <SelectedTemplate 
