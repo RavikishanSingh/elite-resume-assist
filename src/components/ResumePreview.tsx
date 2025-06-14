@@ -60,73 +60,91 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
     if (isGeneratingPDF) return;
     
     setIsGeneratingPDF(true);
-    console.log('Starting PDF download process...');
+    console.log('=== PDF Download Process Started ===');
     
     try {
+      // Validate data first
+      if (!data || !data.personalInfo?.fullName) {
+        throw new Error('Resume data is incomplete. Please fill in at least your name.');
+      }
+
       // Exit edit mode for cleaner PDF
       const wasInEditMode = isEditMode;
       if (isEditMode) {
         console.log('Exiting edit mode for PDF generation');
         setIsEditMode(false);
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Wait for re-render
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
-      // Ensure resume element is ready
+      // Ensure resume element exists and is ready
       const resumeElement = document.getElementById('resume-preview');
       if (!resumeElement) {
-        throw new Error('Resume preview element not found. Please refresh the page.');
+        throw new Error('Resume preview not found. Please refresh the page and try again.');
       }
 
-      // Make sure element is visible and properly rendered
+      // Force element to be visible and properly sized
       resumeElement.style.display = 'block';
       resumeElement.style.visibility = 'visible';
       resumeElement.style.opacity = '1';
+      resumeElement.style.position = 'relative';
+      resumeElement.style.backgroundColor = '#ffffff';
       
-      // Check if element has content
-      if (resumeElement.innerHTML.trim().length === 0) {
-        throw new Error('Resume content is empty. Please make sure your resume data is complete.');
+      // Scroll element into view
+      resumeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      
+      // Wait for scroll and any animations to complete
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Check content one more time
+      const contentLength = resumeElement.innerHTML.trim().length;
+      console.log('Resume element content length:', contentLength);
+      
+      if (contentLength < 50) {
+        throw new Error('Resume content appears to be empty. Please make sure all sections are loaded.');
       }
-      
-      // Scroll to make sure element is in view
-      resumeElement.scrollIntoView({ behavior: 'instant', block: 'start' });
-      
-      // Wait for any dynamic content to load
-      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      console.log('Generating PDF...');
+      console.log('Starting PDF generation...');
       const pdf = await generatePDF(data, selectedTemplate);
       
       if (!pdf) {
         throw new Error('PDF generation failed. Please try again.');
       }
 
-      // Download PDF
+      // Generate filename
       const name = data.personalInfo?.fullName || 'Resume';
-      const cleanName = name.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
-      const fileName = `${cleanName}_Resume.pdf`;
+      const cleanName = name.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '_');
+      const timestamp = new Date().toISOString().slice(0, 10);
+      const fileName = `${cleanName}_Resume_${timestamp}.pdf`;
       
+      // Download PDF
       pdf.save(fileName);
       
       toast({
         title: "Success!",
         description: `Resume downloaded as ${fileName}`,
+        duration: 5000
       });
       
-      // Restore edit mode if needed
+      // Restore edit mode if it was active
       if (wasInEditMode) {
-        setTimeout(() => setIsEditMode(true), 500);
+        setTimeout(() => setIsEditMode(true), 1000);
       }
       
     } catch (error) {
       console.error('PDF download failed:', error);
       
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.';
+      
       toast({
         title: "Download Failed", 
-        description: error instanceof Error ? error.message : 'Failed to generate PDF. Please try again.',
-        variant: "destructive"
+        description: errorMessage,
+        variant: "destructive",
+        duration: 7000
       });
     } finally {
       setIsGeneratingPDF(false);
+      console.log('=== PDF Download Process Completed ===');
     }
   };
 
@@ -258,23 +276,24 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
           <CardContent className="p-0">
             <div 
               id="resume-preview" 
-              className="bg-white"
+              className="bg-white relative"
               style={{ 
-                width: '794px',
-                minHeight: '1123px',
+                width: '210mm', // A4 width
+                minHeight: '297mm', // A4 height
                 maxWidth: '100%',
                 margin: '0 auto',
-                transform: 'scale(0.75)',
+                transform: 'scale(0.6)',
                 transformOrigin: 'top center',
                 backgroundColor: '#ffffff',
                 boxSizing: 'border-box',
-                padding: '40px',
+                padding: '20mm', // Standard margins
                 fontFamily: 'Arial, sans-serif',
-                fontSize: '14px',
-                lineHeight: '1.6',
-                color: '#333333',
-                position: 'relative',
-                overflow: 'visible'
+                fontSize: '12px',
+                lineHeight: '1.4',
+                color: '#000000',
+                overflow: 'visible',
+                border: '1px solid #e0e0e0',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
               }}
             >
               <SelectedTemplate 
