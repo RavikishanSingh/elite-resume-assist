@@ -2,7 +2,7 @@
 import jsPDF from 'jspdf';
 
 export const generatePDF = async (data: any, templateName: string = 'modern') => {
-  console.log('=== Generating Perfect Template PDF ===');
+  console.log('=== Generating Perfect Modern Template PDF ===');
   console.log('Template:', templateName);
   console.log('Data:', data);
 
@@ -19,12 +19,12 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
 
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    let currentY = 25;
+    let currentY = 20;
 
     // Set default font
     pdf.setFont('helvetica');
 
-    // Color definitions matching the Modern template exactly
+    // Modern template colors - exact match
     const colors = {
       blue600: [37, 99, 235],     // #2563eb - main blue
       blue500: [59, 130, 246],    // #3b82f6 - lighter blue
@@ -33,7 +33,8 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       gray600: [75, 85, 99],      // #4b5563 - light text
       blue100: [219, 234, 254],   // #dbeafe - blue background
       blue800: [30, 64, 175],     // #1e40af - blue text on blue bg
-      white: [255, 255, 255]
+      white: [255, 255, 255],
+      lightGray: [229, 231, 235]  // #e5e7eb - light gray for lines
     };
 
     // Helper function to add text with proper wrapping
@@ -56,71 +57,83 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       return y + (lines.length * (options.lineHeight || 6)) + (options.marginBottom || 0);
     };
 
-    // MODERN TEMPLATE - Exact Visual Match
+    // Helper function to draw rounded rectangle
+    const drawRoundedRect = (x: number, y: number, width: number, height: number, radius: number, style: string = 'S') => {
+      pdf.roundedRect(x, y, width, height, radius, radius, style);
+    };
+
+    // MODERN TEMPLATE - Perfect Match
     if (templateName === 'modern') {
       // White background
       pdf.setFillColor(255, 255, 255);
       pdf.rect(0, 0, pageWidth, pageHeight, 'F');
 
-      // Header section
-      // Name - large, bold, dark gray (matching first image)
-      currentY = addText(data.personalInfo?.fullName || '', 20, currentY, {
-        fontSize: 32,
-        fontStyle: 'bold',
-        color: colors.gray900,
-        marginBottom: 3
-      });
+      // HEADER SECTION - Exact match to template
+      // Name - large, bold, dark gray
+      pdf.setFontSize(28);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(colors.gray900[0], colors.gray900[1], colors.gray900[2]);
+      pdf.text(data.personalInfo?.fullName || '', 20, currentY);
+      currentY += 8;
 
-      // Blue horizontal line under name (4px thick like in template)
+      // Blue horizontal line under name (matching template thickness)
       pdf.setDrawColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
-      pdf.setLineWidth(1.2);
+      pdf.setLineWidth(1.0);
       pdf.line(20, currentY, pageWidth - 20, currentY);
       currentY += 8;
 
-      // Contact information - horizontal layout like in template
-      const contactInfo = [];
-      if (data.personalInfo?.email) contactInfo.push(data.personalInfo.email);
-      if (data.personalInfo?.phone) contactInfo.push(data.personalInfo.phone);
-      if (data.personalInfo?.location) contactInfo.push(data.personalInfo.location);
-      if (data.personalInfo?.linkedIn) contactInfo.push(data.personalInfo.linkedIn);
-      if (data.personalInfo?.portfolio) contactInfo.push(data.personalInfo.portfolio);
+      // Contact information - horizontal layout with proper spacing
+      const contactItems = [];
+      if (data.personalInfo?.email) contactItems.push(data.personalInfo.email);
+      if (data.personalInfo?.phone) contactItems.push(data.personalInfo.phone);
+      if (data.personalInfo?.location) contactItems.push(data.personalInfo.location);
+      if (data.personalInfo?.linkedIn) contactItems.push(data.personalInfo.linkedIn);
+      if (data.personalInfo?.portfolio) contactItems.push(data.personalInfo.portfolio);
 
-      if (contactInfo.length > 0) {
-        const contactText = contactInfo.join(' • ');
-        currentY = addText(contactText, 20, currentY, {
-          fontSize: 10,
-          color: colors.gray600,
-          marginBottom: 12
+      if (contactItems.length > 0) {
+        // Create proper contact layout with dots as separators
+        const contactText = contactItems.join(' • ');
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(colors.gray600[0], colors.gray600[1], colors.gray600[2]);
+        
+        // Split into multiple lines if too long
+        const contactLines = pdf.splitTextToSize(contactText, pageWidth - 40);
+        contactLines.forEach((line: string, index: number) => {
+          pdf.text(line, 20, currentY + (index * 4));
         });
+        currentY += (contactLines.length * 4) + 8;
       }
 
       // Professional Summary section
       if (data.personalInfo?.summary) {
-        // Section header with blue color and left border (matching first image)
+        // Section header with blue color and left border
         pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
         pdf.setTextColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
         pdf.text('Professional Summary', 25, currentY);
         
-        // Blue left border (thick line like in template)
+        // Blue left border (thick line)
         pdf.setDrawColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
-        pdf.setLineWidth(1.2);
-        pdf.line(20, currentY - 3, 20, currentY + 3);
+        pdf.setLineWidth(1.5);
+        pdf.line(20, currentY - 4, 20, currentY + 2);
         
-        currentY += 8;
+        currentY += 10;
 
-        // Summary text with proper spacing
-        currentY = addText(data.personalInfo.summary, 20, currentY, {
-          fontSize: 10,
-          color: colors.gray700,
-          marginBottom: 12,
-          lineHeight: 5
+        // Summary text with proper spacing and formatting
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(colors.gray700[0], colors.gray700[1], colors.gray700[2]);
+        const summaryLines = pdf.splitTextToSize(data.personalInfo.summary, pageWidth - 40);
+        summaryLines.forEach((line: string, index: number) => {
+          pdf.text(line, 20, currentY + (index * 4.5));
         });
+        currentY += (summaryLines.length * 4.5) + 12;
       }
 
-      // Professional Experience section
+      // Professional Experience section with timeline
       if (data.experience?.length > 0) {
-        // Section header matching template style
+        // Section header
         pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
         pdf.setTextColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
@@ -128,76 +141,88 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
         
         // Blue left border
         pdf.setDrawColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
-        pdf.setLineWidth(1.2);
-        pdf.line(20, currentY - 3, 20, currentY + 3);
+        pdf.setLineWidth(1.5);
+        pdf.line(20, currentY - 4, 20, currentY + 2);
         
         currentY += 12;
 
+        // Calculate total timeline height for the continuous line
+        let timelineStartY = currentY;
+        let timelineEndY = currentY;
+        
+        // Pre-calculate timeline end position
+        data.experience.forEach((exp: any) => {
+          if (exp.jobTitle && exp.company) {
+            timelineEndY += 25; // Approximate height per experience item
+            if (exp.description) {
+              const descLines = pdf.splitTextToSize(exp.description, pageWidth - 50);
+              timelineEndY += descLines.length * 4;
+            }
+          }
+        });
+
+        // Draw continuous vertical timeline line (light gray)
+        pdf.setDrawColor(colors.lightGray[0], colors.lightGray[1], colors.lightGray[2]);
+        pdf.setLineWidth(0.8);
+        pdf.line(15, timelineStartY, 15, timelineEndY - 10);
+
         data.experience.forEach((exp: any, index: number) => {
           if (exp.jobTitle && exp.company) {
-            // Timeline dot (blue circle like in template)
+            // Timeline dot (blue circle)
             pdf.setFillColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
-            pdf.circle(16, currentY - 1, 1.5, 'F');
-            
-            // Vertical timeline line
-            if (index < data.experience.length - 1) {
-              pdf.setDrawColor(200, 200, 200);
-              pdf.setLineWidth(0.5);
-              pdf.line(16, currentY + 3, 16, currentY + 22);
-            }
+            pdf.circle(15, currentY, 2, 'F');
 
             // Job title - bold, larger font
-            currentY = addText(exp.jobTitle, 22, currentY, {
-              fontSize: 12,
-              fontStyle: 'bold',
-              color: colors.gray900,
-              marginBottom: 2
-            });
+            pdf.setFontSize(12);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(colors.gray900[0], colors.gray900[1], colors.gray900[2]);
+            pdf.text(exp.jobTitle, 25, currentY);
+            currentY += 5;
 
-            // Company name - blue color like in template
-            currentY = addText(exp.company, 22, currentY, {
-              fontSize: 11,
-              fontStyle: 'normal',
-              color: colors.blue600,
-              marginBottom: 1
-            });
+            // Company name and date on same line
+            pdf.setFontSize(11);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
+            pdf.text(exp.company, 25, currentY);
 
             // Date range - right aligned
             const dateText = `${exp.startDate || ''} - ${exp.current ? 'Present' : exp.endDate || ''}`;
             if (dateText.trim() !== ' - ') {
-              const dateWidth = pdf.getTextWidth(dateText);
               pdf.setFontSize(10);
-              pdf.setFont('helvetica', 'normal');
               pdf.setTextColor(colors.gray600[0], colors.gray600[1], colors.gray600[2]);
-              pdf.text(dateText, pageWidth - 20 - dateWidth, currentY - 12);
+              const dateWidth = pdf.getTextWidth(dateText);
+              pdf.text(dateText, pageWidth - 20 - dateWidth, currentY);
             }
+            currentY += 4;
 
             // Location if available
             if (exp.location) {
-              currentY = addText(exp.location, 22, currentY, {
-                fontSize: 9,
-                color: colors.gray600,
-                marginBottom: 2
-              });
+              pdf.setFontSize(9);
+              pdf.setTextColor(colors.gray600[0], colors.gray600[1], colors.gray600[2]);
+              pdf.text(exp.location, 25, currentY);
+              currentY += 4;
             }
 
             // Job description with proper spacing
             if (exp.description) {
-              currentY = addText(exp.description, 22, currentY + 1, {
-                fontSize: 10,
-                color: colors.gray700,
-                marginBottom: 10,
-                lineHeight: 4.5,
-                maxWidth: pageWidth - 45
+              pdf.setFontSize(10);
+              pdf.setFont('helvetica', 'normal');
+              pdf.setTextColor(colors.gray700[0], colors.gray700[1], colors.gray700[2]);
+              const descLines = pdf.splitTextToSize(exp.description, pageWidth - 50);
+              descLines.forEach((line: string, lineIndex: number) => {
+                pdf.text(line, 25, currentY + (lineIndex * 4));
               });
+              currentY += (descLines.length * 4) + 8;
+            } else {
+              currentY += 6;
             }
-
-            currentY += 4;
           }
         });
+
+        currentY += 6;
       }
 
-      // Projects section
+      // Projects section with timeline
       if (data.projects?.length > 0) {
         pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
@@ -205,50 +230,89 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
         pdf.text('Projects', 25, currentY);
         
         pdf.setDrawColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
-        pdf.setLineWidth(1.2);
-        pdf.line(20, currentY - 3, 20, currentY + 3);
+        pdf.setLineWidth(1.5);
+        pdf.line(20, currentY - 4, 20, currentY + 2);
         
         currentY += 12;
 
-        data.projects.forEach((project: any, index: number) => {
+        // Calculate timeline for projects
+        let projectTimelineStart = currentY;
+        let projectTimelineEnd = currentY;
+        
+        data.projects.forEach((project: any) => {
+          if (project.name) {
+            projectTimelineEnd += 20;
+            if (project.description) {
+              const descLines = pdf.splitTextToSize(project.description, pageWidth - 50);
+              projectTimelineEnd += descLines.length * 4;
+            }
+          }
+        });
+
+        // Draw continuous vertical timeline line
+        pdf.setDrawColor(colors.lightGray[0], colors.lightGray[1], colors.lightGray[2]);
+        pdf.setLineWidth(0.8);
+        pdf.line(15, projectTimelineStart, 15, projectTimelineEnd - 10);
+
+        data.projects.forEach((project: any) => {
           if (project.name) {
             // Timeline dot
             pdf.setFillColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
-            pdf.circle(16, currentY - 1, 1.5, 'F');
-            
-            if (index < data.projects.length - 1) {
-              pdf.setDrawColor(200, 200, 200);
-              pdf.setLineWidth(0.5);
-              pdf.line(16, currentY + 3, 16, currentY + 18);
-            }
+            pdf.circle(15, currentY, 2, 'F');
 
-            currentY = addText(project.name, 22, currentY, {
-              fontSize: 12,
-              fontStyle: 'bold',
-              color: colors.gray900,
-              marginBottom: 2
-            });
+            // Project name
+            pdf.setFontSize(12);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(colors.gray900[0], colors.gray900[1], colors.gray900[2]);
+            pdf.text(project.name, 25, currentY);
+            currentY += 5;
 
+            // Project description
             if (project.description) {
-              currentY = addText(project.description, 22, currentY, {
-                fontSize: 10,
-                color: colors.gray700,
-                marginBottom: 4,
-                lineHeight: 4.5
+              pdf.setFontSize(10);
+              pdf.setFont('helvetica', 'normal');
+              pdf.setTextColor(colors.gray700[0], colors.gray700[1], colors.gray700[2]);
+              const descLines = pdf.splitTextToSize(project.description, pageWidth - 50);
+              descLines.forEach((line: string, lineIndex: number) => {
+                pdf.text(line, 25, currentY + (lineIndex * 4));
               });
+              currentY += (descLines.length * 4) + 4;
             }
 
+            // Technologies with blue tags
             if (project.technologies) {
               const techs = project.technologies.split(',').map((t: string) => t.trim());
-              const techText = techs.join(' • ');
-              currentY = addText(techText, 22, currentY, {
-                fontSize: 9,
-                color: colors.blue800,
-                marginBottom: 8
+              let xPos = 25;
+              const tagY = currentY;
+              
+              techs.forEach((tech: string) => {
+                if (tech) {
+                  pdf.setFontSize(8);
+                  const textWidth = pdf.getTextWidth(tech);
+                  const tagWidth = textWidth + 4;
+                  
+                  // Check if tag fits on current line
+                  if (xPos + tagWidth > pageWidth - 20) {
+                    xPos = 25;
+                    currentY += 6;
+                  }
+                  
+                  // Draw rounded blue background
+                  pdf.setFillColor(colors.blue100[0], colors.blue100[1], colors.blue100[2]);
+                  drawRoundedRect(xPos, currentY - 3, tagWidth, 5, 1, 'F');
+                  
+                  // Add tech text
+                  pdf.setFont('helvetica', 'normal');
+                  pdf.setTextColor(colors.blue800[0], colors.blue800[1], colors.blue800[2]);
+                  pdf.text(tech, xPos + 2, currentY);
+                  
+                  xPos += tagWidth + 3;
+                }
               });
+              currentY += 8;
             }
-
-            currentY += 3;
+            
+            currentY += 4;
           }
         });
       }
@@ -261,42 +325,42 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
         pdf.text('Education', 25, currentY);
         
         pdf.setDrawColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
-        pdf.setLineWidth(1.2);
-        pdf.line(20, currentY - 3, 20, currentY + 3);
+        pdf.setLineWidth(1.5);
+        pdf.line(20, currentY - 4, 20, currentY + 2);
         
         currentY += 12;
 
-        data.education.forEach((edu: any, index: number) => {
+        data.education.forEach((edu: any) => {
           if (edu.degree && edu.school) {
+            // Education dot
             pdf.setFillColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
-            pdf.circle(16, currentY - 1, 1.5, 'F');
+            pdf.circle(15, currentY, 2, 'F');
 
-            currentY = addText(edu.degree, 22, currentY, {
-              fontSize: 11,
-              fontStyle: 'bold',
-              color: colors.gray900,
-              marginBottom: 1
-            });
+            // Degree
+            pdf.setFontSize(11);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(colors.gray900[0], colors.gray900[1], colors.gray900[2]);
+            pdf.text(edu.degree, 25, currentY);
+            currentY += 4;
 
-            currentY = addText(edu.school, 22, currentY, {
-              fontSize: 10,
-              color: colors.blue600,
-              marginBottom: 1
-            });
+            // School and graduation date
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
+            pdf.text(edu.school, 25, currentY);
 
             if (edu.graduationDate) {
-              const gradWidth = pdf.getTextWidth(edu.graduationDate);
-              pdf.setFontSize(9);
               pdf.setTextColor(colors.gray600[0], colors.gray600[1], colors.gray600[2]);
-              pdf.text(edu.graduationDate, pageWidth - 20 - gradWidth, currentY - 8);
+              const gradWidth = pdf.getTextWidth(edu.graduationDate);
+              pdf.text(edu.graduationDate, pageWidth - 20 - gradWidth, currentY);
             }
 
-            currentY += 8;
+            currentY += 10;
           }
         });
       }
 
-      // Skills section with blue tags like in template
+      // Skills section with rounded blue tags
       if (data.skills?.length > 0) {
         pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
@@ -304,23 +368,22 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
         pdf.text('Skills', 25, currentY);
         
         pdf.setDrawColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
-        pdf.setLineWidth(1.2);
-        pdf.line(20, currentY - 3, 20, currentY + 3);
+        pdf.setLineWidth(1.5);
+        pdf.line(20, currentY - 4, 20, currentY + 2);
         
         currentY += 10;
 
-        // Create skill tags with blue background like in template
+        // Create skill tags with blue background and rounded edges
         const validSkills = data.skills.filter((skill: string) => skill && skill.trim());
         let xPos = 20;
         let yPos = currentY;
-        const tagHeight = 5;
-        const tagPadding = 2;
 
         validSkills.forEach((skill: string) => {
           const skillText = skill.trim();
-          pdf.setFontSize(8);
+          pdf.setFontSize(9);
           const textWidth = pdf.getTextWidth(skillText);
-          const tagWidth = textWidth + (tagPadding * 2);
+          const tagWidth = textWidth + 6;
+          const tagHeight = 6;
 
           // Check if tag fits on current line
           if (xPos + tagWidth > pageWidth - 20) {
@@ -328,23 +391,23 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
             yPos += tagHeight + 3;
           }
 
-          // Draw blue background rectangle (rounded corners simulation)
+          // Draw rounded blue background
           pdf.setFillColor(colors.blue100[0], colors.blue100[1], colors.blue100[2]);
-          pdf.roundedRect(xPos, yPos - 3, tagWidth, tagHeight, 0.5, 0.5, 'F');
+          drawRoundedRect(xPos, yPos - 4, tagWidth, tagHeight, 2, 'F');
 
-          // Add skill text in blue
+          // Add skill text
           pdf.setFont('helvetica', 'normal');
           pdf.setTextColor(colors.blue800[0], colors.blue800[1], colors.blue800[2]);
-          pdf.text(skillText, xPos + tagPadding, yPos);
+          pdf.text(skillText, xPos + 3, yPos);
 
-          xPos += tagWidth + 3;
+          xPos += tagWidth + 4;
         });
 
-        currentY = yPos + 8;
+        currentY = yPos + 10;
       }
     }
 
-    // Handle other templates with basic styling for now
+    // Handle other templates with basic styling
     else {
       // Basic template for non-modern templates
       currentY = addText(data.personalInfo?.fullName || '', 20, currentY, {
@@ -369,7 +432,6 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
         });
       }
 
-      // Add other sections with basic formatting
       if (data.experience?.length > 0) {
         currentY = addText('EXPERIENCE', 20, currentY, {
           fontSize: 14,
@@ -399,7 +461,7 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       }
     }
 
-    console.log('Perfect Modern template PDF generated!');
+    console.log('Perfect Modern template PDF generated with exact layout matching!');
     return pdf;
 
   } catch (error) {
