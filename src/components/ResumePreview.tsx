@@ -57,67 +57,65 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
   };
 
   const handleDownload = async () => {
+    if (isGeneratingPDF) return;
+    
     setIsGeneratingPDF(true);
     console.log('Starting PDF download process...');
     
     try {
-      // Exit edit mode temporarily for cleaner PDF capture
+      // Temporarily exit edit mode for cleaner PDF
       const wasInEditMode = isEditMode;
       if (isEditMode) {
-        console.log('Temporarily exiting edit mode for PDF generation');
+        console.log('Exiting edit mode for PDF generation');
         setIsEditMode(false);
-        // Wait for UI to update
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 300));
       }
 
-      // Ensure resume element is ready
+      // Ensure the resume element exists
       const resumeElement = document.getElementById('resume-preview');
       if (!resumeElement) {
-        throw new Error('Resume preview element not found');
+        console.error('Resume preview element not found');
+        throw new Error('Resume preview not found. Please refresh and try again.');
       }
 
-      // Make sure element is visible and properly sized
-      resumeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      
-      // Wait for scroll to complete
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Scroll to the resume element
+      resumeElement.scrollIntoView({ behavior: 'instant', block: 'start' });
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-      console.log('Calling generatePDF function...');
+      console.log('Generating PDF...');
       const pdf = await generatePDF(data, selectedTemplate);
       
       if (!pdf) {
-        throw new Error('PDF generation returned null');
+        throw new Error('PDF generation failed. Please try again.');
       }
 
-      // Generate filename
-      const fileName = data.personalInfo?.fullName 
-        ? `${data.personalInfo.fullName.replace(/[^a-zA-Z0-9]/g, '_')}_Resume.pdf`
-        : 'Resume.pdf';
+      // Create filename
+      const name = data.personalInfo?.fullName || 'Resume';
+      const cleanName = name.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+      const fileName = `${cleanName}_Resume.pdf`;
       
-      console.log('Saving PDF as:', fileName);
+      console.log('Downloading PDF:', fileName);
       pdf.save(fileName);
       
       toast({
         title: "Success!",
-        description: `Your resume has been downloaded as ${fileName}`,
-        variant: "default"
+        description: `Resume downloaded as ${fileName}`,
       });
       
-      // Restore edit mode if it was active
+      // Restore edit mode if needed
       if (wasInEditMode) {
         setTimeout(() => setIsEditMode(true), 100);
       }
       
     } catch (error) {
-      console.error('PDF generation failed:', error);
+      console.error('PDF download failed:', error);
       
-      let errorMessage = 'There was an error generating the PDF. Please try again.';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Failed to generate PDF. Please try again.';
       
       toast({
-        title: "PDF Generation Failed", 
+        title: "Download Failed", 
         description: errorMessage,
         variant: "destructive"
       });
@@ -204,7 +202,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
             className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50"
           >
             <Download className="w-4 h-4" />
-            <span>{isGeneratingPDF ? 'Generating PDF...' : 'Download PDF'}</span>
+            <span>{isGeneratingPDF ? 'Generating...' : 'Download PDF'}</span>
           </Button>
         </div>
       </div>
@@ -235,7 +233,6 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
                 toast({
                   title: "Template Changed",
                   description: `Switched to ${template.name} template`,
-                  variant: "default"
                 });
               }}
               className={`p-4 rounded-lg border-2 text-left transition-all ${
@@ -255,7 +252,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
           <CardContent className="p-0">
             <div 
               id="resume-preview" 
-              className={`bg-white overflow-visible print:scale-100 ${!isEditMode ? 'transform scale-75 origin-top' : ''} transition-transform duration-300`}
+              className={`bg-white transition-transform duration-300 ${!isEditMode ? 'transform scale-75 origin-top' : ''}`}
               style={{ 
                 minHeight: '1123px',
                 width: '794px',
@@ -263,7 +260,8 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
                 margin: '0 auto',
                 visibility: 'visible',
                 opacity: 1,
-                position: 'relative'
+                position: 'relative',
+                zIndex: 1
               }}
             >
               <SelectedTemplate 

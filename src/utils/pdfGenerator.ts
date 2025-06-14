@@ -15,123 +15,124 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
 
     console.log('Found resume element, preparing for capture...');
     
+    // Ensure the element is visible and scrolled into view
+    resumeElement.scrollIntoView({ behavior: 'instant', block: 'start' });
+    
+    // Wait for scroll to complete
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     // Store original styles
     const originalStyles = {
-      display: resumeElement.style.display,
       transform: resumeElement.style.transform,
       scale: resumeElement.style.scale,
-      overflow: resumeElement.style.overflow,
+      visibility: resumeElement.style.visibility,
       position: resumeElement.style.position,
-      zIndex: resumeElement.style.zIndex,
-      visibility: resumeElement.style.visibility
+      zIndex: resumeElement.style.zIndex
     };
     
-    // Ensure the element is properly visible for capture
-    resumeElement.style.display = 'block';
+    // Temporarily reset transform and scale for better capture
     resumeElement.style.transform = 'none';
     resumeElement.style.scale = '1';
-    resumeElement.style.overflow = 'visible';
+    resumeElement.style.visibility = 'visible';
     resumeElement.style.position = 'relative';
     resumeElement.style.zIndex = '1';
-    resumeElement.style.visibility = 'visible';
     
     // Force layout recalculation
     resumeElement.offsetHeight;
-    resumeElement.offsetWidth;
     
-    // Wait for styles to apply and fonts to load
-    await new Promise(resolve => setTimeout(resolve, 800));
+    // Wait for styles to apply
+    await new Promise(resolve => setTimeout(resolve, 200));
     
     console.log('Capturing element with html2canvas...');
     
-    // Get actual dimensions
+    // Get the computed dimensions
     const rect = resumeElement.getBoundingClientRect();
-    const elementWidth = resumeElement.scrollWidth || rect.width;
-    const elementHeight = resumeElement.scrollHeight || rect.height;
+    const width = Math.max(rect.width, resumeElement.scrollWidth, 794);
+    const height = Math.max(rect.height, resumeElement.scrollHeight, 1123);
     
-    console.log('Element dimensions:', elementWidth, 'x', elementHeight);
+    console.log('Element dimensions:', width, 'x', height);
     
-    // Use html2canvas with improved settings
+    // Capture with html2canvas
     const canvas = await html2canvas(resumeElement, {
-      scale: 2,
+      scale: 1.5,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
       logging: false,
-      width: elementWidth,
-      height: elementHeight,
+      width: width,
+      height: height,
+      windowWidth: width,
+      windowHeight: height,
       scrollX: 0,
       scrollY: 0,
-      windowWidth: elementWidth,
-      windowHeight: elementHeight,
-      onclone: (clonedDoc) => {
-        // Ensure all styles are properly applied in the cloned document
-        const clonedElement = clonedDoc.getElementById('resume-preview');
-        if (clonedElement) {
-          clonedElement.style.transform = 'none';
-          clonedElement.style.scale = '1';
-          clonedElement.style.display = 'block';
-          clonedElement.style.visibility = 'visible';
-        }
+      x: 0,
+      y: 0,
+      ignoreElements: (element) => {
+        // Ignore elements that might cause issues
+        return element.classList?.contains('no-print') || false;
       }
     });
     
-    console.log('Canvas created successfully:', canvas.width, 'x', canvas.height);
+    console.log('Canvas created:', canvas.width, 'x', canvas.height);
     
     // Restore original styles
     Object.keys(originalStyles).forEach(key => {
-      resumeElement.style[key] = originalStyles[key];
+      if (originalStyles[key as keyof typeof originalStyles]) {
+        resumeElement.style[key as any] = originalStyles[key as keyof typeof originalStyles];
+      }
     });
     
-    if (canvas.width === 0 || canvas.height === 0) {
-      console.error('Canvas has zero dimensions, falling back to text PDF');
+    // Validate canvas
+    if (!canvas || canvas.width === 0 || canvas.height === 0) {
+      console.error('Invalid canvas, falling back to text PDF');
       return generateTextPDF(data);
     }
     
-    // Convert canvas to image
-    const imgData = canvas.toDataURL('image/png', 1.0);
+    // Convert to image
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    if (!imgData || imgData === 'data:,') {
+      console.error('Failed to convert canvas to image, falling back to text PDF');
+      return generateTextPDF(data);
+    }
     
     // Create PDF
     const pdf = new jsPDF({
       orientation: 'portrait',
-      unit: 'pt',
+      unit: 'mm',
       format: 'a4'
     });
     
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 40;
+    const margin = 10;
     
-    // Calculate dimensions to fit the page with margins
-    const availableWidth = pageWidth - (2 * margin);
-    const availableHeight = pageHeight - (2 * margin);
+    // Calculate image dimensions
+    const maxWidth = pageWidth - (2 * margin);
+    const maxHeight = pageHeight - (2 * margin);
     
-    // Calculate image dimensions maintaining aspect ratio
     const aspectRatio = canvas.width / canvas.height;
-    let imgWidth = availableWidth;
+    let imgWidth = maxWidth;
     let imgHeight = imgWidth / aspectRatio;
     
-    // If image is too tall, scale it down
-    if (imgHeight > availableHeight) {
-      imgHeight = availableHeight;
+    if (imgHeight > maxHeight) {
+      imgHeight = maxHeight;
       imgWidth = imgHeight * aspectRatio;
     }
     
-    console.log('PDF image dimensions:', imgWidth, 'x', imgHeight);
-    
-    // Center the image on the page
+    // Center the image
     const xOffset = (pageWidth - imgWidth) / 2;
     const yOffset = margin;
     
+    console.log('Adding image to PDF:', imgWidth, 'x', imgHeight);
+    
     // Add image to PDF
-    pdf.addImage(imgData, 'PNG', xOffset, yOffset, imgWidth, imgHeight);
+    pdf.addImage(imgData, 'JPEG', xOffset, yOffset, imgWidth, imgHeight);
     
     console.log('PDF generation completed successfully');
     return pdf;
     
   } catch (error) {
-    console.error('Error generating PDF with template:', error);
-    // Always fall back to text PDF if visual capture fails
+    console.error('Error in PDF generation:', error);
     return generateTextPDF(data);
   }
 };
@@ -144,17 +145,16 @@ const generateTextPDF = async (data: any) => {
     
     const pdf = new jsPDF({
       orientation: 'portrait',
-      unit: 'pt',
+      unit: 'mm',
       format: 'a4'
     });
     
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 50;
-    const lineHeight = 16;
+    const margin = 15;
+    const lineHeight = 6;
     let yPos = margin;
 
-    // Helper function to add text with page breaks
     const addText = (text: string, x: number, fontSize: number = 11, fontWeight: string = 'normal') => {
       if (!text) return;
       
@@ -164,36 +164,34 @@ const generateTextPDF = async (data: any) => {
       const maxWidth = pageWidth - (2 * margin);
       const lines = pdf.splitTextToSize(text.toString(), maxWidth);
       
-      // Check if we need a new page
       if (yPos + (lines.length * lineHeight) > pageHeight - margin) {
         pdf.addPage();
         yPos = margin;
       }
       
       pdf.text(lines, x, yPos);
-      yPos += lines.length * lineHeight + 10;
+      yPos += lines.length * lineHeight + 3;
     };
 
     const addSection = (title: string) => {
-      yPos += 20;
-      if (yPos + 40 > pageHeight - margin) {
+      yPos += 5;
+      if (yPos + 15 > pageHeight - margin) {
         pdf.addPage();
         yPos = margin;
       }
       
-      // Add section separator line
-      pdf.setDrawColor(100, 100, 100);
-      pdf.setLineWidth(0.5);
+      pdf.setDrawColor(150, 150, 150);
+      pdf.setLineWidth(0.3);
       pdf.line(margin, yPos, pageWidth - margin, yPos);
-      yPos += 15;
+      yPos += 4;
       
       addText(title, margin, 14, 'bold');
     };
 
     // Header
     if (data.personalInfo?.fullName) {
-      addText(data.personalInfo.fullName, margin, 20, 'bold');
-      yPos += 10;
+      addText(data.personalInfo.fullName, margin, 18, 'bold');
+      yPos += 2;
     }
 
     // Contact info
@@ -221,14 +219,14 @@ const generateTextPDF = async (data: any) => {
         
         const dateRange = `${exp.startDate || ''} - ${exp.current ? 'Present' : exp.endDate || ''}`;
         if (dateRange.trim() !== ' - ') {
-          addText(dateRange, margin, 10, 'italic');
+          addText(dateRange, margin, 9, 'italic');
         }
         
         if (exp.description) {
           addText(exp.description, margin, 10);
         }
         
-        yPos += 10;
+        yPos += 3;
       });
     }
 
@@ -245,7 +243,7 @@ const generateTextPDF = async (data: any) => {
           addText(edu.graduationDate, margin, 10);
         }
         
-        yPos += 10;
+        yPos += 3;
       });
     }
 
