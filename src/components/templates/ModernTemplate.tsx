@@ -1,4 +1,3 @@
-
 import { Mail, Phone, MapPin, Globe, Linkedin } from "lucide-react";
 import EditableText from "../EditableText";
 
@@ -6,18 +5,22 @@ interface ModernTemplateProps {
   data: any;
   onUpdate?: (section: string, field: string, value: string, index?: number) => void;
   isEditing?: boolean;
+  isPDFMode?: boolean;
 }
 
-const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplateProps) => {
+const ModernTemplate = ({ data, onUpdate, isEditing = false, isPDFMode = false }: ModernTemplateProps) => {
   const { personalInfo, experience, education, skills, projects } = data;
 
   return (
-    <div className="w-full bg-white text-gray-800 px-12 py-10" style={{ 
-      fontFamily: 'Inter, Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
-      maxWidth: '210mm',
-      minHeight: '297mm',
-      margin: '0 auto'
-    }}>
+    <div 
+      className={`w-full bg-white text-gray-800 ${isPDFMode ? 'px-12 py-10' : 'px-16 py-12'}`} 
+      style={{ 
+        fontFamily: 'Inter, Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+        maxWidth: '210mm',
+        minHeight: '297mm',
+        margin: '0 auto'
+      }}
+    >
       {/* Professional Header with Improved Spacing and Line Separator */}
       <header className="pb-8 mb-10" style={{ pageBreakInside: 'avoid' }}>
         <div className="text-center mb-8">
@@ -32,7 +35,7 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
           </h1>
           
           {/* Primary Contact Information - Better Spaced with Safe Margins */}
-          <div className="flex flex-wrap justify-center items-center gap-8 text-base text-gray-600 mb-6 px-4 max-w-4xl mx-auto">
+          <div className={`flex flex-wrap justify-center items-center gap-8 text-base text-gray-600 mb-6 max-w-4xl mx-auto ${isPDFMode ? 'px-4' : 'px-8'}`}>
             {personalInfo?.email && (
               <div className="flex items-center space-x-3 min-w-0 flex-shrink-0">
                 <Mail className="w-5 h-5 text-blue-600 flex-shrink-0" />
@@ -79,7 +82,7 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
           
           {/* Secondary Contact Information - Web Links with Better Spacing and Safe Margins */}
           {(personalInfo?.linkedIn || personalInfo?.portfolio) && (
-            <div className="flex flex-wrap justify-center items-center gap-8 text-base text-gray-600 mb-8 px-4 max-w-4xl mx-auto">
+            <div className={`flex flex-wrap justify-center items-center gap-8 text-base text-gray-600 mb-8 max-w-4xl mx-auto ${isPDFMode ? 'px-4' : 'px-8'}`}>
               {personalInfo?.linkedIn && (
                 <div className="flex items-center space-x-3 min-w-0 flex-shrink-0">
                   <Linkedin className="w-5 h-5 text-blue-600 flex-shrink-0" />
@@ -113,17 +116,17 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
         </div>
         
         {/* Header End Line Separator with Safe Margins */}
-        <div className="w-full h-1 bg-gradient-to-r from-blue-600 to-purple-600 mx-auto" style={{ maxWidth: 'calc(100% - 2rem)' }}></div>
+        <div className={`w-full h-1 bg-gradient-to-r from-blue-600 to-purple-600 mx-auto ${isPDFMode ? '' : 'max-w-[calc(100%-4rem)]'}`} style={{ maxWidth: isPDFMode ? 'calc(100% - 2rem)' : 'calc(100% - 4rem)' }}></div>
       </header>
 
       {/* Professional Summary */}
       {personalInfo?.summary && (
-        <section className="mb-10 px-2" style={{ pageBreakInside: 'avoid' }}>
+        <section className={`mb-10 ${isPDFMode ? 'px-2' : 'px-4'}`} style={{ pageBreakInside: 'avoid' }}>
           <h2 className="text-xl font-semibold text-blue-600 mb-4 flex items-center">
             <div className="w-2 h-6 bg-blue-600 mr-3"></div>
             Professional Summary
           </h2>
-          <div className="text-gray-700 leading-relaxed pl-5 pr-2">
+          <div className={`text-gray-700 leading-relaxed pl-5 ${isPDFMode ? 'pr-2' : 'pr-4'}`}>
             <EditableText
               value={personalInfo.summary}
               onSave={(value) => onUpdate?.('personalInfo', 'summary', value)}
@@ -138,12 +141,12 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
 
       {/* Professional Experience */}
       {experience?.length > 0 && (
-        <section className="mb-10 px-2">
+        <section className={`mb-10 ${isPDFMode ? 'px-2' : 'px-4'}`}>
           <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center" style={{ pageBreakAfter: 'avoid' }}>
             <div className="w-2 h-6 bg-blue-600 mr-3"></div>
             Professional Experience
           </h2>
-          <div className="space-y-8 pl-5 pr-2">
+          <div className={`space-y-8 pl-5 ${isPDFMode ? 'pr-2' : 'pr-4'}`}>
             {experience.map((exp: any, index: number) => (
               <div key={index} className="relative" style={{ pageBreakInside: 'avoid', orphans: 3, widows: 3 }}>
                 <div className="flex justify-between items-start mb-3 flex-wrap gap-2">
@@ -189,7 +192,7 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
                     </p>
                   </div>
                 </div>
-                <div className="text-gray-700 leading-relaxed whitespace-pre-line text-sm pr-2">
+                <div className={`text-gray-700 leading-relaxed whitespace-pre-line text-sm ${isPDFMode ? 'pr-2' : 'pr-4'}`}>
                   <EditableText
                     value={exp.description || ''}
                     onSave={(value) => onUpdate?.('experience', 'description', value, index)}
@@ -207,12 +210,12 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
 
       {/* Skills */}
       {skills?.length > 0 && (
-        <section className="mb-10 px-2" style={{ pageBreakInside: 'avoid' }}>
+        <section className={`mb-10 ${isPDFMode ? 'px-2' : 'px-4'}`} style={{ pageBreakInside: 'avoid' }}>
           <h2 className="text-xl font-semibold text-blue-600 mb-4 flex items-center">
             <div className="w-2 h-6 bg-blue-600 mr-3"></div>
             Core Competencies
           </h2>
-          <div className="pl-5 pr-2">
+          <div className={`pl-5 ${isPDFMode ? 'pr-2' : 'pr-4'}`}>
             <div className="flex flex-wrap gap-3">
               {skills.map((skill: string, index: number) => (
                 <span
@@ -239,12 +242,12 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
 
       {/* Projects */}
       {projects?.length > 0 && (
-        <section className="mb-10 px-2">
+        <section className={`mb-10 ${isPDFMode ? 'px-2' : 'px-4'}`}>
           <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center" style={{ pageBreakAfter: 'avoid' }}>
             <div className="w-2 h-6 bg-blue-600 mr-3"></div>
             Key Projects
           </h2>
-          <div className="space-y-6 pl-5 pr-2">
+          <div className={`space-y-6 pl-5 ${isPDFMode ? 'pr-2' : 'pr-4'}`}>
             {projects.map((project: any, index: number) => (
               <div key={index} style={{ pageBreakInside: 'avoid', orphans: 2, widows: 2 }}>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -256,7 +259,7 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
                     placeholder="Project Name"
                   />
                 </h3>
-                <div className="text-gray-700 leading-relaxed whitespace-pre-line text-sm mb-2 pr-2">
+                <div className={`text-gray-700 leading-relaxed whitespace-pre-line text-sm mb-2 ${isPDFMode ? 'pr-2' : 'pr-4'}`}>
                   <EditableText
                     value={project.description || ''}
                     onSave={(value) => onUpdate?.('projects', 'description', value, index)}
@@ -279,12 +282,12 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
 
       {/* Education */}
       {education?.length > 0 && (
-        <section className="mb-6 px-2" style={{ pageBreakInside: 'avoid' }}>
+        <section className={`mb-6 ${isPDFMode ? 'px-2' : 'px-4'}`} style={{ pageBreakInside: 'avoid' }}>
           <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center">
             <div className="w-2 h-6 bg-blue-600 mr-3"></div>
             Education
           </h2>
-          <div className="space-y-4 pl-5 pr-2">
+          <div className={`space-y-4 pl-5 ${isPDFMode ? 'pr-2' : 'pr-4'}`}>
             {education.map((edu: any, index: number) => (
               <div key={index} className="flex justify-between items-start flex-wrap gap-2" style={{ pageBreakInside: 'avoid' }}>
                 <div className="flex-1 min-w-0">

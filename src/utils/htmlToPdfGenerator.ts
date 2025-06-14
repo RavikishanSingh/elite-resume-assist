@@ -26,9 +26,13 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     
     console.log(`Original preview dimensions: ${originalWidth}x${originalHeight}px`);
 
-    // Apply professional PDF styling while maintaining exact size
-    resumeElement.style.cssText = `
-      ${originalStyle}
+    // Create a temporary clone for PDF generation with PDF-specific styling
+    const clonedElement = resumeElement.cloneNode(true) as HTMLElement;
+    clonedElement.id = 'pdf-clone';
+    clonedElement.style.cssText = `
+      position: absolute;
+      top: -10000px;
+      left: -10000px;
       background: white !important;
       box-shadow: none !important;
       border: none !important;
@@ -39,52 +43,74 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       max-width: none !important;
       margin: 0 !important;
       padding: 0 !important;
+      z-index: -1;
     `;
 
+    // Set PDF mode on the cloned template
+    const templateElement = clonedElement.querySelector('[data-template]') || clonedElement.firstElementChild;
+    if (templateElement && templateName === 'modern') {
+      // For Modern template, ensure PDF-specific styling
+      (templateElement as HTMLElement).className = 
+        (templateElement as HTMLElement).className.replace(/px-16/g, 'px-12').replace(/py-12/g, 'py-10');
+      
+      // Update all spacing elements for PDF mode
+      const spacingElements = clonedElement.querySelectorAll('[class*="px-"], [class*="pr-"]');
+      spacingElements.forEach(el => {
+        const element = el as HTMLElement;
+        element.className = element.className
+          .replace(/px-8/g, 'px-4')
+          .replace(/px-4/g, 'px-2')
+          .replace(/pr-4/g, 'pr-2');
+      });
+    }
+
+    // Append clone to body for rendering
+    document.body.appendChild(clonedElement);
+
     // Enhanced page break handling for professional multi-page layout
-    const sections = resumeElement.querySelectorAll('section, .experience-item, .project-item, .education-item');
+    const sections = clonedElement.querySelectorAll('section, .experience-item, .project-item, .education-item');
     sections.forEach(section => {
       const element = section as HTMLElement;
       element.style.pageBreakInside = 'avoid';
       element.style.breakInside = 'avoid';
       element.style.orphans = '3';
       element.style.widows = '3';
-      element.style.marginBottom = '20px'; // Ensure proper spacing between sections
+      element.style.marginBottom = '20px';
     });
 
     // Ensure headers don't get separated from content
-    const headers = resumeElement.querySelectorAll('h1, h2, h3, h4');
+    const headers = clonedElement.querySelectorAll('h1, h2, h3, h4');
     headers.forEach(header => {
       const element = header as HTMLElement;
       element.style.pageBreakAfter = 'avoid';
       element.style.breakAfter = 'avoid';
       element.style.orphans = '3';
-      element.style.marginBottom = '12px'; // Professional spacing after headers
+      element.style.marginBottom = '12px';
     });
 
     // Add professional spacing for multi-page layout
-    const experienceItems = resumeElement.querySelectorAll('[style*="pageBreakInside: avoid"]');
+    const experienceItems = clonedElement.querySelectorAll('[style*="pageBreakInside: avoid"]');
     experienceItems.forEach((item, index) => {
       const element = item as HTMLElement;
       if (index > 0) {
-        element.style.marginTop = '24px'; // Professional spacing between items
+        element.style.marginTop = '24px';
       }
     });
 
     // Wait for layout to settle
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    console.log('Capturing resume at original preview size for professional PDF...');
+    console.log('Capturing resume with PDF-optimized styling...');
 
-    // Get the actual rendered dimensions
-    const actualWidth = resumeElement.offsetWidth;
-    const actualHeight = resumeElement.scrollHeight;
+    // Get the actual rendered dimensions of the clone
+    const actualWidth = clonedElement.offsetWidth;
+    const actualHeight = clonedElement.scrollHeight;
     
-    console.log(`Professional capture dimensions: ${actualWidth}x${actualHeight}px`);
+    console.log(`PDF capture dimensions: ${actualWidth}x${actualHeight}px`);
 
     // Configure html2canvas for high-quality professional capture
-    const canvas = await html2canvas(resumeElement, {
-      scale: 2, // High quality for professional output
+    const canvas = await html2canvas(clonedElement, {
+      scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
@@ -94,37 +120,11 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       scrollY: 0,
       windowWidth: actualWidth,
       windowHeight: actualHeight,
-      logging: false,
-      onclone: (clonedDoc) => {
-        const clonedElement = clonedDoc.getElementById('resume-preview');
-        if (clonedElement) {
-          // Preserve exact professional styling in clone
-          clonedElement.style.width = `${actualWidth}px`;
-          clonedElement.style.minHeight = `${actualHeight}px`;
-          clonedElement.style.overflow = 'visible';
-          clonedElement.style.background = 'white';
-          
-          // Fix any layout issues in the clone for professional output
-          const clonedSections = clonedElement.querySelectorAll('section, div');
-          clonedSections.forEach(section => {
-            const element = section as HTMLElement;
-            element.style.pageBreakInside = 'avoid';
-            element.style.breakInside = 'avoid';
-            element.style.orphans = '3';
-            element.style.widows = '3';
-          });
-
-          // Ensure icons and logos are properly positioned
-          const icons = clonedElement.querySelectorAll('svg, .lucide');
-          icons.forEach(icon => {
-            const element = icon as HTMLElement;
-            element.style.display = 'inline-block';
-            element.style.verticalAlign = 'middle';
-            element.style.flexShrink = '0';
-          });
-        }
-      }
+      logging: false
     });
+
+    // Remove the clone
+    document.body.removeChild(clonedElement);
 
     console.log('Canvas captured, generating professional multi-page PDF...');
 
@@ -139,9 +139,9 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     // Professional A4 dimensions in mm
     const pdfWidth = 210;
     const pdfHeight = 297;
-    const topMargin = 20; // Professional top margin for subsequent pages
-    const bottomMargin = 20; // Professional bottom margin
-    const sideMargin = 15; // Professional side margins
+    const topMargin = 15;
+    const bottomMargin = 15;
+    const sideMargin = 15;
     const effectiveWidth = pdfWidth - (sideMargin * 2);
     const effectiveHeight = pdfHeight - topMargin - bottomMargin;
     
@@ -195,7 +195,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
         
         // Position on page with professional margins
         const xPosition = sideMargin;
-        const yPosition = page === 0 ? topMargin : topMargin;
+        const yPosition = topMargin;
         const availableHeight = effectiveHeight;
         const finalHeight = Math.min(currentPageHeight, availableHeight);
 
@@ -204,9 +204,6 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
         console.log(`Professional page ${page + 1}/${totalPages} - Height: ${finalHeight}mm, Y-position: ${yPosition}mm, X-position: ${xPosition}mm`);
       }
     }
-
-    // Restore original styling
-    resumeElement.style.cssText = originalStyle;
 
     // Add professional metadata
     pdf.setProperties({
@@ -222,13 +219,6 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
 
   } catch (error) {
     console.error('Enhanced PDF generation error:', error);
-    
-    // Restore original styling in case of error
-    const resumeElement = document.getElementById('resume-preview');
-    if (resumeElement) {
-      resumeElement.style.cssText = '';
-    }
-    
     throw new Error('Failed to generate professional PDF: ' + (error as Error).message);
   }
 };

@@ -11,6 +11,7 @@ import TechTemplate from "./templates/TechTemplate";
 import AIAnalysis from "./AIAnalysis";
 import { generatePDFFromHTML } from "../utils/htmlToPdfGenerator";
 import { useToast } from "@/hooks/use-toast";
+
 interface ResumePreviewProps {
   data: any;
   onUpdate: (section: string, data: any) => void;
@@ -19,6 +20,7 @@ interface ResumePreviewProps {
   isLastStep: boolean;
   isFirstStep: boolean;
 }
+
 const ResumePreview = ({
   data,
   onUpdate
@@ -27,32 +29,20 @@ const ResumePreview = ({
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+
   const handleUpdateData = (section: string, field: string, value: string, index?: number) => {
-    console.log('Updating data:', {
-      section,
-      field,
-      value,
-      index
-    });
+    console.log('Updating data:', { section, field, value, index });
     if (index !== undefined) {
       // Handle array-based sections (experience, education, projects)
       const updatedSection = [...(data[section] || [])];
       if (updatedSection[index]) {
-        updatedSection[index] = {
-          ...updatedSection[index],
-          [field]: value
-        };
+        updatedSection[index] = { ...updatedSection[index], [field]: value };
       }
       onUpdate(section, updatedSection);
     } else if (section === 'personalInfo') {
       // Handle personalInfo object
-      onUpdate(section, {
-        ...data.personalInfo,
-        [field]: value
-      });
+      onUpdate(section, { ...data.personalInfo, [field]: value });
     } else if (section === 'skills') {
       // Handle skills array
       if (typeof value === 'string' && value.includes(',')) {
@@ -67,11 +57,13 @@ const ResumePreview = ({
       }
     }
   };
+
   const handleDownload = async () => {
     if (isGeneratingPDF) return;
     setIsGeneratingPDF(true);
     console.log('=== Starting Professional Multi-Page PDF Download ===');
     console.log('Selected template:', selectedTemplate);
+    
     try {
       // Validate data
       if (!data || !data.personalInfo?.fullName) {
@@ -127,6 +119,7 @@ const ResumePreview = ({
       console.log('=== Professional PDF Download Complete ===');
     }
   };
+
   const handleRefreshPreview = () => {
     // Force a re-render of the preview
     setSelectedTemplate(selectedTemplate);
@@ -136,6 +129,7 @@ const ResumePreview = ({
       variant: "default"
     });
   };
+
   const templates = {
     modern: {
       component: ModernTemplate,
@@ -172,51 +166,76 @@ const ResumePreview = ({
   const SelectedTemplate = templates[selectedTemplate as keyof typeof templates].component;
 
   if (showAnalysis) {
-    return <div className="space-y-6">
+    return (
+      <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h3 className="text-2xl font-bold text-gray-900">AI Resume Analysis</h3>
-          <Button variant="outline" onClick={() => setShowAnalysis(false)} className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowAnalysis(false)}
+            className="flex items-center space-x-2"
+          >
             <Eye className="w-4 h-4" />
             <span>Back to Preview</span>
           </Button>
         </div>
         <AIAnalysis resumeData={data} />
-      </div>;
+      </div>
+    );
   }
 
-  return <div className="space-y-6">
+  return (
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-2xl font-bold text-gray-900">Professional Resume Preview</h3>
         <div className="flex space-x-3">
-          <Button variant="outline" onClick={() => setShowAnalysis(true)} className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowAnalysis(true)}
+            className="flex items-center space-x-2"
+          >
             <Brain className="w-4 h-4" />
             <span>AI Analysis</span>
           </Button>
-          <Button variant="outline" onClick={handleRefreshPreview} className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            onClick={handleRefreshPreview}
+            className="flex items-center space-x-2"
+          >
             <RefreshCw className="w-4 h-4" />
             <span>Refresh</span>
           </Button>
-          <Button variant={isEditMode ? "default" : "outline"} onClick={() => {
-          setIsEditMode(!isEditMode);
-          console.log('Edit mode toggled:', !isEditMode);
-        }} className="flex items-center space-x-2">
+          <Button
+            variant={isEditMode ? "default" : "outline"}
+            onClick={() => {
+              setIsEditMode(!isEditMode);
+              console.log('Edit mode toggled:', !isEditMode);
+            }}
+            className="flex items-center space-x-2"
+          >
             {isEditMode ? <Save className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
             <span>{isEditMode ? 'Save & Exit' : 'Edit Resume'}</span>
           </Button>
-          <Button onClick={handleDownload} disabled={isGeneratingPDF} className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50">
+          <Button
+            onClick={handleDownload}
+            disabled={isGeneratingPDF}
+            className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50"
+          >
             <Download className="w-4 h-4" />
             <span>{isGeneratingPDF ? 'Creating Professional PDF...' : 'Download Professional PDF'}</span>
           </Button>
         </div>
       </div>
 
-      {isEditMode && <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      {isEditMode && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h4 className="font-medium text-blue-900 mb-2">✏️ Edit Mode Active</h4>
           <p className="text-sm text-blue-800">
             Click on any text in the resume to edit it. Press Enter to save, or Escape to cancel. 
             For multi-line text, use Ctrl+Enter to save.
           </p>
-        </div>}
+        </div>
+      )}
 
       {/* Template Selection */}
       <div className="bg-white p-6 rounded-lg border-2 border-gray-200">
@@ -226,19 +245,29 @@ const ResumePreview = ({
         </div>
         
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-          {Object.entries(templates).map(([key, template]) => <button key={key} onClick={() => {
-          setSelectedTemplate(key);
-          toast({
-            title: "Template Changed",
-            description: `Switched to ${template.name} template - PDF will capture this design perfectly`
-          });
-        }} className={`p-4 rounded-lg border-2 text-left transition-all ${selectedTemplate === key ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-purple-300'}`}>
+          {Object.entries(templates).map(([key, template]) => (
+            <button
+              key={key}
+              onClick={() => {
+                setSelectedTemplate(key);
+                toast({
+                  title: "Template Changed",
+                  description: `Switched to ${template.name} template - PDF will capture this design perfectly`
+                });
+              }}
+              className={`p-4 rounded-lg border-2 text-left transition-all ${
+                selectedTemplate === key 
+                  ? 'border-purple-600 bg-purple-50' 
+                  : 'border-gray-200 hover:border-purple-300'
+              }`}
+            >
               <h5 className="font-semibold text-gray-900 mb-1">{template.name}</h5>
               <p className="text-sm text-gray-600">{template.description}</p>
-            </button>)}
+            </button>
+          ))}
         </div>
 
-        {/* Direct Resume Display - No Extra Containers */}
+        {/* Direct Resume Display with Preview Margins */}
         <div 
           id="resume-preview" 
           className="w-full bg-white shadow-lg border border-gray-200 mx-auto"
@@ -251,7 +280,12 @@ const ResumePreview = ({
             color: '#2d3748'
           }}
         >
-          <SelectedTemplate data={data} onUpdate={handleUpdateData} isEditing={isEditMode} />
+          <SelectedTemplate 
+            data={data} 
+            onUpdate={handleUpdateData} 
+            isEditing={isEditMode}
+            isPDFMode={false}
+          />
         </div>
       </div>
 
@@ -282,7 +316,8 @@ const ResumePreview = ({
           <li>• Always save and send as PDF to preserve formatting</li>
         </ul>
       </div>
-    </div>;
+    </div>
+  );
 };
 
 export default ResumePreview;
