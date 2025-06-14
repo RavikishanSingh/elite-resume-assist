@@ -26,49 +26,8 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     
     console.log(`Original preview dimensions: ${originalWidth}x${originalHeight}px`);
 
-    // Create a temporary clone for PDF generation with PDF-specific styling
-    const clonedElement = resumeElement.cloneNode(true) as HTMLElement;
-    clonedElement.id = 'pdf-clone';
-    clonedElement.style.cssText = `
-      position: absolute;
-      top: -10000px;
-      left: -10000px;
-      background: white !important;
-      box-shadow: none !important;
-      border: none !important;
-      transform: none !important;
-      overflow: visible !important;
-      width: ${originalWidth}px !important;
-      min-height: ${originalHeight}px !important;
-      max-width: none !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      z-index: -1;
-    `;
-
-    // Set PDF mode on the cloned template
-    const templateElement = clonedElement.querySelector('[data-template]') || clonedElement.firstElementChild;
-    if (templateElement && templateName === 'modern') {
-      // For Modern template, ensure PDF-specific styling
-      (templateElement as HTMLElement).className = 
-        (templateElement as HTMLElement).className.replace(/px-16/g, 'px-12').replace(/py-12/g, 'py-10');
-      
-      // Update all spacing elements for PDF mode
-      const spacingElements = clonedElement.querySelectorAll('[class*="px-"], [class*="pr-"]');
-      spacingElements.forEach(el => {
-        const element = el as HTMLElement;
-        element.className = element.className
-          .replace(/px-8/g, 'px-4')
-          .replace(/px-4/g, 'px-2')
-          .replace(/pr-4/g, 'pr-2');
-      });
-    }
-
-    // Append clone to body for rendering
-    document.body.appendChild(clonedElement);
-
     // Enhanced page break handling for professional multi-page layout
-    const sections = clonedElement.querySelectorAll('section, .experience-item, .project-item, .education-item');
+    const sections = resumeElement.querySelectorAll('section, .experience-item, .project-item, .education-item');
     sections.forEach(section => {
       const element = section as HTMLElement;
       element.style.pageBreakInside = 'avoid';
@@ -79,7 +38,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     });
 
     // Ensure headers don't get separated from content
-    const headers = clonedElement.querySelectorAll('h1, h2, h3, h4');
+    const headers = resumeElement.querySelectorAll('h1, h2, h3, h4');
     headers.forEach(header => {
       const element = header as HTMLElement;
       element.style.pageBreakAfter = 'avoid';
@@ -88,28 +47,19 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       element.style.marginBottom = '12px';
     });
 
-    // Add professional spacing for multi-page layout
-    const experienceItems = clonedElement.querySelectorAll('[style*="pageBreakInside: avoid"]');
-    experienceItems.forEach((item, index) => {
-      const element = item as HTMLElement;
-      if (index > 0) {
-        element.style.marginTop = '24px';
-      }
-    });
-
     // Wait for layout to settle
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    console.log('Capturing resume with PDF-optimized styling...');
+    console.log('Capturing resume with original styling...');
 
-    // Get the actual rendered dimensions of the clone
-    const actualWidth = clonedElement.offsetWidth;
-    const actualHeight = clonedElement.scrollHeight;
+    // Get the actual rendered dimensions
+    const actualWidth = resumeElement.offsetWidth;
+    const actualHeight = resumeElement.scrollHeight;
     
     console.log(`PDF capture dimensions: ${actualWidth}x${actualHeight}px`);
 
     // Configure html2canvas for high-quality professional capture
-    const canvas = await html2canvas(clonedElement, {
+    const canvas = await html2canvas(resumeElement, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
@@ -122,9 +72,6 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       windowHeight: actualHeight,
       logging: false
     });
-
-    // Remove the clone
-    document.body.removeChild(clonedElement);
 
     console.log('Canvas captured, generating professional multi-page PDF...');
 
