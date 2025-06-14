@@ -1,7 +1,7 @@
 
 import jsPDF from 'jspdf';
 
-// Template-specific styling configurations
+// Template-specific styling configurations with consistent color properties
 const templateConfigs = {
   modern: {
     colors: {
@@ -9,7 +9,9 @@ const templateConfigs = {
       secondary: [75, 85, 99],
       text: [17, 24, 39],
       accent: [59, 130, 246],
-      light: [243, 244, 246]
+      light: [243, 244, 246],
+      border: [209, 213, 219],
+      background: [255, 255, 255]
     },
     fonts: {
       header: { size: 32, weight: 'bold' },
@@ -28,8 +30,10 @@ const templateConfigs = {
       primary: [31, 41, 55],
       secondary: [75, 85, 99],
       text: [17, 24, 39],
+      accent: [107, 114, 128],
+      light: [243, 244, 246],
       border: [209, 213, 219],
-      light: [243, 244, 246]
+      background: [255, 255, 255]
     },
     fonts: {
       header: { size: 28, weight: 'bold' },
@@ -49,7 +53,9 @@ const templateConfigs = {
       secondary: [236, 72, 153],
       text: [31, 41, 55],
       accent: [168, 85, 247],
-      light: [243, 232, 255]
+      light: [243, 232, 255],
+      border: [209, 213, 219],
+      background: [255, 255, 255]
     },
     fonts: {
       header: { size: 28, weight: 'bold' },
@@ -68,7 +74,10 @@ const templateConfigs = {
       primary: [55, 65, 81],
       secondary: [107, 114, 128],
       text: [31, 41, 55],
-      light: [249, 250, 251]
+      accent: [107, 114, 128],
+      light: [249, 250, 251],
+      border: [209, 213, 219],
+      background: [255, 255, 255]
     },
     fonts: {
       header: { size: 36, weight: 'normal' },
@@ -88,7 +97,9 @@ const templateConfigs = {
       secondary: [55, 65, 81],
       text: [31, 41, 55],
       accent: [75, 85, 99],
-      border: [0, 0, 0]
+      light: [243, 244, 246],
+      border: [0, 0, 0],
+      background: [255, 255, 255]
     },
     fonts: {
       header: { size: 32, weight: 'bold' },
@@ -107,8 +118,10 @@ const templateConfigs = {
       primary: [34, 197, 94],
       secondary: [16, 185, 129],
       text: [255, 255, 255],
-      background: [31, 41, 55],
-      accent: [52, 211, 153]
+      accent: [52, 211, 153],
+      light: [243, 244, 246],
+      border: [209, 213, 219],
+      background: [31, 41, 55]
     },
     fonts: {
       header: { size: 28, weight: 'bold' },
@@ -169,6 +182,12 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       pdf.setLineWidth(width);
       pdf.line(x1, y1, x2, y2);
     };
+
+    // Tech template background setup
+    if (templateName === 'tech') {
+      setFillColor(config.colors.background);
+      pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+    }
 
     // Template-specific header rendering
     switch (templateName) {
@@ -366,10 +385,6 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
         break;
 
       case 'tech':
-        // Tech template with dark background and green accents
-        setFillColor(config.colors.background);
-        pdf.rect(0, 0, pageWidth, pageHeight, 'F');
-        
         // Green header bar
         setFillColor(config.colors.primary);
         pdf.rect(margins.left - 5, currentY - 8, pageWidth - margins.left - margins.right + 10, 25, 'F');
@@ -460,7 +475,7 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       renderSection('PROFESSIONAL SUMMARY', () => {
         pdf.setFontSize(config.fonts.body.size);
         pdf.setFont('helvetica', config.fonts.body.weight);
-        setColor(templateName === 'tech' ? config.colors.text : config.colors.text);
+        setColor(config.colors.text);
         
         const summaryLines = pdf.splitTextToSize(data.personalInfo.summary, pageWidth - margins.left - margins.right);
         summaryLines.forEach((line: string, index: number) => {
@@ -521,7 +536,7 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
             // Description
             if (exp.description) {
               pdf.setFontSize(config.fonts.body.size);
-              setColor(templateName === 'tech' ? config.colors.text : config.colors.text);
+              setColor(config.colors.text);
               const descLines = pdf.splitTextToSize(exp.description, pageWidth - margins.left - margins.right - (templateName === 'modern' ? 8 : 0));
               
               descLines.forEach((line: string, index: number) => {
@@ -563,7 +578,7 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
             if (project.description) {
               pdf.setFontSize(config.fonts.body.size);
               pdf.setFont('helvetica', 'normal');
-              setColor(templateName === 'tech' ? config.colors.text : config.colors.text);
+              setColor(config.colors.text);
               const projLines = pdf.splitTextToSize(project.description, pageWidth - margins.left - margins.right - (templateName === 'modern' ? 8 : 0));
               
               projLines.forEach((line: string, index: number) => {
@@ -651,7 +666,11 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
             }
             
             // Draw skill background
-            setFillColor(templateName === 'tech' ? config.colors.background : config.colors.light);
+            if (templateName === 'tech') {
+              setFillColor(config.colors.background);
+            } else {
+              setFillColor(config.colors.light);
+            }
             pdf.rect(skillX, skillY - 3, skillWidth, 6, 'F');
             
             // Draw skill border
@@ -660,7 +679,7 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
             pdf.rect(skillX, skillY - 3, skillWidth, 6, 'S');
             
             // Draw skill text
-            setColor(templateName === 'tech' ? config.colors.text : config.colors.text);
+            setColor(config.colors.text);
             pdf.text(skill, skillX + 3, skillY + 1);
             
             skillX += skillWidth + 4;
@@ -673,7 +692,7 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
           
           pdf.setFontSize(config.fonts.body.size);
           pdf.setFont('helvetica', 'normal');
-          setColor(templateName === 'tech' ? config.colors.text : config.colors.text);
+          setColor(config.colors.text);
           
           const skillLines = pdf.splitTextToSize(skillsText, pageWidth - margins.left - margins.right);
           skillLines.forEach((line: string, index: number) => {
