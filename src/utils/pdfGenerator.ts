@@ -1,4 +1,3 @@
-
 import html2canvas from 'html2canvas';
 
 export const generatePDF = async (data: any, templateName: string = 'modern') => {
@@ -27,48 +26,50 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       scale: resumeElement.style.scale,
       visibility: resumeElement.style.visibility,
       position: resumeElement.style.position,
-      zIndex: resumeElement.style.zIndex
+      zIndex: resumeElement.style.zIndex,
+      width: resumeElement.style.width,
+      height: resumeElement.style.height
     };
     
-    // Temporarily reset transform and scale for better capture
+    // Set exact A4 dimensions for the element (210mm x 297mm at 96 DPI)
+    const A4_WIDTH_PX = 794;  // 210mm at 96 DPI
+    const A4_HEIGHT_PX = 1123; // 297mm at 96 DPI
+    
+    // Temporarily set exact A4 dimensions and reset transforms
     resumeElement.style.transform = 'none';
     resumeElement.style.scale = '1';
     resumeElement.style.visibility = 'visible';
     resumeElement.style.position = 'relative';
     resumeElement.style.zIndex = '1';
+    resumeElement.style.width = `${A4_WIDTH_PX}px`;
+    resumeElement.style.height = `${A4_HEIGHT_PX}px`;
     
     // Force layout recalculation
     resumeElement.offsetHeight;
     
     // Wait for styles to apply
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 300));
     
     console.log('Capturing element with html2canvas...');
     
-    // Get the computed dimensions
-    const rect = resumeElement.getBoundingClientRect();
-    const width = Math.max(rect.width, resumeElement.scrollWidth, 794);
-    const height = Math.max(rect.height, resumeElement.scrollHeight, 1123);
-    
-    console.log('Element dimensions:', width, 'x', height);
-    
-    // Capture with html2canvas
+    // Capture with html2canvas using exact A4 dimensions
     const canvas = await html2canvas(resumeElement, {
-      scale: 1.5,
+      scale: 2, // Higher scale for better quality
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
       logging: false,
-      width: width,
-      height: height,
-      windowWidth: width,
-      windowHeight: height,
+      width: A4_WIDTH_PX,
+      height: A4_HEIGHT_PX,
+      windowWidth: A4_WIDTH_PX,
+      windowHeight: A4_HEIGHT_PX,
       scrollX: 0,
       scrollY: 0,
       x: 0,
       y: 0,
+      foreignObjectRendering: true,
+      removeContainer: true,
       ignoreElements: (element) => {
-        // Ignore elements that might cause issues
         return element.classList?.contains('no-print') || false;
       }
     });
@@ -77,8 +78,11 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
     
     // Restore original styles
     Object.keys(originalStyles).forEach(key => {
-      if (originalStyles[key as keyof typeof originalStyles]) {
-        resumeElement.style[key as any] = originalStyles[key as keyof typeof originalStyles];
+      const value = originalStyles[key as keyof typeof originalStyles];
+      if (value) {
+        resumeElement.style[key as any] = value;
+      } else {
+        resumeElement.style.removeProperty(key);
       }
     });
     
@@ -88,47 +92,32 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       return generateTextPDF(data);
     }
     
-    // Convert to image
-    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    // Convert to high-quality image
+    const imgData = canvas.toDataURL('image/png', 1.0);
     if (!imgData || imgData === 'data:,') {
       console.error('Failed to convert canvas to image, falling back to text PDF');
       return generateTextPDF(data);
     }
     
-    // Create PDF
+    // Create PDF with exact A4 dimensions
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
-      format: 'a4'
+      format: 'a4',
+      compress: true
     });
     
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 10;
+    // A4 dimensions in mm
+    const pageWidth = 210;
+    const pageHeight = 297;
     
-    // Calculate image dimensions
-    const maxWidth = pageWidth - (2 * margin);
-    const maxHeight = pageHeight - (2 * margin);
+    // Add image to fill entire A4 page with no margins
+    console.log('Adding image to PDF with perfect A4 dimensions');
     
-    const aspectRatio = canvas.width / canvas.height;
-    let imgWidth = maxWidth;
-    let imgHeight = imgWidth / aspectRatio;
+    // Add image to PDF filling the entire page
+    pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight, '', 'FAST');
     
-    if (imgHeight > maxHeight) {
-      imgHeight = maxHeight;
-      imgWidth = imgHeight * aspectRatio;
-    }
-    
-    // Center the image
-    const xOffset = (pageWidth - imgWidth) / 2;
-    const yOffset = margin;
-    
-    console.log('Adding image to PDF:', imgWidth, 'x', imgHeight);
-    
-    // Add image to PDF
-    pdf.addImage(imgData, 'JPEG', xOffset, yOffset, imgWidth, imgHeight);
-    
-    console.log('PDF generation completed successfully');
+    console.log('PDF generation completed successfully with perfect A4 size');
     return pdf;
     
   } catch (error) {
@@ -146,12 +135,13 @@ const generateTextPDF = async (data: any) => {
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
-      format: 'a4'
+      format: 'a4',
+      compress: true
     });
     
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 15;
+    const pageWidth = 210; // A4 width in mm
+    const pageHeight = 297; // A4 height in mm
+    const margin = 20; // Professional margin
     const lineHeight = 6;
     let yPos = margin;
 
@@ -170,37 +160,41 @@ const generateTextPDF = async (data: any) => {
       }
       
       pdf.text(lines, x, yPos);
-      yPos += lines.length * lineHeight + 3;
+      yPos += lines.length * lineHeight + 4;
     };
 
     const addSection = (title: string) => {
-      yPos += 5;
-      if (yPos + 15 > pageHeight - margin) {
+      yPos += 8;
+      if (yPos + 20 > pageHeight - margin) {
         pdf.addPage();
         yPos = margin;
       }
       
-      pdf.setDrawColor(150, 150, 150);
-      pdf.setLineWidth(0.3);
+      // Add section divider line
+      pdf.setDrawColor(100, 100, 100);
+      pdf.setLineWidth(0.5);
       pdf.line(margin, yPos, pageWidth - margin, yPos);
-      yPos += 4;
+      yPos += 6;
       
       addText(title, margin, 14, 'bold');
     };
 
-    // Header
+    // Header with name
     if (data.personalInfo?.fullName) {
-      addText(data.personalInfo.fullName, margin, 18, 'bold');
-      yPos += 2;
+      addText(data.personalInfo.fullName, margin, 20, 'bold');
+      yPos += 4;
     }
 
-    // Contact info
+    // Contact information in a professional layout
     const contactInfo = [];
-    if (data.personalInfo?.email) contactInfo.push(`Email: ${data.personalInfo.email}`);
-    if (data.personalInfo?.phone) contactInfo.push(`Phone: ${data.personalInfo.phone}`);
-    if (data.personalInfo?.location) contactInfo.push(`Location: ${data.personalInfo.location}`);
+    if (data.personalInfo?.email) contactInfo.push(`${data.personalInfo.email}`);
+    if (data.personalInfo?.phone) contactInfo.push(`${data.personalInfo.phone}`);
+    if (data.personalInfo?.location) contactInfo.push(`${data.personalInfo.location}`);
     
-    contactInfo.forEach(info => addText(info, margin, 10));
+    if (contactInfo.length > 0) {
+      const contactLine = contactInfo.join(' | ');
+      addText(contactLine, margin, 10);
+    }
 
     // Professional Summary
     if (data.personalInfo?.summary) {
@@ -254,7 +248,7 @@ const generateTextPDF = async (data: any) => {
       addText(skillsText, margin, 10);
     }
 
-    console.log('Text PDF generated successfully');
+    console.log('Professional A4 text PDF generated successfully');
     return pdf;
     
   } catch (error) {

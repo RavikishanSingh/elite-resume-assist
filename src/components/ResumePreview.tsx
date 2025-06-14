@@ -68,43 +68,43 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
       if (isEditMode) {
         console.log('Exiting edit mode for PDF generation');
         setIsEditMode(false);
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
 
-      // Ensure the resume element exists
+      // Ensure the resume element exists and is properly sized
       const resumeElement = document.getElementById('resume-preview');
       if (!resumeElement) {
         console.error('Resume preview element not found');
         throw new Error('Resume preview not found. Please refresh and try again.');
       }
 
-      // Scroll to the resume element
+      // Scroll to the resume element and wait for it to be in view
       resumeElement.scrollIntoView({ behavior: 'instant', block: 'start' });
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-      console.log('Generating PDF...');
+      console.log('Generating professional A4 PDF...');
       const pdf = await generatePDF(data, selectedTemplate);
       
       if (!pdf) {
         throw new Error('PDF generation failed. Please try again.');
       }
 
-      // Create filename
+      // Create professional filename
       const name = data.personalInfo?.fullName || 'Resume';
       const cleanName = name.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
-      const fileName = `${cleanName}_Resume.pdf`;
+      const fileName = `${cleanName}_Resume_A4.pdf`;
       
-      console.log('Downloading PDF:', fileName);
+      console.log('Downloading professional A4 PDF:', fileName);
       pdf.save(fileName);
       
       toast({
         title: "Success!",
-        description: `Resume downloaded as ${fileName}`,
+        description: `Professional A4 resume downloaded as ${fileName}`,
       });
       
       // Restore edit mode if needed
       if (wasInEditMode) {
-        setTimeout(() => setIsEditMode(true), 100);
+        setTimeout(() => setIsEditMode(true), 200);
       }
       
     } catch (error) {
@@ -112,7 +112,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
       
       const errorMessage = error instanceof Error 
         ? error.message 
-        : 'Failed to generate PDF. Please try again.';
+        : 'Failed to generate professional PDF. Please try again.';
       
       toast({
         title: "Download Failed", 
@@ -254,14 +254,16 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
               id="resume-preview" 
               className={`bg-white transition-transform duration-300 ${!isEditMode ? 'transform scale-75 origin-top' : ''}`}
               style={{ 
-                minHeight: '1123px',
-                width: '794px',
+                width: '794px', // Exact A4 width at 96 DPI
+                height: '1123px', // Exact A4 height at 96 DPI
                 maxWidth: '100%',
                 margin: '0 auto',
                 visibility: 'visible',
                 opacity: 1,
                 position: 'relative',
-                zIndex: 1
+                zIndex: 1,
+                overflow: 'hidden', // Ensure content fits within A4 bounds
+                boxSizing: 'border-box'
               }}
             >
               <SelectedTemplate 
