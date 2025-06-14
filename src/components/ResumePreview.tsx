@@ -60,91 +60,70 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
     if (isGeneratingPDF) return;
     
     setIsGeneratingPDF(true);
-    console.log('=== PDF Download Process Started ===');
+    console.log('=== Starting PDF Download Process ===');
     
     try {
-      // Validate data first
+      // Basic data validation
       if (!data || !data.personalInfo?.fullName) {
-        throw new Error('Resume data is incomplete. Please fill in at least your name.');
+        throw new Error('Please fill in at least your name before downloading');
       }
 
-      // Exit edit mode for cleaner PDF
-      const wasInEditMode = isEditMode;
+      // Temporarily exit edit mode for cleaner PDF
+      const wasEditMode = isEditMode;
       if (isEditMode) {
-        console.log('Exiting edit mode for PDF generation');
         setIsEditMode(false);
-        // Wait for re-render
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log('Temporarily disabled edit mode for PDF generation');
       }
 
-      // Ensure resume element exists and is ready
-      const resumeElement = document.getElementById('resume-preview');
-      if (!resumeElement) {
-        throw new Error('Resume preview not found. Please refresh the page and try again.');
-      }
+      // Give time for the UI to update
+      await new Promise(resolve => setTimeout(resolve, 800));
 
-      // Force element to be visible and properly sized
-      resumeElement.style.display = 'block';
-      resumeElement.style.visibility = 'visible';
-      resumeElement.style.opacity = '1';
-      resumeElement.style.position = 'relative';
-      resumeElement.style.backgroundColor = '#ffffff';
-      
-      // Scroll element into view
-      resumeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      
-      // Wait for scroll and any animations to complete
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Check content one more time
-      const contentLength = resumeElement.innerHTML.trim().length;
-      console.log('Resume element content length:', contentLength);
-      
-      if (contentLength < 50) {
-        throw new Error('Resume content appears to be empty. Please make sure all sections are loaded.');
-      }
-
-      console.log('Starting PDF generation...');
+      console.log('Generating PDF...');
       const pdf = await generatePDF(data, selectedTemplate);
       
       if (!pdf) {
-        throw new Error('PDF generation failed. Please try again.');
+        throw new Error('PDF generation failed');
       }
 
       // Generate filename
       const name = data.personalInfo?.fullName || 'Resume';
-      const cleanName = name.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '_');
-      const timestamp = new Date().toISOString().slice(0, 10);
-      const fileName = `${cleanName}_Resume_${timestamp}.pdf`;
+      const sanitizedName = name.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+      const date = new Date().toISOString().split('T')[0];
+      const filename = `${sanitizedName}_Resume_${date}.pdf`;
       
-      // Download PDF
-      pdf.save(fileName);
+      // Download the PDF
+      pdf.save(filename);
+      
+      console.log(`PDF saved as: ${filename}`);
       
       toast({
         title: "Success!",
-        description: `Resume downloaded as ${fileName}`,
+        description: `Resume downloaded as ${filename}`,
         duration: 5000
       });
-      
+
       // Restore edit mode if it was active
-      if (wasInEditMode) {
-        setTimeout(() => setIsEditMode(true), 1000);
+      if (wasEditMode) {
+        setTimeout(() => setIsEditMode(true), 500);
       }
       
     } catch (error) {
-      console.error('PDF download failed:', error);
+      console.error('PDF download error:', error);
       
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.';
+      let errorMessage = 'Failed to generate PDF. Please try again.';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
       
       toast({
-        title: "Download Failed", 
+        title: "Download Failed",
         description: errorMessage,
         variant: "destructive",
-        duration: 7000
+        duration: 8000
       });
     } finally {
       setIsGeneratingPDF(false);
-      console.log('=== PDF Download Process Completed ===');
+      console.log('=== PDF Download Process Complete ===');
     }
   };
 
@@ -226,7 +205,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
             className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50"
           >
             <Download className="w-4 h-4" />
-            <span>{isGeneratingPDF ? 'Generating...' : 'Download PDF'}</span>
+            <span>{isGeneratingPDF ? 'Generating PDF...' : 'Download PDF'}</span>
           </Button>
         </div>
       </div>
@@ -276,24 +255,23 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
           <CardContent className="p-0">
             <div 
               id="resume-preview" 
-              className="bg-white relative"
+              className="bg-white"
               style={{ 
-                width: '210mm', // A4 width
-                minHeight: '297mm', // A4 height
+                width: '210mm',
+                minHeight: '297mm',
                 maxWidth: '100%',
                 margin: '0 auto',
-                transform: 'scale(0.6)',
+                transform: 'scale(0.65)',
                 transformOrigin: 'top center',
                 backgroundColor: '#ffffff',
                 boxSizing: 'border-box',
-                padding: '20mm', // Standard margins
                 fontFamily: 'Arial, sans-serif',
                 fontSize: '12px',
-                lineHeight: '1.4',
+                lineHeight: '1.5',
                 color: '#000000',
-                overflow: 'visible',
-                border: '1px solid #e0e0e0',
-                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                border: '1px solid #ddd',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                overflow: 'visible'
               }}
             >
               <SelectedTemplate 
