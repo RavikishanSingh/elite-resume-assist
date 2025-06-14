@@ -23,7 +23,7 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       
       // Use html2canvas with optimized settings
       const canvas = await html2canvas(resumeElement, {
-        scale: 3, // Higher quality
+        scale: 2, // High quality but manageable
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
@@ -59,48 +59,48 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       if (imgHeight <= pageHeight) {
         pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight, undefined, 'FAST');
       } else {
-        // Handle multi-page content with smart page breaks
-        const pageRatio = pageHeight / imgHeight;
-        const scaledImgHeight = pageHeight;
-        const scaledImgWidth = canvas.width * pageRatio;
-        
+        // Handle multi-page content by splitting the canvas
         let yOffset = 0;
         let pageNumber = 0;
+        const pixelsPerPage = (canvas.height * pageHeight) / imgHeight;
         
         while (yOffset < canvas.height) {
           if (pageNumber > 0) {
             pdf.addPage();
           }
           
-          // Create a section of the canvas for this page
-          const sectionHeight = Math.min(canvas.height / pageRatio, canvas.height - yOffset);
+          // Create a temporary canvas for this page section
+          const pageCanvas = document.createElement('canvas');
+          const pageCtx = pageCanvas.getContext('2d');
           
-          // Calculate the portion of the image to show on this page
-          const sourceY = yOffset;
-          const sourceHeight = sectionHeight;
+          if (pageCtx) {
+            const remainingHeight = canvas.height - yOffset;
+            const sectionHeight = Math.min(pixelsPerPage, remainingHeight);
+            
+            pageCanvas.width = canvas.width;
+            pageCanvas.height = sectionHeight;
+            
+            // Draw the section of the original canvas onto the page canvas
+            pageCtx.drawImage(
+              canvas,
+              0, yOffset, // source x, y
+              canvas.width, sectionHeight, // source width, height
+              0, 0, // destination x, y
+              canvas.width, sectionHeight // destination width, height
+            );
+            
+            // Convert page canvas to image and add to PDF
+            const pageImgData = pageCanvas.toDataURL('image/png', 1.0);
+            const scaledHeight = (sectionHeight * imgWidth) / canvas.width;
+            
+            pdf.addImage(pageImgData, 'PNG', margin, margin, imgWidth, scaledHeight, undefined, 'FAST');
+          }
           
-          // Add the image section to the PDF
-          pdf.addImage(
-            imgData, 
-            'PNG', 
-            margin, 
-            margin, 
-            imgWidth, 
-            scaledImgHeight,
-            undefined,
-            'FAST',
-            0, // rotation
-            sourceY / canvas.height, // sx - source x ratio
-            0, // sy - source y ratio  
-            1, // sWidth ratio
-            sourceHeight / canvas.height // sHeight ratio
-          );
-          
-          yOffset += sectionHeight;
+          yOffset += pixelsPerPage;
           pageNumber++;
           
           // Safety break to prevent infinite loops
-          if (pageNumber > 10) break;
+          if (pageNumber > 5) break;
         }
       }
       
