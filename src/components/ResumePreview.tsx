@@ -249,37 +249,42 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
           ))}
         </div>
 
-        {/* Enhanced Template Preview */}
-        <Card className="border-2 border-gray-200">
-          <CardContent className="p-0">
-            <div 
-              id="resume-preview" 
-              className="bg-white mx-auto shadow-lg"
-              style={{ 
-                width: '210mm',
-                minHeight: '297mm',
-                maxWidth: '100%',
-                transform: 'scale(0.65)',
-                transformOrigin: 'top center',
-                backgroundColor: '#ffffff',
-                fontFamily: 'Inter, Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
-                fontSize: '11pt',
-                lineHeight: '1.4',
-                color: '#2d3748',
-                border: '1px solid #e2e8f0',
-                boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                padding: '20mm',
-                boxSizing: 'border-box'
-              }}
-            >
-              <SelectedTemplate 
-                data={data} 
-                onUpdate={handleUpdateData} 
-                isEditing={isEditMode} 
-              />
-            </div>
-          </CardContent>
-        </Card>
+        {/* Improved Preview Container */}
+        <div className="w-full flex justify-center">
+          <div className="w-full max-w-5xl">
+            <Card className="border-2 border-gray-200 shadow-lg">
+              <CardContent className="p-0">
+                <div 
+                  id="resume-preview" 
+                  className="bg-white mx-auto"
+                  style={{ 
+                    width: '210mm',
+                    minHeight: '297mm',
+                    maxWidth: '100%',
+                    transform: 'scale(0.85)',
+                    transformOrigin: 'top center',
+                    backgroundColor: '#ffffff',
+                    fontFamily: 'Inter, Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+                    fontSize: '11pt',
+                    lineHeight: '1.4',
+                    color: '#2d3748',
+                    border: '1px solid #e2e8f0',
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                    padding: '15mm',
+                    boxSizing: 'border-box',
+                    margin: '0 auto'
+                  }}
+                >
+                  <SelectedTemplate 
+                    data={data} 
+                    onUpdate={handleUpdateData} 
+                    isEditing={isEditMode} 
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
 
       {/* Enhanced Features */}
