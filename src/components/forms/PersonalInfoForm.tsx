@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle } from "lucide-react";
+import AIWritingAssistant from "../AIWritingAssistant";
 
 interface PersonalInfoFormProps {
   data: any;
@@ -102,6 +102,14 @@ const PersonalInfoForm = ({ data, onUpdate, onNext }: PersonalInfoFormProps) => 
       return <CheckCircle className="w-4 h-4 text-green-500" />;
     }
     return null;
+  };
+
+  // Prepare context for AI writing assistant
+  const aiContext = {
+    fullName: formData.fullName,
+    experience: data?.experience || [],
+    skills: data?.skills || [],
+    education: data?.education || []
   };
 
   return (
@@ -228,26 +236,16 @@ const PersonalInfoForm = ({ data, onUpdate, onNext }: PersonalInfoFormProps) => 
         </div>
       </div>
 
-      <div className="relative">
-        <Label htmlFor="summary" className="text-sm font-medium text-gray-700">
+      <div>
+        <Label className="text-sm font-medium text-gray-700 mb-3 block">
           Professional Summary (Optional but Recommended)
         </Label>
-        <div className="relative">
-          <Textarea
-            id="summary"
-            value={formData.summary}
-            onChange={(e) => handleChange('summary', e.target.value)}
-            placeholder="Write a brief summary of your professional background, key skills, and career objectives..."
-            rows={4}
-            className="mt-1 pr-8"
-          />
-          <div className="absolute right-2 top-3">
-            {getFieldIcon('summary')}
-          </div>
-        </div>
-        <p className="text-xs text-gray-500 mt-1">
-          💡 Tip: 2-3 sentences highlighting your expertise and what you bring to potential employers.
-        </p>
+        <AIWritingAssistant
+          value={formData.summary}
+          onChange={(value) => handleChange('summary', value)}
+          placeholder="Write a brief summary of your professional background, key skills, and career objectives..."
+          userContext={aiContext}
+        />
       </div>
 
       <div className="flex justify-between pt-6">
