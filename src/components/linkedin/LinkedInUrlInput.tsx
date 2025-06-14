@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Download, AlertCircle } from "lucide-react";
+import { Loader2, Download, AlertCircle, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface LinkedInUrlInputProps {
@@ -22,6 +22,7 @@ const LinkedInUrlInput = ({ onImportSuccess }: LinkedInUrlInputProps) => {
   };
 
   const simulateLinkedInAPI = async (profileUrl: string) => {
+    // Demo data simulation - in a real app, this would connect to LinkedIn API
     const profiles = {
       'john-doe': {
         personalInfo: {
@@ -149,8 +150,8 @@ const LinkedInUrlInput = ({ onImportSuccess }: LinkedInUrlInputProps) => {
       console.log('LinkedIn profile data retrieved:', profileData);
       
       toast({
-        title: "Profile Imported Successfully",
-        description: "Your LinkedIn profile data has been imported. Click 'Use This Data' to proceed.",
+        title: "Demo Profile Imported",
+        description: "Demo data has been imported successfully. This is simulated data for demonstration purposes.",
         variant: "default"
       });
       
@@ -171,7 +172,20 @@ const LinkedInUrlInput = ({ onImportSuccess }: LinkedInUrlInputProps) => {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">LinkedIn Profile Import</h3>
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-start space-x-2">
+          <Info className="w-5 h-5 text-blue-600 mt-0.5" />
+          <div>
+            <h4 className="font-medium text-blue-900 mb-1">Demo LinkedIn Import</h4>
+            <p className="text-sm text-blue-800">
+              This is a demo simulation. Real LinkedIn integration requires backend API access. 
+              Try our demo profiles or enter any LinkedIn URL to see how it would work.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <h3 className="text-lg font-semibold">LinkedIn Profile Import (Demo)</h3>
       <div className="space-y-2">
         <Label htmlFor="linkedin-url">LinkedIn Profile URL</Label>
         <Input
@@ -190,10 +204,10 @@ const LinkedInUrlInput = ({ onImportSuccess }: LinkedInUrlInputProps) => {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-center space-x-2">
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span>Importing your LinkedIn profile...</span>
+            <span>Simulating LinkedIn profile import...</span>
           </div>
           <div className="mt-2 text-sm text-blue-700">
-            This may take a few seconds. Please wait.
+            This is a demo simulation for testing purposes.
           </div>
         </div>
       )}
@@ -215,12 +229,12 @@ const LinkedInUrlInput = ({ onImportSuccess }: LinkedInUrlInputProps) => {
         {isImporting ? (
           <>
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            Importing Profile...
+            Importing Demo Profile...
           </>
         ) : (
           <>
             <Download className="w-4 h-4 mr-2" />
-            Import Profile Data
+            Import Demo Profile Data
           </>
         )}
       </Button>
