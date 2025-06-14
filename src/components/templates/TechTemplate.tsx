@@ -13,9 +13,9 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
 
   return (
     <div className="max-w-4xl mx-auto bg-gray-900 text-white p-8 shadow-lg min-h-[297mm]">
-      {/* Enhanced Header */}
-      <header className="bg-gradient-to-r from-green-400 to-blue-500 p-6 rounded-lg mb-8">
-        <h1 className="text-4xl font-bold mb-4">
+      {/* Enhanced Header with Better Spacing */}
+      <header className="bg-gradient-to-r from-green-400 to-blue-500 p-8 rounded-lg mb-8" style={{ pageBreakInside: 'avoid' }}>
+        <h1 className="text-4xl font-bold mb-6 text-center">
           <EditableText
             value={personalInfo?.fullName || ''}
             onSave={(value) => onUpdate?.('personalInfo', 'fullName', value)}
@@ -25,10 +25,10 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
           />
         </h1>
         
-        {/* Enhanced Contact Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+        {/* Primary Contact Information */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm mb-6">
           {personalInfo?.email && (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-center space-x-3">
               <Mail className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.email}
@@ -40,7 +40,7 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
             </div>
           )}
           {personalInfo?.phone && (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-center space-x-3">
               <Phone className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.phone}
@@ -52,7 +52,7 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
             </div>
           )}
           {personalInfo?.location && (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-center space-x-3">
               <MapPin className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.location}
@@ -63,31 +63,37 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
               />
             </div>
           )}
-          {personalInfo?.linkedIn && (
-            <div className="flex items-center space-x-2">
-              <Linkedin className="w-4 h-4 flex-shrink-0" />
-              <EditableText
-                value={personalInfo.linkedIn}
-                onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
-                isEditing={isEditing}
-                className="inline-block text-white"
-                placeholder="LinkedIn"
-              />
-            </div>
-          )}
-          {personalInfo?.portfolio && (
-            <div className="flex items-center space-x-2">
-              <Globe className="w-4 h-4 flex-shrink-0" />
-              <EditableText
-                value={personalInfo.portfolio}
-                onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
-                isEditing={isEditing}
-                className="inline-block text-white"
-                placeholder="Portfolio"
-              />
-            </div>
-          )}
         </div>
+
+        {/* Secondary Contact Information */}
+        {(personalInfo?.linkedIn || personalInfo?.portfolio) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+            {personalInfo?.linkedIn && (
+              <div className="flex items-center justify-center space-x-3">
+                <Linkedin className="w-4 h-4 flex-shrink-0" />
+                <EditableText
+                  value={personalInfo.linkedIn}
+                  onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
+                  isEditing={isEditing}
+                  className="inline-block text-white"
+                  placeholder="LinkedIn"
+                />
+              </div>
+            )}
+            {personalInfo?.portfolio && (
+              <div className="flex items-center justify-center space-x-3">
+                <Globe className="w-4 h-4 flex-shrink-0" />
+                <EditableText
+                  value={personalInfo.portfolio}
+                  onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
+                  isEditing={isEditing}
+                  className="inline-block text-white"
+                  placeholder="Portfolio"
+                />
+              </div>
+            )}
+          </div>
+        )}
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
