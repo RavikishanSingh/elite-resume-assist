@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +15,7 @@ const Index = () => {
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [userName, setUserName] = useState('');
   const [showResumes, setShowResumes] = useState(false);
-  const [importedData, setImportedData] = useState(null);
+  const [importedData, setImportedData] = useState<any>(null);
 
   const handleSignIn = (email: string, password: string) => {
     // Simple mock authentication
@@ -41,9 +40,6 @@ const Index = () => {
   const handleLinkedInImport = (data: any) => {
     console.log('LinkedIn data imported in Index:', data);
     console.log('Data structure:', JSON.stringify(data, null, 2));
-    
-    // Clear any existing data first
-    setImportedData(null);
     
     // Set the new imported data
     setImportedData(data);
@@ -190,7 +186,7 @@ const Index = () => {
               <Button 
                 size="lg" 
                 className="text-lg px-10 py-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
-                onClick={() => setShowBuilder(true)}
+                onClick={() => { setImportedData(null); setShowBuilder(true); }}
               >
                 <Zap className="mr-3 w-5 h-5" />
                 Start Building Free
@@ -246,15 +242,7 @@ const Index = () => {
 
       {/* LinkedIn Integration Highlight */}
       <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-            <g fill="none" fillRule="evenodd">
-              <g fill="#ffffff" fillOpacity="0.1">
-                <circle cx="30" cy="30" r="4"/>
-              </g>
-            </g>
-          </svg>
-        </div>
+      <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")" }}></div>
         <div className="container mx-auto px-4 relative">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm border border-white/30 px-6 py-3 rounded-full mb-8">
@@ -390,13 +378,7 @@ const Index = () => {
 
       {/* Enhanced CTA Section */}
       <section className="py-24 bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-50">
-          <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-            <g fill="#ffffff" fillOpacity="0.03">
-              <polygon points="50 0 60 40 100 50 60 60 50 100 40 60 0 50 40 40"/>
-            </g>
-          </svg>
-        </div>
+      <div className="absolute inset-0 opacity-50" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpolygon points='50 0 60 40 100 50 60 60 50 100 40 60 0 50 40 40'/%3E%3C/g%3E%3C/svg%3E\")" }}></div>
         <div className="container mx-auto px-4 relative">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
@@ -409,7 +391,7 @@ const Index = () => {
               <Button 
                 size="lg" 
                 className="text-lg px-10 py-6 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
-                onClick={() => setShowBuilder(true)}
+                onClick={() => { setImportedData(null); setShowBuilder(true); }}
               >
                 <Sparkles className="mr-3 w-5 h-5" />
                 Start From Scratch
@@ -440,7 +422,7 @@ const Index = () => {
             </div>
             <span className="text-xl font-bold">SmartResume</span>
           </div>
-          <p className="text-gray-400 mb-4">&copy; 2024 SmartResume. Built with AI to help you succeed.</p>
+          <p className="text-gray-400 mb-4">&copy; 2025 SmartResume. Built with AI to help you succeed.</p>
           <div className="flex justify-center space-x-6 text-sm text-gray-400">
             <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-white transition-colors">Terms of Service</a>

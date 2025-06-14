@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -5,26 +6,48 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 interface PersonalInfoFormProps {
-  data: any;
+  data: any; // Should ideally be a more specific type
   onUpdate: (section: string, data: any) => void;
   onNext: () => void;
-  onPrevious: () => void;
-  isLastStep: boolean;
-  isFirstStep: boolean;
+  onPrevious: () => void; // This prop is declared but not used in the provided code
+  isLastStep: boolean; // This prop is declared but not used
+  isFirstStep: boolean; // This prop is declared but not used
 }
 
 const PersonalInfoForm = ({ data, onUpdate, onNext }: PersonalInfoFormProps) => {
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    location: '',
-    linkedIn: '',
-    portfolio: '',
-    summary: '',
-    ...data.personalInfo
+  const [formData, setFormData] = useState(() => {
+    const defaults = {
+      fullName: '',
+      email: '',
+      phone: '',
+      location: '',
+      linkedIn: '',
+      portfolio: '',
+      summary: '',
+    };
+    // Initialize with defaults, then merge data from props if available
+    return { ...defaults, ...(data?.personalInfo || {}) };
   });
 
+  // Effect to update formData when `data` prop (and specifically data.personalInfo) changes
+  useEffect(() => {
+    if (data && data.personalInfo) {
+      const defaults = {
+        fullName: '', email: '', phone: '', location: '',
+        linkedIn: '', portfolio: '', summary: ''
+      };
+      // Merge current form data with new data from props to preserve any intermediate edits
+      // and ensure all default keys are present.
+      // The order is: defaults, then existing data, then new data from props.
+      setFormData(prevFormData => ({
+        ...defaults,
+        ...prevFormData,
+        ...data.personalInfo
+      }));
+    }
+  }, [data]); // React to changes in the 'data' prop object
+
+  // Effect to call onUpdate whenever formData changes locally
   useEffect(() => {
     onUpdate('personalInfo', formData);
   }, [formData, onUpdate]);
