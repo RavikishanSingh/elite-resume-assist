@@ -168,7 +168,9 @@ const ResumePreview = ({
       description: 'Perfect for developers'
     }
   };
+
   const SelectedTemplate = templates[selectedTemplate as keyof typeof templates].component;
+
   if (showAnalysis) {
     return <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -181,6 +183,7 @@ const ResumePreview = ({
         <AIAnalysis resumeData={data} />
       </div>;
   }
+
   return <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-2xl font-bold text-gray-900">Professional Resume Preview</h3>
@@ -235,33 +238,20 @@ const ResumePreview = ({
             </button>)}
         </div>
 
-        {/* Improved Preview Container */}
-        <div className="w-full flex justify-center">
-          <div className="w-full max-w-5xl">
-            <Card className="border-2 border-gray-200 shadow-lg">
-              <CardContent className="p-0">
-                <div id="resume-preview" style={{
-                width: '210mm',
-                minHeight: '297mm',
-                maxWidth: '100%',
-                transform: 'scale(0.85)',
-                transformOrigin: 'top center',
-                backgroundColor: '#ffffff',
-                fontFamily: 'Inter, Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
-                fontSize: '11pt',
-                lineHeight: '1.4',
-                color: '#2d3748',
-                border: '1px solid #e2e8f0',
-                boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                padding: '15mm',
-                boxSizing: 'border-box',
-                margin: '0 auto'
-              }} className="bg-white mx-0">
-                  <SelectedTemplate data={data} onUpdate={handleUpdateData} isEditing={isEditMode} />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+        {/* Direct Resume Display - No Extra Containers */}
+        <div 
+          id="resume-preview" 
+          className="w-full bg-white shadow-lg border border-gray-200 mx-auto"
+          style={{
+            width: '210mm',
+            minHeight: '297mm',
+            fontFamily: 'Inter, Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+            fontSize: '11pt',
+            lineHeight: '1.4',
+            color: '#2d3748'
+          }}
+        >
+          <SelectedTemplate data={data} onUpdate={handleUpdateData} isEditing={isEditMode} />
         </div>
       </div>
 
@@ -294,4 +284,5 @@ const ResumePreview = ({
       </div>
     </div>;
 };
+
 export default ResumePreview;
