@@ -60,7 +60,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
     if (isGeneratingPDF) return;
     
     setIsGeneratingPDF(true);
-    console.log('=== Starting Template-Based PDF Download ===');
+    console.log('=== Starting PDF Download ===');
     console.log('Selected template:', selectedTemplate);
     
     try {
@@ -69,7 +69,10 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
         throw new Error('Please fill in at least your name before downloading');
       }
 
-      console.log('Generating template-based PDF with static import...');
+      console.log('Generating PDF with direct static import...');
+      
+      // Import the PDF generator function directly
+      const { generatePDF } = await import('../utils/pdfGenerator');
       const pdf = await generatePDF(data, selectedTemplate);
       
       if (!pdf) {
@@ -86,7 +89,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
       // Download the PDF
       pdf.save(filename);
       
-      console.log(`Template-based PDF saved as: ${filename}`);
+      console.log(`PDF saved as: ${filename}`);
       
       toast({
         title: "Success!",
@@ -110,7 +113,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
       });
     } finally {
       setIsGeneratingPDF(false);
-      console.log('=== Template-Based PDF Download Complete ===');
+      console.log('=== PDF Download Complete ===');
     }
   };
 
