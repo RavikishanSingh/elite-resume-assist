@@ -60,7 +60,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
     if (isGeneratingPDF) return;
     
     setIsGeneratingPDF(true);
-    console.log('=== Starting PDF Download Process ===');
+    console.log('=== Starting Alternative PDF Download Process ===');
     
     try {
       // Validate data
@@ -68,17 +68,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
         throw new Error('Please fill in at least your name before downloading');
       }
 
-      // Temporarily disable edit mode for cleaner PDF
-      const wasEditMode = isEditMode;
-      if (isEditMode) {
-        setIsEditMode(false);
-        console.log('Temporarily disabled edit mode');
-      }
-
-      // Give UI time to update
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      console.log('Generating PDF...');
+      console.log('Generating PDF with alternative method...');
       const pdf = await generatePDF(data, selectedTemplate);
       
       if (!pdf) {
@@ -101,11 +91,6 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
         description: `Resume downloaded as ${filename}`,
         duration: 3000
       });
-
-      // Restore edit mode if it was active
-      if (wasEditMode) {
-        setTimeout(() => setIsEditMode(true), 200);
-      }
       
     } catch (error) {
       console.error('PDF download error:', error);
@@ -284,23 +269,15 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
 
       {/* Enhanced Features */}
       <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-6">
-        <h4 className="font-medium text-purple-900 mb-3">✨ Enhanced Features</h4>
+        <h4 className="font-medium text-purple-900 mb-3">✨ Enhanced PDF Generation</h4>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <h5 className="font-medium text-purple-800">Smart Template Selection</h5>
-            <p className="text-sm text-purple-700">Choose from 6 professional templates optimized for different industries and career levels</p>
+            <h5 className="font-medium text-purple-800">Professional Formatting</h5>
+            <p className="text-sm text-purple-700">Clean, ATS-friendly PDF with perfect A4 dimensions and professional styling</p>
           </div>
           <div className="space-y-2">
-            <h5 className="font-medium text-purple-800">Real-time Editing</h5>
-            <p className="text-sm text-purple-700">Edit your resume directly in the preview with instant updates and live formatting</p>
-          </div>
-          <div className="space-y-2">
-            <h5 className="font-medium text-purple-800">AI-Powered Analysis</h5>
-            <p className="text-sm text-purple-700">Get intelligent feedback on content, keywords, and ATS optimization</p>
-          </div>
-          <div className="space-y-2">
-            <h5 className="font-medium text-purple-800">Professional PDF Export</h5>
-            <p className="text-sm text-purple-700">Generate high-quality PDFs that preserve your chosen template styling</p>
+            <h5 className="font-medium text-purple-800">Reliable Generation</h5>
+            <p className="text-sm text-purple-700">Alternative PDF method ensures consistent results with proper content and sizing</p>
           </div>
         </div>
       </div>

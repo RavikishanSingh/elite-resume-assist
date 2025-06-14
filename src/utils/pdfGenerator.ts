@@ -1,8 +1,6 @@
 
-import html2canvas from 'html2canvas';
-
 export const generatePDF = async (data: any, templateName: string = 'modern') => {
-  console.log('=== Starting PDF Generation ===');
+  console.log('=== Starting Alternative PDF Generation ===');
   console.log('Data received:', data);
   console.log('Template:', templateName);
 
@@ -13,90 +11,11 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
 
     // Basic validation
     if (!data || !data.personalInfo?.fullName) {
-      console.log('Insufficient data, using fallback PDF');
-      return await generateFallbackPDF(data);
+      console.log('Insufficient data for PDF generation');
+      throw new Error('Please fill in at least your name before downloading');
     }
 
-    // Try to find the resume preview element
-    const resumeElement = document.getElementById('resume-preview');
-    
-    if (!resumeElement) {
-      console.log('Resume preview element not found, using fallback');
-      return await generateFallbackPDF(data);
-    }
-
-    console.log('Resume element found, checking visibility...');
-    
-    // Ensure element is visible and properly sized
-    const rect = resumeElement.getBoundingClientRect();
-    console.log('Element rect:', rect);
-    
-    if (rect.width === 0 || rect.height === 0) {
-      console.log('Element has zero dimensions, using fallback');
-      return await generateFallbackPDF(data);
-    }
-
-    // Force element to be visible with proper styling
-    const originalStyles = {
-      display: resumeElement.style.display,
-      visibility: resumeElement.style.visibility,
-      opacity: resumeElement.style.opacity,
-      transform: resumeElement.style.transform,
-      position: resumeElement.style.position
-    };
-
-    // Apply capture-friendly styles
-    resumeElement.style.display = 'block';
-    resumeElement.style.visibility = 'visible';
-    resumeElement.style.opacity = '1';
-    resumeElement.style.transform = 'none';
-    resumeElement.style.position = 'relative';
-
-    // Wait for styles to apply
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    console.log('Capturing element with html2canvas...');
-    
-    // Capture with optimized settings
-    const canvas = await html2canvas(resumeElement, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: false,
-      backgroundColor: '#ffffff',
-      logging: false,
-      width: Math.floor(rect.width),
-      height: Math.floor(rect.height),
-      scrollX: 0,
-      scrollY: 0,
-      foreignObjectRendering: true,
-      onclone: (clonedDoc) => {
-        const clonedElement = clonedDoc.getElementById('resume-preview');
-        if (clonedElement) {
-          clonedElement.style.transform = 'none';
-          clonedElement.style.scale = '1';
-        }
-      }
-    });
-
-    // Restore original styles
-    Object.assign(resumeElement.style, originalStyles);
-
-    console.log('Canvas created:', canvas.width, 'x', canvas.height);
-
-    if (!canvas || canvas.width === 0 || canvas.height === 0) {
-      console.log('Invalid canvas, using fallback');
-      return await generateFallbackPDF(data);
-    }
-
-    // Get image data
-    const imageData = canvas.toDataURL('image/png', 1.0);
-    
-    if (!imageData || imageData === 'data:,' || imageData.length < 100) {
-      console.log('Invalid image data, using fallback');
-      return await generateFallbackPDF(data);
-    }
-
-    console.log('Creating PDF document...');
+    console.log('Creating PDF document with direct content rendering...');
 
     // Create PDF with A4 dimensions
     const pdf = new jsPDF({
@@ -106,66 +25,24 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       compress: true
     });
 
-    // A4 dimensions in mm
-    const pageWidth = 210;
-    const pageHeight = 297;
-    
-    // Calculate aspect ratio and fit image properly
-    const canvasAspectRatio = canvas.width / canvas.height;
-    const pageAspectRatio = pageWidth / pageHeight;
-    
-    let imgWidth = pageWidth;
-    let imgHeight = pageHeight;
-    
-    if (canvasAspectRatio > pageAspectRatio) {
-      // Canvas is wider, fit to width
-      imgHeight = pageWidth / canvasAspectRatio;
-    } else {
-      // Canvas is taller, fit to height
-      imgWidth = pageHeight * canvasAspectRatio;
-    }
-    
-    // Center the image on the page
-    const x = (pageWidth - imgWidth) / 2;
-    const y = (pageHeight - imgHeight) / 2;
-    
-    console.log(`Adding image to PDF: ${imgWidth}mm x ${imgHeight}mm at (${x}, ${y})`);
-    
-    pdf.addImage(imageData, 'PNG', x, y, imgWidth, imgHeight, '', 'FAST');
-    
-    console.log('PDF generated successfully!');
-    return pdf;
-
-  } catch (error) {
-    console.error('Error in PDF generation:', error);
-    console.log('Falling back to text-based PDF');
-    return await generateFallbackPDF(data);
-  }
-};
-
-const generateFallbackPDF = async (data: any) => {
-  console.log('=== Generating Fallback Text PDF ===');
-  
-  try {
-    const { default: jsPDF } = await import('jspdf');
-    
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
-    });
-
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 20;
-    const lineHeight = 6;
+    const margin = 15;
+    const lineHeight = 5;
     let currentY = margin;
 
-    const addText = (text: string, fontSize: number = 11, fontStyle: string = 'normal') => {
+    // Helper function to add text with proper wrapping
+    const addText = (text: string, fontSize: number = 10, fontStyle: string = 'normal', color: string = '#000000') => {
       if (!text || text.trim() === '') return;
       
       pdf.setFontSize(fontSize);
       pdf.setFont('helvetica', fontStyle);
+      
+      // Set text color
+      const r = parseInt(color.substr(1, 2), 16);
+      const g = parseInt(color.substr(3, 2), 16);
+      const b = parseInt(color.substr(5, 2), 16);
+      pdf.setTextColor(r, g, b);
       
       const maxWidth = pageWidth - (2 * margin);
       const lines = pdf.splitTextToSize(text.toString(), maxWidth);
@@ -180,21 +57,29 @@ const generateFallbackPDF = async (data: any) => {
       currentY += lines.length * lineHeight;
     };
 
-    const addSection = (title: string) => {
+    const addSection = (title: string, color: string = '#2563eb') => {
       currentY += 8;
-      addText(title, 14, 'bold');
-      currentY += 4;
-      // Add underline
-      pdf.setDrawColor(0);
+      addText(title, 14, 'bold', color);
+      currentY += 2;
+      
+      // Add colored underline
+      const r = parseInt(color.substr(1, 2), 16);
+      const g = parseInt(color.substr(3, 2), 16);
+      const b = parseInt(color.substr(5, 2), 16);
+      pdf.setDrawColor(r, g, b);
       pdf.setLineWidth(0.5);
-      pdf.line(margin, currentY - 2, pageWidth - margin, currentY - 2);
-      currentY += 4;
+      pdf.line(margin, currentY, pageWidth - margin, currentY);
+      currentY += 6;
     };
 
-    // Header
+    // Reset color for main content
+    pdf.setTextColor(0, 0, 0);
+
+    // Header with name
     if (data.personalInfo?.fullName) {
-      pdf.setFontSize(20);
+      pdf.setFontSize(24);
       pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(44, 82, 130); // Professional blue
       pdf.text(data.personalInfo.fullName, margin, currentY);
       currentY += 12;
     }
@@ -202,12 +87,13 @@ const generateFallbackPDF = async (data: any) => {
     // Contact Information
     if (data.personalInfo) {
       const contactInfo = [];
-      if (data.personalInfo.email) contactInfo.push(`Email: ${data.personalInfo.email}`);
-      if (data.personalInfo.phone) contactInfo.push(`Phone: ${data.personalInfo.phone}`);
-      if (data.personalInfo.location) contactInfo.push(`Location: ${data.personalInfo.location}`);
+      if (data.personalInfo.email) contactInfo.push(`📧 ${data.personalInfo.email}`);
+      if (data.personalInfo.phone) contactInfo.push(`📞 ${data.personalInfo.phone}`);
+      if (data.personalInfo.location) contactInfo.push(`📍 ${data.personalInfo.location}`);
       
       if (contactInfo.length > 0) {
-        addText(contactInfo.join(' | '), 10);
+        pdf.setTextColor(60, 60, 60);
+        addText(contactInfo.join(' | '), 9);
         currentY += 4;
       }
     }
@@ -215,27 +101,35 @@ const generateFallbackPDF = async (data: any) => {
     // Professional Summary
     if (data.personalInfo?.summary) {
       addSection('PROFESSIONAL SUMMARY');
-      addText(data.personalInfo.summary, 11);
+      addText(data.personalInfo.summary, 10);
     }
 
     // Experience
     if (data.experience?.length > 0) {
-      addSection('EXPERIENCE');
+      addSection('PROFESSIONAL EXPERIENCE');
       
-      data.experience.forEach((exp: any) => {
+      data.experience.forEach((exp: any, index: number) => {
         if (exp.jobTitle && exp.company) {
-          addText(`${exp.jobTitle} at ${exp.company}`, 12, 'bold');
+          // Job title and company
+          addText(`${exp.jobTitle}`, 12, 'bold', '#1f2937');
+          addText(`${exp.company}`, 11, 'normal', '#374151');
           
+          // Date range
           if (exp.startDate || exp.endDate) {
             const period = `${exp.startDate || ''} - ${exp.current ? 'Present' : exp.endDate || ''}`;
-            addText(period, 10, 'italic');
+            addText(period, 9, 'italic', '#6b7280');
           }
           
+          // Description
           if (exp.description) {
+            currentY += 2;
             addText(exp.description, 10);
           }
           
-          currentY += 6;
+          // Add space between experiences
+          if (index < data.experience.length - 1) {
+            currentY += 6;
+          }
         }
       });
     }
@@ -244,46 +138,67 @@ const generateFallbackPDF = async (data: any) => {
     if (data.education?.length > 0) {
       addSection('EDUCATION');
       
-      data.education.forEach((edu: any) => {
+      data.education.forEach((edu: any, index: number) => {
         if (edu.degree && edu.school) {
-          addText(`${edu.degree} - ${edu.school}`, 11, 'bold');
+          addText(`${edu.degree}`, 11, 'bold', '#1f2937');
+          addText(`${edu.school}`, 10, 'normal', '#374151');
+          
           if (edu.graduationDate) {
-            addText(edu.graduationDate, 10);
+            addText(edu.graduationDate, 9, 'italic', '#6b7280');
           }
-          currentY += 4;
+          
+          if (index < data.education.length - 1) {
+            currentY += 4;
+          }
         }
       });
     }
 
     // Skills
     if (data.skills?.length > 0) {
-      addSection('SKILLS');
-      addText(data.skills.join(', '), 10);
+      addSection('TECHNICAL SKILLS');
+      const skillsText = Array.isArray(data.skills) ? data.skills.join(' • ') : data.skills;
+      addText(`• ${skillsText}`, 10);
     }
 
     // Projects
     if (data.projects?.length > 0) {
       addSection('PROJECTS');
       
-      data.projects.forEach((project: any) => {
+      data.projects.forEach((project: any, index: number) => {
         if (project.name) {
-          addText(project.name, 11, 'bold');
+          addText(project.name, 11, 'bold', '#1f2937');
+          
           if (project.description) {
             addText(project.description, 10);
           }
+          
           if (project.technologies) {
-            addText(`Technologies: ${project.technologies}`, 10, 'italic');
+            addText(`Technologies: ${project.technologies}`, 9, 'italic', '#6b7280');
           }
-          currentY += 4;
+          
+          if (project.url) {
+            addText(`Link: ${project.url}`, 9, 'normal', '#2563eb');
+          }
+          
+          if (index < data.projects.length - 1) {
+            currentY += 4;
+          }
         }
       });
     }
 
-    console.log('Fallback PDF generated successfully');
+    // Footer
+    currentY = pageHeight - 15;
+    pdf.setTextColor(120, 120, 120);
+    pdf.setFontSize(8);
+    pdf.text('Generated with SmartResume AI', margin, currentY);
+
+    console.log('Alternative PDF generated successfully!');
     return pdf;
-    
+
   } catch (error) {
-    console.error('Error generating fallback PDF:', error);
+    console.error('Error in alternative PDF generation:', error);
     throw new Error('Failed to generate PDF: ' + error.message);
   }
 };
