@@ -69,7 +69,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
         throw new Error('Please fill in at least your name before downloading');
       }
 
-      console.log('Generating template-based PDF...');
+      console.log('Generating template-based PDF with static import...');
       const pdf = await generatePDF(data, selectedTemplate);
       
       if (!pdf) {

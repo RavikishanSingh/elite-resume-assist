@@ -1,14 +1,12 @@
 
+import jsPDF from 'jspdf';
+
 export const generatePDF = async (data: any, templateName: string = 'modern') => {
   console.log('=== Starting Template-Based PDF Generation ===');
   console.log('Data received:', data);
   console.log('Template:', templateName);
 
   try {
-    // Dynamic import of jsPDF
-    const { default: jsPDF } = await import('jspdf');
-    console.log('jsPDF imported successfully');
-
     // Basic validation
     if (!data || !data.personalInfo?.fullName) {
       console.log('Insufficient data for PDF generation');
@@ -383,6 +381,6 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
 
   } catch (error) {
     console.error('Error in template-based PDF generation:', error);
-    throw new Error('Failed to generate PDF: ' + error.message);
+    throw new Error('Failed to generate PDF: ' + (error as Error).message);
   }
 };
