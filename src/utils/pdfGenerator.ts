@@ -19,23 +19,14 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
 
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 20;
-    let currentY = margin;
+    let currentY = 20;
 
     // Helper functions
-    const setTextColor = (color: string) => {
-      const hex = color.replace('#', '');
-      const r = parseInt(hex.substr(0, 2), 16);
-      const g = parseInt(hex.substr(2, 2), 16);
-      const b = parseInt(hex.substr(4, 2), 16);
+    const setTextColor = (r: number, g: number, b: number) => {
       pdf.setTextColor(r, g, b);
     };
 
-    const setFillColor = (color: string) => {
-      const hex = color.replace('#', '');
-      const r = parseInt(hex.substr(0, 2), 16);
-      const g = parseInt(hex.substr(2, 2), 16);
-      const b = parseInt(hex.substr(4, 2), 16);
+    const setFillColor = (r: number, g: number, b: number) => {
       pdf.setFillColor(r, g, b);
     };
 
@@ -46,178 +37,195 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       pdf.setFont('helvetica', options.fontStyle || 'normal');
       
       if (options.color) {
-        setTextColor(options.color);
+        const [r, g, b] = options.color;
+        setTextColor(r, g, b);
       } else {
-        pdf.setTextColor(0, 0, 0);
+        setTextColor(0, 0, 0);
       }
       
-      const maxWidth = options.maxWidth || (pageWidth - 2 * margin);
+      const maxWidth = options.maxWidth || (pageWidth - 40);
       const lines = pdf.splitTextToSize(text, maxWidth);
       
-      if (y + (lines.length * 6) > pageHeight - margin) {
+      if (y + (lines.length * (options.lineHeight || 6)) > pageHeight - 20) {
         pdf.addPage();
-        y = margin;
+        y = 20;
       }
       
       if (options.align === 'center') {
         lines.forEach((line: string, index: number) => {
           const textWidth = pdf.getTextWidth(line);
-          pdf.text(line, (pageWidth - textWidth) / 2, y + (index * 6));
+          pdf.text(line, (pageWidth - textWidth) / 2, y + (index * (options.lineHeight || 6)));
         });
       } else if (options.align === 'right') {
         lines.forEach((line: string, index: number) => {
           const textWidth = pdf.getTextWidth(line);
-          pdf.text(line, pageWidth - margin - textWidth, y + (index * 6));
+          pdf.text(line, pageWidth - 20 - textWidth, y + (index * (options.lineHeight || 6)));
         });
       } else {
         pdf.text(lines, x, y);
       }
       
-      return y + (lines.length * 6) + 3;
+      return y + (lines.length * (options.lineHeight || 6)) + (options.marginBottom || 3);
     };
 
-    // Template-specific rendering
+    // Template-specific rendering to match exact designs
     switch (templateName) {
       case 'modern':
-        // Modern Template - Clean blue theme
-        currentY = addText(data.personalInfo?.fullName || '', margin, currentY, {
-          fontSize: 24,
+        // Modern Template - Clean blue theme with exact styling
+        currentY = addText(data.personalInfo?.fullName || '', 20, currentY, {
+          fontSize: 28,
           fontStyle: 'bold',
-          color: '#1f2937'
+          color: [31, 41, 55], // text-gray-900
+          marginBottom: 5
         });
         
-        // Blue line
-        pdf.setDrawColor(37, 99, 235);
+        // Blue line exactly like template
+        pdf.setDrawColor(37, 99, 235); // blue-600
         pdf.setLineWidth(2);
-        pdf.line(margin, currentY, pageWidth - margin, currentY);
-        currentY += 8;
+        pdf.line(20, currentY, pageWidth - 20, currentY);
+        currentY += 10;
 
-        // Contact info in one line
+        // Contact info in one line like template
         const modernContact = [];
         if (data.personalInfo?.email) modernContact.push(data.personalInfo.email);
         if (data.personalInfo?.phone) modernContact.push(data.personalInfo.phone);
         if (data.personalInfo?.location) modernContact.push(data.personalInfo.location);
         
         if (modernContact.length > 0) {
-          currentY = addText(modernContact.join(' • '), margin, currentY, {
-            fontSize: 9,
-            color: '#6b7280'
-          });
-        }
-
-        // Summary section
-        if (data.personalInfo?.summary) {
-          currentY += 6;
-          currentY = addText('PROFESSIONAL SUMMARY', margin, currentY, {
-            fontSize: 14,
-            fontStyle: 'bold',
-            color: '#2563eb'
-          });
-          pdf.setDrawColor(37, 99, 235);
-          pdf.line(margin, currentY, pageWidth - margin, currentY);
-          currentY += 4;
-          currentY = addText(data.personalInfo.summary, margin, currentY, {
+          currentY = addText(modernContact.join(' • '), 20, currentY, {
             fontSize: 10,
-            color: '#374151'
+            color: [107, 114, 128], // text-gray-500
+            marginBottom: 8
           });
         }
 
-        // Experience
-        if (data.experience?.length > 0) {
-          currentY += 6;
-          currentY = addText('PROFESSIONAL EXPERIENCE', margin, currentY, {
+        // Professional Summary section
+        if (data.personalInfo?.summary) {
+          currentY = addText('PROFESSIONAL SUMMARY', 20, currentY, {
             fontSize: 14,
             fontStyle: 'bold',
-            color: '#2563eb'
+            color: [37, 99, 235], // text-blue-600
+            marginBottom: 3
           });
           pdf.setDrawColor(37, 99, 235);
-          pdf.line(margin, currentY, pageWidth - margin, currentY);
-          currentY += 4;
+          pdf.setLineWidth(1);
+          pdf.line(20, currentY - 1, pageWidth - 20, currentY - 1);
+          currentY += 2;
+          currentY = addText(data.personalInfo.summary, 20, currentY, {
+            fontSize: 10,
+            color: [55, 65, 81], // text-gray-700
+            lineHeight: 5,
+            marginBottom: 10
+          });
+        }
+
+        // Experience section
+        if (data.experience?.length > 0) {
+          currentY = addText('PROFESSIONAL EXPERIENCE', 20, currentY, {
+            fontSize: 14,
+            fontStyle: 'bold',
+            color: [37, 99, 235],
+            marginBottom: 3
+          });
+          pdf.setDrawColor(37, 99, 235);
+          pdf.line(20, currentY - 1, pageWidth - 20, currentY - 1);
+          currentY += 5;
           
           data.experience.forEach((exp: any) => {
             if (exp.jobTitle && exp.company) {
-              currentY = addText(exp.jobTitle, margin, currentY, {
+              currentY = addText(exp.jobTitle, 20, currentY, {
                 fontSize: 12,
                 fontStyle: 'bold',
-                color: '#1f2937'
+                color: [31, 41, 55],
+                marginBottom: 2
               });
               
               const expDate = `${exp.company} | ${exp.startDate || ''} - ${exp.current ? 'Present' : exp.endDate || ''}`;
-              currentY = addText(expDate, margin, currentY, {
+              currentY = addText(expDate, 20, currentY, {
                 fontSize: 10,
-                color: '#2563eb'
+                color: [37, 99, 235],
+                marginBottom: 3
               });
               
               if (exp.description) {
-                currentY = addText(exp.description, margin + 5, currentY, {
+                currentY = addText(exp.description, 25, currentY, {
                   fontSize: 9,
-                  color: '#4b5563'
+                  color: [75, 85, 99],
+                  lineHeight: 4,
+                  marginBottom: 6
                 });
               }
-              currentY += 4;
             }
           });
         }
         break;
 
       case 'creative':
-        // Creative Template - Purple gradient header
-        setFillColor('#9333ea');
-        pdf.rect(0, 0, pageWidth, 35, 'F');
+        // Creative Template - Purple gradient header matching exact design
+        // Purple gradient header background
+        setFillColor(147, 51, 234); // purple-600
+        pdf.rect(0, 0, pageWidth, 40, 'F');
         
-        currentY = addText(data.personalInfo?.fullName || '', margin, 20, {
-          fontSize: 22,
+        // White text on purple background
+        currentY = addText(data.personalInfo?.fullName || '', 20, 20, {
+          fontSize: 24,
           fontStyle: 'bold',
-          color: '#ffffff'
+          color: [255, 255, 255],
+          marginBottom: 3
         });
         
+        // Contact info in header
         const creativeContact = [];
         if (data.personalInfo?.email) creativeContact.push(data.personalInfo.email);
         if (data.personalInfo?.phone) creativeContact.push(data.personalInfo.phone);
         if (data.personalInfo?.location) creativeContact.push(data.personalInfo.location);
         
         if (creativeContact.length > 0) {
-          addText(creativeContact.join(' • '), margin, 28, {
-            fontSize: 8,
-            color: '#ffffff'
+          addText(creativeContact.join(' • '), 20, 30, {
+            fontSize: 9,
+            color: [255, 255, 255]
           });
         }
         
-        currentY = 45;
+        currentY = 50;
 
-        // Two-column layout simulation
-        const leftColumnWidth = (pageWidth - 3 * margin) * 0.35;
-        const rightColumnX = margin + leftColumnWidth + 10;
+        // Two-column layout like the template
+        const leftColumnWidth = 60;
+        const rightColumnX = 80;
         
         // Left column - About Me
         let leftY = currentY;
         if (data.personalInfo?.summary) {
-          leftY = addText('ABOUT ME', margin, leftY, {
+          leftY = addText('ABOUT ME', 20, leftY, {
             fontSize: 12,
             fontStyle: 'bold',
-            color: '#9333ea'
+            color: [147, 51, 234], // purple-600
+            marginBottom: 4
           });
-          leftY = addText(data.personalInfo.summary, margin, leftY, {
+          leftY = addText(data.personalInfo.summary, 20, leftY, {
             fontSize: 9,
             maxWidth: leftColumnWidth,
-            color: '#374151'
+            color: [55, 65, 81],
+            lineHeight: 4,
+            marginBottom: 8
           });
         }
         
-        // Left column - Skills
+        // Left column - Skills with purple styling
         if (data.skills?.length > 0) {
-          leftY += 8;
-          leftY = addText('SKILLS', margin, leftY, {
+          leftY = addText('SKILLS', 20, leftY, {
             fontSize: 12,
             fontStyle: 'bold',
-            color: '#9333ea'
+            color: [147, 51, 234],
+            marginBottom: 4
           });
           data.skills.forEach((skill: string) => {
             if (skill && skill.trim()) {
-              leftY = addText(`• ${skill}`, margin, leftY, {
+              leftY = addText(`• ${skill}`, 20, leftY, {
                 fontSize: 9,
                 maxWidth: leftColumnWidth,
-                color: '#7c3aed'
+                color: [124, 58, 237],
+                marginBottom: 2
               });
             }
           });
@@ -229,7 +237,8 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
           rightY = addText('EXPERIENCE', rightColumnX, rightY, {
             fontSize: 12,
             fontStyle: 'bold',
-            color: '#9333ea'
+            color: [147, 51, 234],
+            marginBottom: 4
           });
           
           data.experience.forEach((exp: any) => {
@@ -237,36 +246,40 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
               rightY = addText(exp.jobTitle, rightColumnX, rightY, {
                 fontSize: 11,
                 fontStyle: 'bold',
-                maxWidth: pageWidth - rightColumnX - margin,
-                color: '#1f2937'
+                maxWidth: pageWidth - rightColumnX - 20,
+                color: [31, 41, 55],
+                marginBottom: 2
               });
               
               rightY = addText(exp.company, rightColumnX, rightY, {
                 fontSize: 10,
-                maxWidth: pageWidth - rightColumnX - margin,
-                color: '#9333ea'
+                maxWidth: pageWidth - rightColumnX - 20,
+                color: [147, 51, 234],
+                marginBottom: 2
               });
               
               if (exp.description) {
                 rightY = addText(exp.description, rightColumnX, rightY, {
                   fontSize: 9,
-                  maxWidth: pageWidth - rightColumnX - margin,
-                  color: '#4b5563'
+                  maxWidth: pageWidth - rightColumnX - 20,
+                  color: [75, 85, 99],
+                  lineHeight: 4,
+                  marginBottom: 6
                 });
               }
-              rightY += 4;
             }
           });
         }
         break;
 
       case 'classic':
-        // Classic Template - Centered header
+        // Classic Template - Centered header with traditional styling
         currentY = addText(data.personalInfo?.fullName || '', pageWidth / 2, currentY, {
-          fontSize: 22,
+          fontSize: 24,
           fontStyle: 'bold',
-          color: '#1f2937',
-          align: 'center'
+          color: [31, 41, 55],
+          align: 'center',
+          marginBottom: 5
         });
         
         const classicContact = [];
@@ -277,42 +290,46 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
         if (classicContact.length > 0) {
           currentY = addText(classicContact.join(' • '), pageWidth / 2, currentY, {
             fontSize: 10,
-            color: '#6b7280',
-            align: 'center'
+            color: [107, 114, 128],
+            align: 'center',
+            marginBottom: 8
           });
         }
         
         // Traditional line
         pdf.setDrawColor(209, 213, 219);
-        pdf.line(margin, currentY + 3, pageWidth - margin, currentY + 3);
+        pdf.setLineWidth(1);
+        pdf.line(20, currentY, pageWidth - 20, currentY);
         currentY += 10;
 
         if (data.personalInfo?.summary) {
-          currentY = addText('PROFESSIONAL SUMMARY', margin, currentY, {
+          currentY = addText('PROFESSIONAL SUMMARY', 20, currentY, {
             fontSize: 14,
             fontStyle: 'bold',
-            color: '#1f2937'
+            color: [31, 41, 55],
+            marginBottom: 3
           });
           pdf.setDrawColor(75, 85, 99);
-          pdf.line(margin, currentY, pageWidth - margin, currentY);
-          currentY += 4;
-          currentY = addText(data.personalInfo.summary, margin, currentY, {
+          pdf.line(20, currentY - 1, pageWidth - 20, currentY - 1);
+          currentY += 3;
+          currentY = addText(data.personalInfo.summary, 20, currentY, {
             fontSize: 10,
-            color: '#374151'
+            color: [55, 65, 81],
+            lineHeight: 5,
+            marginBottom: 10
           });
         }
         break;
 
       case 'minimal':
-        // Minimal Template - Centered, clean
+        // Minimal Template - Centered, clean design exactly as shown
         currentY = addText(data.personalInfo?.fullName || '', pageWidth / 2, currentY, {
-          fontSize: 28,
-          fontStyle: 'normal',
-          color: '#1f2937',
-          align: 'center'
+          fontSize: 32,
+          fontStyle: 'normal', // thin font
+          color: [31, 41, 55],
+          align: 'center',
+          marginBottom: 8
         });
-        
-        currentY += 4;
         
         const minimalContact = [];
         if (data.personalInfo?.email) minimalContact.push(data.personalInfo.email);
@@ -322,241 +339,321 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
         if (minimalContact.length > 0) {
           currentY = addText(minimalContact.join(' • '), pageWidth / 2, currentY, {
             fontSize: 9,
-            color: '#6b7280',
-            align: 'center'
+            color: [107, 114, 128],
+            align: 'center',
+            marginBottom: 10
           });
         }
-        
-        currentY += 8;
 
         if (data.personalInfo?.summary) {
           currentY = addText(data.personalInfo.summary, pageWidth / 2, currentY, {
             fontSize: 10,
-            color: '#374151',
-            align: 'center'
+            color: [55, 65, 81],
+            align: 'center',
+            marginBottom: 12,
+            fontStyle: 'italic'
           });
-          currentY += 8;
         }
 
         if (data.experience?.length > 0) {
           currentY = addText('EXPERIENCE', pageWidth / 2, currentY, {
             fontSize: 16,
-            fontStyle: 'bold',
-            color: '#1f2937',
-            align: 'center'
+            fontStyle: 'normal', // thin
+            color: [31, 41, 55],
+            align: 'center',
+            marginBottom: 8
           });
-          currentY += 6;
           
           data.experience.forEach((exp: any) => {
             if (exp.jobTitle && exp.company) {
               currentY = addText(exp.jobTitle, pageWidth / 2, currentY, {
                 fontSize: 12,
                 fontStyle: 'bold',
-                color: '#1f2937',
-                align: 'center'
+                color: [31, 41, 55],
+                align: 'center',
+                marginBottom: 2
               });
               
               currentY = addText(exp.company, pageWidth / 2, currentY, {
                 fontSize: 10,
-                color: '#6b7280',
-                align: 'center'
+                color: [107, 114, 128],
+                align: 'center',
+                marginBottom: 2
               });
               
               const dateText = `${exp.startDate || ''} - ${exp.current ? 'Present' : exp.endDate || ''}`;
               currentY = addText(dateText, pageWidth / 2, currentY, {
                 fontSize: 9,
-                color: '#9ca3af',
-                align: 'center'
+                color: [156, 163, 175],
+                align: 'center',
+                marginBottom: 3
               });
               
               if (exp.description) {
-                currentY = addText(exp.description, margin, currentY, {
+                currentY = addText(exp.description, 20, currentY, {
                   fontSize: 9,
-                  color: '#4b5563'
+                  color: [75, 85, 99],
+                  lineHeight: 4,
+                  marginBottom: 10
                 });
               }
-              currentY += 8;
             }
           });
         }
         break;
 
       case 'executive':
-        // Executive Template - Bold and professional
-        currentY = addText(data.personalInfo?.fullName || '', margin, currentY, {
-          fontSize: 26,
+        // Executive Template - Bold and professional with heavy lines
+        currentY = addText(data.personalInfo?.fullName || '', 20, currentY, {
+          fontSize: 28,
           fontStyle: 'bold',
-          color: '#1f2937'
+          color: [31, 41, 55],
+          marginBottom: 5
         });
         
-        // Heavy underline
+        // Heavy underline like executive template
         pdf.setDrawColor(31, 41, 55);
-        pdf.setLineWidth(3);
-        pdf.line(margin, currentY + 2, pageWidth - margin, currentY + 2);
-        currentY += 10;
+        pdf.setLineWidth(4);
+        pdf.line(20, currentY + 2, pageWidth - 20, currentY + 2);
+        currentY += 15;
 
-        // Contact split left/right
+        // Contact split left/right like template
         if (data.personalInfo?.email) {
-          addText(`Email: ${data.personalInfo.email}`, margin, currentY, {
+          addText(`Email: ${data.personalInfo.email}`, 20, currentY, {
             fontSize: 10,
-            color: '#4b5563'
+            color: [75, 85, 99]
           });
         }
         
         if (data.personalInfo?.phone) {
-          addText(`Phone: ${data.personalInfo.phone}`, pageWidth - margin, currentY, {
+          addText(`Phone: ${data.personalInfo.phone}`, pageWidth - 20, currentY, {
             fontSize: 10,
-            color: '#4b5563',
+            color: [75, 85, 99],
             align: 'right'
           });
         }
         
-        currentY += 8;
+        currentY += 12;
 
         if (data.personalInfo?.summary) {
-          currentY = addText('EXECUTIVE SUMMARY', margin, currentY, {
+          currentY = addText('EXECUTIVE SUMMARY', 20, currentY, {
             fontSize: 16,
             fontStyle: 'bold',
-            color: '#1f2937'
+            color: [31, 41, 55],
+            marginBottom: 3
           });
           pdf.setDrawColor(31, 41, 55);
           pdf.setLineWidth(1);
-          pdf.line(margin, currentY, pageWidth - margin, currentY);
+          pdf.line(20, currentY - 1, pageWidth - 20, currentY - 1);
           currentY += 4;
-          currentY = addText(data.personalInfo.summary, margin, currentY, {
+          currentY = addText(data.personalInfo.summary, 20, currentY, {
             fontSize: 11,
-            color: '#374151'
+            color: [55, 65, 81],
+            lineHeight: 6,
+            marginBottom: 10
           });
         }
         break;
 
       case 'tech':
-        // Tech Template - Green accents, structured
-        currentY = addText(data.personalInfo?.fullName || '', margin, currentY, {
+        // Tech Template - Dark theme with green accents
+        // Set dark background
+        setFillColor(17, 24, 39); // gray-900
+        pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+        
+        // Green gradient header
+        setFillColor(34, 197, 94); // green-500
+        pdf.rect(0, 0, pageWidth, 40, 'F');
+        
+        currentY = addText(data.personalInfo?.fullName || '', 20, 20, {
           fontSize: 24,
           fontStyle: 'bold',
-          color: '#1f2937'
+          color: [255, 255, 255],
+          marginBottom: 3
         });
         
-        pdf.setDrawColor(16, 185, 129);
-        pdf.setLineWidth(2);
-        pdf.line(margin, currentY, pageWidth - margin, currentY);
-        currentY += 8;
+        const techContact = [];
+        if (data.personalInfo?.email) techContact.push(data.personalInfo.email);
+        if (data.personalInfo?.phone) techContact.push(data.personalInfo.phone);
+        if (data.personalInfo?.location) techContact.push(data.personalInfo.location);
+        
+        if (techContact.length > 0) {
+          addText(techContact.join(' • '), 20, 30, {
+            fontSize: 9,
+            color: [255, 255, 255]
+          });
+        }
+        
+        currentY = 50;
 
-        if (data.personalInfo?.email) {
-          currentY = addText(`> ${data.personalInfo.email}`, margin, currentY, {
-            fontSize: 9,
-            color: '#059669'
+        // Two-column layout like tech template
+        let techLeftY = currentY;
+        if (data.skills?.length > 0) {
+          techLeftY = addText('TECH STACK', 20, techLeftY, {
+            fontSize: 12,
+            fontStyle: 'bold',
+            color: [34, 197, 94], // green-500
+            marginBottom: 4
+          });
+          data.skills.forEach((skill: string) => {
+            if (skill && skill.trim()) {
+              techLeftY = addText(`> ${skill}`, 20, techLeftY, {
+                fontSize: 9,
+                maxWidth: 60,
+                color: [34, 197, 94],
+                marginBottom: 2
+              });
+            }
           });
         }
         
-        if (data.personalInfo?.phone) {
-          currentY = addText(`> ${data.personalInfo.phone}`, margin, currentY, {
-            fontSize: 9,
-            color: '#059669'
+        // Right column - Experience
+        let techRightY = currentY;
+        if (data.experience?.length > 0) {
+          techRightY = addText('EXPERIENCE', 80, techRightY, {
+            fontSize: 12,
+            fontStyle: 'bold',
+            color: [34, 197, 94],
+            marginBottom: 4
+          });
+          
+          data.experience.forEach((exp: any) => {
+            if (exp.jobTitle && exp.company) {
+              techRightY = addText(exp.jobTitle, 80, techRightY, {
+                fontSize: 11,
+                fontStyle: 'bold',
+                maxWidth: pageWidth - 100,
+                color: [255, 255, 255],
+                marginBottom: 2
+              });
+              
+              techRightY = addText(exp.company, 80, techRightY, {
+                fontSize: 10,
+                maxWidth: pageWidth - 100,
+                color: [34, 197, 94],
+                marginBottom: 2
+              });
+              
+              if (exp.description) {
+                techRightY = addText(exp.description, 80, techRightY, {
+                  fontSize: 9,
+                  maxWidth: pageWidth - 100,
+                  color: [209, 213, 219],
+                  lineHeight: 4,
+                  marginBottom: 6
+                });
+              }
+            }
           });
         }
-        
-        currentY += 4;
         break;
 
       default:
         // Fallback to modern
-        currentY = addText(data.personalInfo?.fullName || '', margin, currentY, {
+        currentY = addText(data.personalInfo?.fullName || '', 20, currentY, {
           fontSize: 24,
           fontStyle: 'bold'
         });
     }
 
-    // Common sections for all templates except creative and minimal
-    if (!['creative', 'minimal'].includes(templateName)) {
-      // Skills
+    // Add common sections for templates that need them
+    if (!['creative', 'minimal', 'tech'].includes(templateName)) {
+      // Skills section
       if (data.skills?.length > 0 && data.skills.some((skill: string) => skill && skill.trim())) {
         const validSkills = data.skills.filter((skill: string) => skill && skill.trim());
-        currentY += 6;
-        const skillsColor = templateName === 'tech' ? '#10b981' : '#2563eb';
-        currentY = addText('SKILLS', margin, currentY, {
+        currentY += 10;
+        const skillsColor = templateName === 'executive' ? [31, 41, 55] : [37, 99, 235];
+        currentY = addText('SKILLS', 20, currentY, {
           fontSize: 14,
           fontStyle: 'bold',
-          color: skillsColor
+          color: skillsColor,
+          marginBottom: 3
         });
-        pdf.setDrawColor(templateName === 'tech' ? 16 : 37, templateName === 'tech' ? 185 : 99, templateName === 'tech' ? 129 : 235);
-        pdf.line(margin, currentY, pageWidth - margin, currentY);
+        pdf.setDrawColor(skillsColor[0], skillsColor[1], skillsColor[2]);
+        pdf.line(20, currentY - 1, pageWidth - 20, currentY - 1);
         currentY += 4;
         const skillsText = validSkills.join(' • ');
-        currentY = addText(skillsText, margin, currentY, {
+        currentY = addText(skillsText, 20, currentY, {
           fontSize: 10,
-          color: '#374151'
+          color: [55, 65, 81],
+          lineHeight: 5,
+          marginBottom: 10
         });
       }
 
-      // Education
+      // Education section
       if (data.education?.length > 0) {
-        currentY += 6;
-        const eduColor = templateName === 'tech' ? '#10b981' : '#2563eb';
-        currentY = addText('EDUCATION', margin, currentY, {
+        currentY += 10;
+        const eduColor = templateName === 'executive' ? [31, 41, 55] : [37, 99, 235];
+        currentY = addText('EDUCATION', 20, currentY, {
           fontSize: 14,
           fontStyle: 'bold',
-          color: eduColor
+          color: eduColor,
+          marginBottom: 3
         });
-        pdf.setDrawColor(templateName === 'tech' ? 16 : 37, templateName === 'tech' ? 185 : 99, templateName === 'tech' ? 129 : 235);
-        pdf.line(margin, currentY, pageWidth - margin, currentY);
+        pdf.setDrawColor(eduColor[0], eduColor[1], eduColor[2]);
+        pdf.line(20, currentY - 1, pageWidth - 20, currentY - 1);
         currentY += 4;
         
         data.education.forEach((edu: any) => {
           if (edu.degree && edu.school) {
-            currentY = addText(`${edu.degree} - ${edu.school}`, margin, currentY, {
+            currentY = addText(`${edu.degree} - ${edu.school}`, 20, currentY, {
               fontSize: 11,
               fontStyle: 'bold',
-              color: '#1f2937'
+              color: [31, 41, 55],
+              marginBottom: 2
             });
             
             if (edu.graduationDate) {
-              currentY = addText(edu.graduationDate, margin, currentY, {
+              currentY = addText(edu.graduationDate, 20, currentY, {
                 fontSize: 9,
-                color: '#6b7280'
+                color: [107, 114, 128],
+                marginBottom: 5
               });
             }
-            currentY += 3;
           }
         });
       }
 
-      // Projects
+      // Projects section
       if (data.projects?.length > 0) {
-        currentY += 6;
-        const projectColor = templateName === 'tech' ? '#10b981' : '#2563eb';
-        currentY = addText('PROJECTS', margin, currentY, {
+        currentY += 10;
+        const projectColor = templateName === 'executive' ? [31, 41, 55] : [37, 99, 235];
+        currentY = addText('PROJECTS', 20, currentY, {
           fontSize: 14,
           fontStyle: 'bold',
-          color: projectColor
+          color: projectColor,
+          marginBottom: 3
         });
-        pdf.setDrawColor(templateName === 'tech' ? 16 : 37, templateName === 'tech' ? 185 : 99, templateName === 'tech' ? 129 : 235);
-        pdf.line(margin, currentY, pageWidth - margin, currentY);
+        pdf.setDrawColor(projectColor[0], projectColor[1], projectColor[2]);
+        pdf.line(20, currentY - 1, pageWidth - 20, currentY - 1);
         currentY += 4;
         
         data.projects.forEach((project: any) => {
           if (project.name) {
-            currentY = addText(project.name, margin, currentY, {
+            currentY = addText(project.name, 20, currentY, {
               fontSize: 11,
               fontStyle: 'bold',
-              color: '#1f2937'
+              color: [31, 41, 55],
+              marginBottom: 2
             });
             
             if (project.description) {
-              currentY = addText(project.description, margin, currentY, {
+              currentY = addText(project.description, 20, currentY, {
                 fontSize: 10,
-                color: '#4b5563'
+                color: [75, 85, 99],
+                lineHeight: 4,
+                marginBottom: 3
               });
             }
             
             if (project.technologies) {
-              currentY = addText(`Technologies: ${project.technologies}`, margin, currentY, {
+              currentY = addText(`Technologies: ${project.technologies}`, 20, currentY, {
                 fontSize: 9,
-                color: '#6b7280'
+                color: [107, 114, 128],
+                marginBottom: 6
               });
             }
-            currentY += 4;
           }
         });
       }
