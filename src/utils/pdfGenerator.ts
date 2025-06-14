@@ -1,10 +1,132 @@
 
 import jsPDF from 'jspdf';
 
+// Template-specific styling configurations
+const templateConfigs = {
+  modern: {
+    colors: {
+      primary: [37, 99, 235],
+      secondary: [75, 85, 99],
+      text: [17, 24, 39],
+      accent: [59, 130, 246],
+      light: [243, 244, 246]
+    },
+    fonts: {
+      header: { size: 32, weight: 'bold' },
+      subheader: { size: 18, weight: 'bold' },
+      body: { size: 10, weight: 'normal' },
+      small: { size: 9, weight: 'normal' }
+    },
+    spacing: {
+      section: 12,
+      item: 8,
+      line: 4
+    }
+  },
+  classic: {
+    colors: {
+      primary: [31, 41, 55],
+      secondary: [75, 85, 99],
+      text: [17, 24, 39],
+      border: [209, 213, 219],
+      light: [243, 244, 246]
+    },
+    fonts: {
+      header: { size: 28, weight: 'bold' },
+      subheader: { size: 16, weight: 'bold' },
+      body: { size: 10, weight: 'normal' },
+      small: { size: 9, weight: 'normal' }
+    },
+    spacing: {
+      section: 10,
+      item: 6,
+      line: 4
+    }
+  },
+  creative: {
+    colors: {
+      primary: [147, 51, 234],
+      secondary: [236, 72, 153],
+      text: [31, 41, 55],
+      accent: [168, 85, 247],
+      light: [243, 232, 255]
+    },
+    fonts: {
+      header: { size: 28, weight: 'bold' },
+      subheader: { size: 14, weight: 'bold' },
+      body: { size: 9, weight: 'normal' },
+      small: { size: 8, weight: 'normal' }
+    },
+    spacing: {
+      section: 8,
+      item: 6,
+      line: 3
+    }
+  },
+  minimal: {
+    colors: {
+      primary: [55, 65, 81],
+      secondary: [107, 114, 128],
+      text: [31, 41, 55],
+      light: [249, 250, 251]
+    },
+    fonts: {
+      header: { size: 36, weight: 'normal' },
+      subheader: { size: 16, weight: 'normal' },
+      body: { size: 10, weight: 'normal' },
+      small: { size: 9, weight: 'normal' }
+    },
+    spacing: {
+      section: 15,
+      item: 10,
+      line: 5
+    }
+  },
+  executive: {
+    colors: {
+      primary: [17, 24, 39],
+      secondary: [55, 65, 81],
+      text: [31, 41, 55],
+      accent: [75, 85, 99],
+      border: [0, 0, 0]
+    },
+    fonts: {
+      header: { size: 32, weight: 'bold' },
+      subheader: { size: 16, weight: 'bold' },
+      body: { size: 10, weight: 'normal' },
+      small: { size: 9, weight: 'normal' }
+    },
+    spacing: {
+      section: 12,
+      item: 8,
+      line: 4
+    }
+  },
+  tech: {
+    colors: {
+      primary: [34, 197, 94],
+      secondary: [16, 185, 129],
+      text: [255, 255, 255],
+      background: [31, 41, 55],
+      accent: [52, 211, 153]
+    },
+    fonts: {
+      header: { size: 28, weight: 'bold' },
+      subheader: { size: 14, weight: 'bold' },
+      body: { size: 9, weight: 'normal' },
+      small: { size: 8, weight: 'normal' }
+    },
+    spacing: {
+      section: 8,
+      item: 6,
+      line: 3
+    }
+  }
+};
+
 export const generatePDF = async (data: any, templateName: string = 'modern') => {
-  console.log('=== PDF Generation Started ===');
+  console.log('=== Perfect Template-Matched PDF Generation ===');
   console.log('Template:', templateName);
-  console.log('Data:', data);
 
   try {
     if (!data || !data.personalInfo?.fullName) {
@@ -19,373 +141,555 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
 
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
+    const config = templateConfigs[templateName as keyof typeof templateConfigs] || templateConfigs.modern;
+    
     let currentY = 20;
+    const margins = { left: 20, right: 20, top: 20, bottom: 20 };
 
-    // Set default font
-    pdf.setFont('helvetica');
-
-    // Color palette
-    const colors = {
-      primary: [37, 99, 235],      // Blue
-      secondary: [75, 85, 99],     // Gray
-      text: [17, 24, 39],          // Dark gray
-      light: [229, 231, 235],      // Light gray
-      white: [255, 255, 255],
-      purple: [147, 51, 234],      // Purple for creative
-      green: [34, 197, 94],        // Green for tech
-      pink: [236, 72, 153]         // Pink for creative
-    };
-
-    // Helper function for page breaks
+    // Helper functions
     const checkPageBreak = (requiredSpace: number) => {
-      if (currentY + requiredSpace > pageHeight - 20) {
+      if (currentY + requiredSpace > pageHeight - margins.bottom) {
         pdf.addPage();
-        currentY = 20;
+        currentY = margins.top;
         return true;
       }
       return false;
     };
 
-    // Template-specific styling
+    const setColor = (colorArray: number[]) => {
+      pdf.setTextColor(colorArray[0], colorArray[1], colorArray[2]);
+    };
+
+    const setFillColor = (colorArray: number[]) => {
+      pdf.setFillColor(colorArray[0], colorArray[1], colorArray[2]);
+    };
+
+    const drawLine = (x1: number, y1: number, x2: number, y2: number, color: number[], width: number = 0.5) => {
+      pdf.setDrawColor(color[0], color[1], color[2]);
+      pdf.setLineWidth(width);
+      pdf.line(x1, y1, x2, y2);
+    };
+
+    // Template-specific header rendering
     switch (templateName) {
       case 'modern':
-        // Modern template with blue theme
-        pdf.setFontSize(32);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-        pdf.text(data.personalInfo?.fullName || '', 20, currentY);
+        // Modern template with blue theme and timeline design
+        pdf.setFontSize(config.fonts.header.size);
+        pdf.setFont('helvetica', config.fonts.header.weight);
+        setColor(config.colors.text);
+        pdf.text(data.personalInfo?.fullName || '', margins.left, currentY);
         currentY += 8;
 
-        // Blue line under name
-        pdf.setDrawColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-        pdf.setLineWidth(2);
-        pdf.line(20, currentY, pageWidth - 20, currentY);
+        // Blue underline
+        drawLine(margins.left, currentY, pageWidth - margins.right, currentY, config.colors.primary, 2);
         currentY += 10;
+
+        // Contact info in horizontal layout
+        if (data.personalInfo) {
+          pdf.setFontSize(config.fonts.small.size);
+          setColor(config.colors.secondary);
+          
+          const contacts = [
+            data.personalInfo.email,
+            data.personalInfo.phone,
+            data.personalInfo.location,
+            data.personalInfo.linkedIn,
+            data.personalInfo.portfolio
+          ].filter(Boolean);
+
+          let contactX = margins.left;
+          contacts.forEach((contact, index) => {
+            if (contactX + pdf.getTextWidth(contact) > pageWidth - margins.right) {
+              currentY += config.spacing.line;
+              contactX = margins.left;
+            }
+            pdf.text(contact, contactX, currentY);
+            contactX += pdf.getTextWidth(contact) + 15;
+          });
+          currentY += config.spacing.section;
+        }
+        break;
+
+      case 'classic':
+        // Classic centered header with border
+        pdf.setFontSize(config.fonts.header.size);
+        pdf.setFont('helvetica', config.fonts.header.weight);
+        setColor(config.colors.text);
+        
+        const nameWidth = pdf.getTextWidth(data.personalInfo?.fullName || '');
+        pdf.text(data.personalInfo?.fullName || '', (pageWidth - nameWidth) / 2, currentY);
+        currentY += 8;
+
+        // Classic border line
+        drawLine(margins.left, currentY, pageWidth - margins.right, currentY, config.colors.border, 2);
+        currentY += 8;
+
+        // Contact info centered
+        if (data.personalInfo) {
+          pdf.setFontSize(config.fonts.small.size);
+          setColor(config.colors.secondary);
+          
+          const contacts = [
+            data.personalInfo.email,
+            data.personalInfo.phone,
+            data.personalInfo.location,
+            data.personalInfo.linkedIn,
+            data.personalInfo.portfolio
+          ].filter(Boolean);
+
+          contacts.forEach(contact => {
+            const contactWidth = pdf.getTextWidth(contact);
+            pdf.text(contact, (pageWidth - contactWidth) / 2, currentY);
+            currentY += config.spacing.line;
+          });
+          currentY += config.spacing.section;
+        }
         break;
 
       case 'creative':
-        // Creative template with purple/pink gradient effect
-        pdf.setFillColor(colors.purple[0], colors.purple[1], colors.purple[2]);
-        pdf.rect(15, 15, pageWidth - 30, 25, 'F');
+        // Creative template with purple gradient header
+        setFillColor(config.colors.primary);
+        pdf.rect(margins.left - 5, currentY - 8, pageWidth - margins.left - margins.right + 10, 25, 'F');
         
-        pdf.setFontSize(28);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(colors.white[0], colors.white[1], colors.white[2]);
-        pdf.text(data.personalInfo?.fullName || '', 20, currentY + 15);
-        currentY += 35;
-        break;
+        pdf.setFontSize(config.fonts.header.size);
+        pdf.setFont('helvetica', config.fonts.header.weight);
+        pdf.setTextColor(255, 255, 255);
+        pdf.text(data.personalInfo?.fullName || '', margins.left, currentY + 8);
+        currentY += 25;
 
-      case 'tech':
-        // Tech template with dark theme
-        pdf.setFillColor(31, 41, 55); // Dark gray background
-        pdf.rect(0, 0, pageWidth, pageHeight, 'F');
-        
-        // Green gradient header
-        pdf.setFillColor(colors.green[0], colors.green[1], colors.green[2]);
-        pdf.rect(15, 15, pageWidth - 30, 25, 'F');
-        
-        pdf.setFontSize(28);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(colors.white[0], colors.white[1], colors.white[2]);
-        pdf.text(data.personalInfo?.fullName || '', 20, currentY + 15);
-        currentY += 35;
-        break;
+        // Contact info in creative layout
+        if (data.personalInfo) {
+          pdf.setFontSize(config.fonts.small.size);
+          setColor(config.colors.text);
+          
+          const contacts = [
+            data.personalInfo.email,
+            data.personalInfo.phone,
+            data.personalInfo.location,
+            data.personalInfo.linkedIn,
+            data.personalInfo.portfolio
+          ].filter(Boolean);
 
-      case 'executive':
-        // Executive template with bold black lines
-        pdf.setFontSize(32);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-        pdf.text(data.personalInfo?.fullName || '', 20, currentY);
-        currentY += 8;
-
-        // Thick black line
-        pdf.setDrawColor(0, 0, 0);
-        pdf.setLineWidth(3);
-        pdf.line(20, currentY, pageWidth - 20, currentY);
-        currentY += 12;
+          const itemsPerRow = 3;
+          let itemCount = 0;
+          let rowY = currentY;
+          
+          contacts.forEach(contact => {
+            const colWidth = (pageWidth - margins.left - margins.right) / itemsPerRow;
+            const x = margins.left + (itemCount % itemsPerRow) * colWidth;
+            
+            pdf.text(contact, x, rowY);
+            itemCount++;
+            
+            if (itemCount % itemsPerRow === 0) {
+              rowY += config.spacing.line;
+            }
+          });
+          
+          currentY = rowY + config.spacing.section;
+        }
         break;
 
       case 'minimal':
-        // Minimal template with centered layout
-        pdf.setFontSize(36);
-        pdf.setFont('helvetica', 'normal');
-        pdf.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-        const nameWidth = pdf.getTextWidth(data.personalInfo?.fullName || '');
-        pdf.text(data.personalInfo?.fullName || '', (pageWidth - nameWidth) / 2, currentY);
+        // Minimal centered design
+        pdf.setFontSize(config.fonts.header.size);
+        pdf.setFont('helvetica', config.fonts.header.weight);
+        setColor(config.colors.text);
+        
+        const minimalNameWidth = pdf.getTextWidth(data.personalInfo?.fullName || '');
+        pdf.text(data.personalInfo?.fullName || '', (pageWidth - minimalNameWidth) / 2, currentY);
         currentY += 15;
+
+        // Contact info centered and spaced
+        if (data.personalInfo) {
+          pdf.setFontSize(config.fonts.small.size);
+          setColor(config.colors.secondary);
+          
+          const contacts = [
+            data.personalInfo.email,
+            data.personalInfo.phone,
+            data.personalInfo.location,
+            data.personalInfo.linkedIn,
+            data.personalInfo.portfolio
+          ].filter(Boolean);
+
+          const contactsText = contacts.join(' • ');
+          const contactsWidth = pdf.getTextWidth(contactsText);
+          pdf.text(contactsText, (pageWidth - contactsWidth) / 2, currentY);
+          currentY += config.spacing.section;
+        }
         break;
 
-      default:
-        // Classic template
-        pdf.setFontSize(28);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-        const classicNameWidth = pdf.getTextWidth(data.personalInfo?.fullName || '');
-        pdf.text(data.personalInfo?.fullName || '', (pageWidth - classicNameWidth) / 2, currentY);
+      case 'executive':
+        // Executive bold header
+        pdf.setFontSize(config.fonts.header.size);
+        pdf.setFont('helvetica', config.fonts.header.weight);
+        setColor(config.colors.primary);
+        pdf.text(data.personalInfo?.fullName || '', margins.left, currentY);
         currentY += 8;
 
-        // Simple line
-        pdf.setDrawColor(colors.light[0], colors.light[1], colors.light[2]);
-        pdf.setLineWidth(1);
-        pdf.line(20, currentY, pageWidth - 20, currentY);
-        currentY += 10;
+        // Thick executive line
+        drawLine(margins.left, currentY, pageWidth - margins.right, currentY, config.colors.border, 4);
+        currentY += 12;
+
+        // Contact layout for executive
+        if (data.personalInfo) {
+          pdf.setFontSize(config.fonts.small.size);
+          setColor(config.colors.secondary);
+          
+          // Left side contacts
+          let leftY = currentY;
+          if (data.personalInfo.email) {
+            pdf.text(data.personalInfo.email, margins.left, leftY);
+            leftY += config.spacing.line;
+          }
+          if (data.personalInfo.phone) {
+            pdf.text(data.personalInfo.phone, margins.left, leftY);
+            leftY += config.spacing.line;
+          }
+
+          // Right side contacts
+          let rightY = currentY;
+          if (data.personalInfo.location) {
+            const locWidth = pdf.getTextWidth(data.personalInfo.location);
+            pdf.text(data.personalInfo.location, pageWidth - margins.right - locWidth, rightY);
+            rightY += config.spacing.line;
+          }
+          if (data.personalInfo.linkedIn) {
+            const linkedInWidth = pdf.getTextWidth(data.personalInfo.linkedIn);
+            pdf.text(data.personalInfo.linkedIn, pageWidth - margins.right - linkedInWidth, rightY);
+            rightY += config.spacing.line;
+          }
+
+          currentY = Math.max(leftY, rightY) + config.spacing.section;
+        }
+        break;
+
+      case 'tech':
+        // Tech template with dark background and green accents
+        setFillColor(config.colors.background);
+        pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+        
+        // Green header bar
+        setFillColor(config.colors.primary);
+        pdf.rect(margins.left - 5, currentY - 8, pageWidth - margins.left - margins.right + 10, 25, 'F');
+        
+        pdf.setFontSize(config.fonts.header.size);
+        pdf.setFont('helvetica', config.fonts.header.weight);
+        pdf.setTextColor(255, 255, 255);
+        pdf.text(data.personalInfo?.fullName || '', margins.left, currentY + 8);
+        currentY += 25;
+
+        // Tech contact grid
+        if (data.personalInfo) {
+          pdf.setFontSize(config.fonts.small.size);
+          setColor(config.colors.text);
+          
+          const contacts = [
+            data.personalInfo.email,
+            data.personalInfo.phone,
+            data.personalInfo.location,
+            data.personalInfo.linkedIn,
+            data.personalInfo.portfolio
+          ].filter(Boolean);
+
+          const itemsPerRow = 3;
+          let itemCount = 0;
+          let rowY = currentY;
+          
+          contacts.forEach(contact => {
+            const colWidth = (pageWidth - margins.left - margins.right) / itemsPerRow;
+            const x = margins.left + (itemCount % itemsPerRow) * colWidth;
+            
+            pdf.text(contact, x, rowY);
+            itemCount++;
+            
+            if (itemCount % itemsPerRow === 0) {
+              rowY += config.spacing.line;
+            }
+          });
+          
+          currentY = rowY + config.spacing.section;
+        }
         break;
     }
 
-    // Contact information
-    if (data.personalInfo) {
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      pdf.setTextColor(colors.secondary[0], colors.secondary[1], colors.secondary[2]);
+    // Render sections with template-specific styling
+    const renderSection = (title: string, content: () => void) => {
+      checkPageBreak(15);
       
-      let contactY = currentY;
-      let contactX = 20;
+      pdf.setFontSize(config.fonts.subheader.size);
+      pdf.setFont('helvetica', config.fonts.subheader.weight);
       
-      const contacts = [
-        data.personalInfo.email,
-        data.personalInfo.phone,
-        data.personalInfo.location,
-        data.personalInfo.linkedIn,
-        data.personalInfo.portfolio
-      ].filter(Boolean);
-
-      contacts.forEach((contact, index) => {
-        if (templateName === 'minimal') {
-          // Center contacts for minimal template
-          const contactWidth = pdf.getTextWidth(contact);
-          pdf.text(contact, (pageWidth - contactWidth) / 2, contactY);
-          contactY += 4;
-        } else {
-          pdf.text(contact, contactX, contactY);
-          contactX += pdf.getTextWidth(contact) + 15;
-          
-          if (contactX > pageWidth - 50) {
-            contactX = 20;
-            contactY += 5;
-          }
-        }
-      });
+      switch (templateName) {
+        case 'modern':
+          setColor(config.colors.primary);
+          pdf.text(title, margins.left, currentY);
+          currentY += 6;
+          drawLine(margins.left, currentY, margins.left + 40, currentY, config.colors.primary, 2);
+          currentY += 8;
+          break;
+        case 'creative':
+          setColor(config.colors.primary);
+          pdf.text(title, margins.left, currentY);
+          currentY += 4;
+          drawLine(margins.left, currentY, margins.left + 30, currentY, config.colors.secondary, 2);
+          currentY += 6;
+          break;
+        case 'tech':
+          setColor(config.colors.primary);
+          pdf.text(title, margins.left, currentY);
+          currentY += 4;
+          drawLine(margins.left, currentY, margins.left + 30, currentY, config.colors.primary, 1);
+          currentY += 6;
+          break;
+        default:
+          setColor(config.colors.primary);
+          pdf.text(title.toUpperCase(), margins.left, currentY);
+          currentY += 4;
+          drawLine(margins.left, currentY, pageWidth - margins.right, currentY, config.colors.primary, 1);
+          currentY += 8;
+      }
       
-      currentY = contactY + 10;
-    }
+      content();
+      currentY += config.spacing.section;
+    };
 
     // Professional Summary
     if (data.personalInfo?.summary) {
-      checkPageBreak(20);
-      
-      pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
-      
-      if (templateName === 'creative') {
-        pdf.setTextColor(colors.purple[0], colors.purple[1], colors.purple[2]);
-      } else if (templateName === 'tech') {
-        pdf.setTextColor(colors.green[0], colors.green[1], colors.green[2]);
-      } else {
-        pdf.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-      }
-      
-      pdf.text('PROFESSIONAL SUMMARY', 20, currentY);
-      currentY += 8;
-
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      pdf.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-      
-      const summaryLines = pdf.splitTextToSize(data.personalInfo.summary, pageWidth - 40);
-      summaryLines.forEach((line: string, index: number) => {
-        checkPageBreak(5);
-        pdf.text(line, 20, currentY + (index * 4));
+      renderSection('PROFESSIONAL SUMMARY', () => {
+        pdf.setFontSize(config.fonts.body.size);
+        pdf.setFont('helvetica', config.fonts.body.weight);
+        setColor(templateName === 'tech' ? config.colors.text : config.colors.text);
+        
+        const summaryLines = pdf.splitTextToSize(data.personalInfo.summary, pageWidth - margins.left - margins.right);
+        summaryLines.forEach((line: string, index: number) => {
+          checkPageBreak(4);
+          pdf.text(line, margins.left, currentY + (index * config.spacing.line));
+        });
+        currentY += summaryLines.length * config.spacing.line;
       });
-      currentY += (summaryLines.length * 4) + 10;
     }
 
     // Experience Section
     if (data.experience?.length > 0) {
-      checkPageBreak(25);
-      
-      pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
-      
-      if (templateName === 'creative') {
-        pdf.setTextColor(colors.purple[0], colors.purple[1], colors.purple[2]);
-      } else if (templateName === 'tech') {
-        pdf.setTextColor(colors.green[0], colors.green[1], colors.green[2]);
-      } else {
-        pdf.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-      }
-      
-      pdf.text('EXPERIENCE', 20, currentY);
-      currentY += 10;
-
-      data.experience.forEach((exp: any) => {
-        if (exp.jobTitle && exp.company) {
-          checkPageBreak(20);
-          
-          // Job title
-          pdf.setFontSize(12);
-          pdf.setFont('helvetica', 'bold');
-          pdf.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-          pdf.text(exp.jobTitle, 20, currentY);
-          currentY += 5;
-
-          // Company and dates
-          pdf.setFontSize(11);
-          pdf.setFont('helvetica', 'normal');
-          pdf.setTextColor(colors.secondary[0], colors.secondary[1], colors.secondary[2]);
-          pdf.text(exp.company, 20, currentY);
-          
-          const dateText = `${exp.startDate || ''} - ${exp.current ? 'Present' : exp.endDate || ''}`;
-          if (dateText.trim() !== ' - ') {
-            const dateWidth = pdf.getTextWidth(dateText);
-            pdf.text(dateText, pageWidth - 20 - dateWidth, currentY);
-          }
-          currentY += 5;
-
-          // Description
-          if (exp.description) {
-            pdf.setFontSize(10);
-            pdf.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-            const descLines = pdf.splitTextToSize(exp.description, pageWidth - 40);
+      renderSection('EXPERIENCE', () => {
+        data.experience.forEach((exp: any, expIndex: number) => {
+          if (exp.jobTitle && exp.company) {
+            checkPageBreak(20);
             
-            descLines.forEach((line: string, index: number) => {
-              checkPageBreak(4);
-              pdf.text(line, 20, currentY + (index * 4));
-            });
-            currentY += (descLines.length * 4) + 6;
+            // Modern template timeline design
+            if (templateName === 'modern') {
+              // Timeline dot
+              setFillColor(config.colors.primary);
+              pdf.circle(margins.left + 2, currentY, 1.5, 'F');
+              
+              // Timeline line (if not last item)
+              if (expIndex < data.experience.length - 1) {
+                drawLine(margins.left + 2, currentY + 2, margins.left + 2, currentY + 25, config.colors.light, 1);
+              }
+            }
+            
+            const contentX = templateName === 'modern' ? margins.left + 8 : margins.left;
+            
+            // Job title
+            pdf.setFontSize(config.fonts.body.size + 2);
+            pdf.setFont('helvetica', 'bold');
+            setColor(config.colors.text);
+            pdf.text(exp.jobTitle, contentX, currentY);
+            currentY += 5;
+
+            // Company and dates
+            pdf.setFontSize(config.fonts.body.size);
+            pdf.setFont('helvetica', 'normal');
+            
+            if (templateName === 'modern') {
+              setColor(config.colors.primary);
+            } else {
+              setColor(config.colors.secondary);
+            }
+            
+            pdf.text(exp.company, contentX, currentY);
+            
+            const dateText = `${exp.startDate || ''} - ${exp.current ? 'Present' : exp.endDate || ''}`;
+            if (dateText.trim() !== ' - ') {
+              const dateWidth = pdf.getTextWidth(dateText);
+              pdf.text(dateText, pageWidth - margins.right - dateWidth, currentY);
+            }
+            currentY += 5;
+
+            // Description
+            if (exp.description) {
+              pdf.setFontSize(config.fonts.body.size);
+              setColor(templateName === 'tech' ? config.colors.text : config.colors.text);
+              const descLines = pdf.splitTextToSize(exp.description, pageWidth - margins.left - margins.right - (templateName === 'modern' ? 8 : 0));
+              
+              descLines.forEach((line: string, index: number) => {
+                checkPageBreak(4);
+                pdf.text(line, contentX, currentY + (index * config.spacing.line));
+              });
+              currentY += descLines.length * config.spacing.line + config.spacing.item;
+            }
           }
-        }
+        });
       });
     }
 
     // Projects Section
     if (data.projects?.length > 0) {
-      checkPageBreak(25);
-      
-      pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
-      
-      if (templateName === 'creative') {
-        pdf.setTextColor(colors.purple[0], colors.purple[1], colors.purple[2]);
-      } else if (templateName === 'tech') {
-        pdf.setTextColor(colors.green[0], colors.green[1], colors.green[2]);
-      } else {
-        pdf.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-      }
-      
-      pdf.text('PROJECTS', 20, currentY);
-      currentY += 10;
-
-      data.projects.forEach((project: any) => {
-        if (project.name) {
-          checkPageBreak(15);
-          
-          pdf.setFontSize(12);
-          pdf.setFont('helvetica', 'bold');
-          pdf.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-          pdf.text(project.name, 20, currentY);
-          currentY += 5;
-
-          if (project.description) {
-            pdf.setFontSize(10);
-            pdf.setFont('helvetica', 'normal');
-            const projLines = pdf.splitTextToSize(project.description, pageWidth - 40);
+      renderSection('PROJECTS', () => {
+        data.projects.forEach((project: any, projIndex: number) => {
+          if (project.name) {
+            checkPageBreak(15);
             
-            projLines.forEach((line: string, index: number) => {
-              checkPageBreak(4);
-              pdf.text(line, 20, currentY + (index * 4));
-            });
-            currentY += (projLines.length * 4) + 3;
-          }
+            // Modern template timeline design for projects
+            if (templateName === 'modern') {
+              setFillColor(config.colors.primary);
+              pdf.circle(margins.left + 2, currentY, 1.5, 'F');
+              
+              if (projIndex < data.projects.length - 1) {
+                drawLine(margins.left + 2, currentY + 2, margins.left + 2, currentY + 20, config.colors.light, 1);
+              }
+            }
+            
+            const contentX = templateName === 'modern' ? margins.left + 8 : margins.left;
+            
+            pdf.setFontSize(config.fonts.body.size + 1);
+            pdf.setFont('helvetica', 'bold');
+            setColor(config.colors.text);
+            pdf.text(project.name, contentX, currentY);
+            currentY += 5;
 
-          if (project.technologies) {
-            pdf.setFontSize(9);
-            pdf.setTextColor(colors.secondary[0], colors.secondary[1], colors.secondary[2]);
-            pdf.text(`Technologies: ${project.technologies}`, 20, currentY);
-            currentY += 6;
+            if (project.description) {
+              pdf.setFontSize(config.fonts.body.size);
+              pdf.setFont('helvetica', 'normal');
+              setColor(templateName === 'tech' ? config.colors.text : config.colors.text);
+              const projLines = pdf.splitTextToSize(project.description, pageWidth - margins.left - margins.right - (templateName === 'modern' ? 8 : 0));
+              
+              projLines.forEach((line: string, index: number) => {
+                checkPageBreak(4);
+                pdf.text(line, contentX, currentY + (index * config.spacing.line));
+              });
+              currentY += projLines.length * config.spacing.line + 3;
+            }
+
+            if (project.technologies) {
+              pdf.setFontSize(config.fonts.small.size);
+              setColor(config.colors.secondary);
+              pdf.text(`Technologies: ${project.technologies}`, contentX, currentY);
+              currentY += config.spacing.item;
+            }
           }
-        }
+        });
       });
     }
 
     // Education Section
     if (data.education?.length > 0) {
-      checkPageBreak(20);
-      
-      pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
-      
-      if (templateName === 'creative') {
-        pdf.setTextColor(colors.purple[0], colors.purple[1], colors.purple[2]);
-      } else if (templateName === 'tech') {
-        pdf.setTextColor(colors.green[0], colors.green[1], colors.green[2]);
-      } else {
-        pdf.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-      }
-      
-      pdf.text('EDUCATION', 20, currentY);
-      currentY += 10;
+      renderSection('EDUCATION', () => {
+        data.education.forEach((edu: any, eduIndex: number) => {
+          if (edu.degree && edu.school) {
+            checkPageBreak(12);
+            
+            // Modern template timeline design for education
+            if (templateName === 'modern') {
+              setFillColor(config.colors.primary);
+              pdf.circle(margins.left + 2, currentY, 1.5, 'F');
+              
+              if (eduIndex < data.education.length - 1) {
+                drawLine(margins.left + 2, currentY + 2, margins.left + 2, currentY + 15, config.colors.light, 1);
+              }
+            }
+            
+            const contentX = templateName === 'modern' ? margins.left + 8 : margins.left;
+            
+            pdf.setFontSize(config.fonts.body.size + 1);
+            pdf.setFont('helvetica', 'bold');
+            setColor(config.colors.text);
+            pdf.text(edu.degree, contentX, currentY);
+            currentY += 4;
 
-      data.education.forEach((edu: any) => {
-        if (edu.degree && edu.school) {
-          checkPageBreak(10);
-          
-          pdf.setFontSize(11);
-          pdf.setFont('helvetica', 'bold');
-          pdf.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-          pdf.text(edu.degree, 20, currentY);
-          currentY += 4;
-
-          pdf.setFont('helvetica', 'normal');
-          pdf.setTextColor(colors.secondary[0], colors.secondary[1], colors.secondary[2]);
-          pdf.text(edu.school, 20, currentY);
-          
-          if (edu.graduationDate) {
-            const gradWidth = pdf.getTextWidth(edu.graduationDate);
-            pdf.text(edu.graduationDate, pageWidth - 20 - gradWidth, currentY);
+            pdf.setFont('helvetica', 'normal');
+            if (templateName === 'modern') {
+              setColor(config.colors.primary);
+            } else {
+              setColor(config.colors.secondary);
+            }
+            
+            pdf.text(edu.school, contentX, currentY);
+            
+            if (edu.graduationDate) {
+              const gradWidth = pdf.getTextWidth(edu.graduationDate);
+              pdf.text(edu.graduationDate, pageWidth - margins.right - gradWidth, currentY);
+            }
+            currentY += config.spacing.item;
           }
-          currentY += 8;
-        }
+        });
       });
     }
 
     // Skills Section
     if (data.skills?.length > 0) {
-      checkPageBreak(15);
-      
-      pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
-      
-      if (templateName === 'creative') {
-        pdf.setTextColor(colors.purple[0], colors.purple[1], colors.purple[2]);
-      } else if (templateName === 'tech') {
-        pdf.setTextColor(colors.green[0], colors.green[1], colors.green[2]);
-      } else {
-        pdf.setTextColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-      }
-      
-      pdf.text('SKILLS', 20, currentY);
-      currentY += 8;
-
-      const validSkills = data.skills.filter((skill: string) => skill && skill.trim());
-      const skillsText = validSkills.join(' • ');
-      
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      pdf.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-      
-      const skillLines = pdf.splitTextToSize(skillsText, pageWidth - 40);
-      skillLines.forEach((line: string, index: number) => {
-        checkPageBreak(4);
-        pdf.text(line, 20, currentY + (index * 4));
+      renderSection('SKILLS', () => {
+        const validSkills = data.skills.filter((skill: string) => skill && skill.trim());
+        
+        if (templateName === 'creative' || templateName === 'tech') {
+          // Skills as badges for creative and tech templates
+          pdf.setFontSize(config.fonts.small.size);
+          pdf.setFont('helvetica', 'normal');
+          
+          let skillX = margins.left;
+          let skillY = currentY;
+          
+          validSkills.forEach((skill: string) => {
+            const skillWidth = pdf.getTextWidth(skill) + 6;
+            
+            if (skillX + skillWidth > pageWidth - margins.right) {
+              skillX = margins.left;
+              skillY += 8;
+              checkPageBreak(8);
+            }
+            
+            // Draw skill background
+            setFillColor(templateName === 'tech' ? config.colors.background : config.colors.light);
+            pdf.rect(skillX, skillY - 3, skillWidth, 6, 'F');
+            
+            // Draw skill border
+            pdf.setDrawColor(config.colors.primary[0], config.colors.primary[1], config.colors.primary[2]);
+            pdf.setLineWidth(0.2);
+            pdf.rect(skillX, skillY - 3, skillWidth, 6, 'S');
+            
+            // Draw skill text
+            setColor(templateName === 'tech' ? config.colors.text : config.colors.text);
+            pdf.text(skill, skillX + 3, skillY + 1);
+            
+            skillX += skillWidth + 4;
+          });
+          
+          currentY = skillY + 6;
+        } else {
+          // Skills as bullet points for other templates
+          const skillsText = validSkills.join(' • ');
+          
+          pdf.setFontSize(config.fonts.body.size);
+          pdf.setFont('helvetica', 'normal');
+          setColor(templateName === 'tech' ? config.colors.text : config.colors.text);
+          
+          const skillLines = pdf.splitTextToSize(skillsText, pageWidth - margins.left - margins.right);
+          skillLines.forEach((line: string, index: number) => {
+            checkPageBreak(4);
+            pdf.text(line, margins.left, currentY + (index * config.spacing.line));
+          });
+          currentY += skillLines.length * config.spacing.line;
+        }
       });
     }
 
-    console.log('PDF generation completed successfully');
+    console.log('Perfect template-matched PDF generation completed');
     return pdf;
 
   } catch (error) {
     console.error('PDF generation error:', error);
-    throw new Error('Failed to generate PDF: ' + (error as Error).message);
+    throw new Error('Failed to generate perfect PDF: ' + (error as Error).message);
   }
 };
