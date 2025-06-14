@@ -1,3 +1,4 @@
+
 import html2canvas from 'html2canvas';
 
 export const generatePDF = async (data: any, templateName: string = 'modern') => {
@@ -14,11 +15,11 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
 
     console.log('Found resume element, preparing for capture...');
     
-    // Ensure the element is visible and scrolled into view
+    // Ensure the element is visible and properly displayed
     resumeElement.scrollIntoView({ behavior: 'instant', block: 'start' });
     
-    // Wait for scroll to complete
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // Wait for scroll and rendering to complete
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     // Store original styles
     const originalStyles = {
@@ -28,49 +29,57 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       position: resumeElement.style.position,
       zIndex: resumeElement.style.zIndex,
       width: resumeElement.style.width,
-      height: resumeElement.style.height
+      height: resumeElement.style.height,
+      overflow: resumeElement.style.overflow,
+      backgroundColor: resumeElement.style.backgroundColor
     };
     
-    // Set exact A4 dimensions for the element (210mm x 297mm at 96 DPI)
-    const A4_WIDTH_PX = 794;  // 210mm at 96 DPI
-    const A4_HEIGHT_PX = 1123; // 297mm at 96 DPI
-    
-    // Temporarily set exact A4 dimensions and reset transforms
+    // Set optimal styles for capture
     resumeElement.style.transform = 'none';
     resumeElement.style.scale = '1';
     resumeElement.style.visibility = 'visible';
     resumeElement.style.position = 'relative';
-    resumeElement.style.zIndex = '1';
-    resumeElement.style.width = `${A4_WIDTH_PX}px`;
-    resumeElement.style.height = `${A4_HEIGHT_PX}px`;
+    resumeElement.style.zIndex = '1000';
+    resumeElement.style.width = '794px'; // A4 width at 96 DPI
+    resumeElement.style.height = 'auto'; // Let height be determined by content
+    resumeElement.style.overflow = 'visible';
+    resumeElement.style.backgroundColor = '#ffffff';
     
     // Force layout recalculation
     resumeElement.offsetHeight;
     
-    // Wait for styles to apply
-    await new Promise(resolve => setTimeout(resolve, 300));
+    // Wait for styles to apply and content to render
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
     console.log('Capturing element with html2canvas...');
     
-    // Capture with html2canvas using exact A4 dimensions
+    // Get the actual dimensions of the element
+    const rect = resumeElement.getBoundingClientRect();
+    console.log('Element dimensions:', rect.width, 'x', rect.height);
+    
+    // Capture with html2canvas with better settings
     const canvas = await html2canvas(resumeElement, {
       scale: 2, // Higher scale for better quality
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
-      logging: false,
-      width: A4_WIDTH_PX,
-      height: A4_HEIGHT_PX,
-      windowWidth: A4_WIDTH_PX,
-      windowHeight: A4_HEIGHT_PX,
+      logging: true,
+      width: rect.width,
+      height: rect.height,
       scrollX: 0,
       scrollY: 0,
-      x: 0,
-      y: 0,
       foreignObjectRendering: true,
-      removeContainer: true,
-      ignoreElements: (element) => {
-        return element.classList?.contains('no-print') || false;
+      imageTimeout: 0,
+      removeContainer: false,
+      onclone: (clonedDoc) => {
+        // Ensure all styles are preserved in the cloned document
+        const clonedElement = clonedDoc.getElementById('resume-preview');
+        if (clonedElement) {
+          clonedElement.style.visibility = 'visible';
+          clonedElement.style.opacity = '1';
+          clonedElement.style.transform = 'none';
+          clonedElement.style.backgroundColor = '#ffffff';
+        }
       }
     });
     
@@ -79,8 +88,8 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
     // Restore original styles
     Object.keys(originalStyles).forEach(key => {
       const value = originalStyles[key as keyof typeof originalStyles];
-      if (value) {
-        resumeElement.style[key as any] = value;
+      if (value !== null && value !== undefined) {
+        (resumeElement.style as any)[key] = value;
       } else {
         resumeElement.style.removeProperty(key);
       }
@@ -88,16 +97,18 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
     
     // Validate canvas
     if (!canvas || canvas.width === 0 || canvas.height === 0) {
-      console.error('Invalid canvas, falling back to text PDF');
+      console.error('Invalid canvas created, falling back to text PDF');
       return generateTextPDF(data);
     }
     
     // Convert to high-quality image
     const imgData = canvas.toDataURL('image/png', 1.0);
-    if (!imgData || imgData === 'data:,') {
+    if (!imgData || imgData === 'data:,' || imgData.length < 100) {
       console.error('Failed to convert canvas to image, falling back to text PDF');
       return generateTextPDF(data);
     }
+    
+    console.log('Image data length:', imgData.length);
     
     // Create PDF with exact A4 dimensions
     const pdf = new jsPDF({
@@ -111,13 +122,31 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
     const pageWidth = 210;
     const pageHeight = 297;
     
-    // Add image to fill entire A4 page with no margins
-    console.log('Adding image to PDF with perfect A4 dimensions');
+    // Calculate aspect ratio to fit content properly
+    const canvasAspectRatio = canvas.width / canvas.height;
+    const pageAspectRatio = pageWidth / pageHeight;
     
-    // Add image to PDF filling the entire page
-    pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight, '', 'FAST');
+    let imgWidth = pageWidth;
+    let imgHeight = pageHeight;
+    let xOffset = 0;
+    let yOffset = 0;
     
-    console.log('PDF generation completed successfully with perfect A4 size');
+    if (canvasAspectRatio > pageAspectRatio) {
+      // Canvas is wider, fit to width
+      imgHeight = pageWidth / canvasAspectRatio;
+      yOffset = (pageHeight - imgHeight) / 2;
+    } else {
+      // Canvas is taller, fit to height
+      imgWidth = pageHeight * canvasAspectRatio;
+      xOffset = (pageWidth - imgWidth) / 2;
+    }
+    
+    console.log('Adding image to PDF with dimensions:', imgWidth, 'x', imgHeight);
+    
+    // Add image to PDF with proper positioning
+    pdf.addImage(imgData, 'PNG', xOffset, yOffset, imgWidth, imgHeight, '', 'FAST');
+    
+    console.log('PDF generation completed successfully');
     return pdf;
     
   } catch (error) {

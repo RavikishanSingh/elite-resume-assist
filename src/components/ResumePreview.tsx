@@ -63,48 +63,53 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
     console.log('Starting PDF download process...');
     
     try {
-      // Temporarily exit edit mode for cleaner PDF
+      // Exit edit mode for cleaner PDF
       const wasInEditMode = isEditMode;
       if (isEditMode) {
         console.log('Exiting edit mode for PDF generation');
         setIsEditMode(false);
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 300));
       }
 
-      // Ensure the resume element exists and is properly sized
+      // Ensure the resume element exists
       const resumeElement = document.getElementById('resume-preview');
       if (!resumeElement) {
         console.error('Resume preview element not found');
         throw new Error('Resume preview not found. Please refresh and try again.');
       }
 
-      // Scroll to the resume element and wait for it to be in view
+      // Make sure element is visible and properly sized
+      resumeElement.style.display = 'block';
+      resumeElement.style.visibility = 'visible';
+      resumeElement.style.opacity = '1';
+      
+      // Scroll to element and wait
       resumeElement.scrollIntoView({ behavior: 'instant', block: 'start' });
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      console.log('Generating professional A4 PDF...');
+      console.log('Generating PDF from resume content...');
       const pdf = await generatePDF(data, selectedTemplate);
       
       if (!pdf) {
         throw new Error('PDF generation failed. Please try again.');
       }
 
-      // Create professional filename
+      // Create filename
       const name = data.personalInfo?.fullName || 'Resume';
       const cleanName = name.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
-      const fileName = `${cleanName}_Resume_A4.pdf`;
+      const fileName = `${cleanName}_Resume.pdf`;
       
-      console.log('Downloading professional A4 PDF:', fileName);
+      console.log('Downloading PDF:', fileName);
       pdf.save(fileName);
       
       toast({
         title: "Success!",
-        description: `Professional A4 resume downloaded as ${fileName}`,
+        description: `Resume downloaded as ${fileName}`,
       });
       
       // Restore edit mode if needed
       if (wasInEditMode) {
-        setTimeout(() => setIsEditMode(true), 200);
+        setTimeout(() => setIsEditMode(true), 300);
       }
       
     } catch (error) {
@@ -112,7 +117,7 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
       
       const errorMessage = error instanceof Error 
         ? error.message 
-        : 'Failed to generate professional PDF. Please try again.';
+        : 'Failed to generate PDF. Please try again.';
       
       toast({
         title: "Download Failed", 
@@ -252,18 +257,22 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
           <CardContent className="p-0">
             <div 
               id="resume-preview" 
-              className={`bg-white transition-transform duration-300 ${!isEditMode ? 'transform scale-75 origin-top' : ''}`}
+              className="bg-white overflow-visible"
               style={{ 
-                width: '794px', // Exact A4 width at 96 DPI
-                height: '1123px', // Exact A4 height at 96 DPI
+                width: '794px', // A4 width
+                minHeight: '1123px', // A4 height
                 maxWidth: '100%',
                 margin: '0 auto',
+                transform: !isEditMode ? 'scale(0.8)' : 'scale(1)',
+                transformOrigin: 'top center',
+                transition: 'transform 0.3s ease',
                 visibility: 'visible',
                 opacity: 1,
                 position: 'relative',
                 zIndex: 1,
-                overflow: 'hidden', // Ensure content fits within A4 bounds
-                boxSizing: 'border-box'
+                backgroundColor: '#ffffff',
+                boxSizing: 'border-box',
+                padding: '20px'
               }}
             >
               <SelectedTemplate 
