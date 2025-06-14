@@ -68,38 +68,43 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
       if (isEditMode) {
         console.log('Exiting edit mode for PDF generation');
         setIsEditMode(false);
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
 
-      // Ensure the resume element exists
+      // Ensure resume element is ready
       const resumeElement = document.getElementById('resume-preview');
       if (!resumeElement) {
-        console.error('Resume preview element not found');
-        throw new Error('Resume preview not found. Please refresh and try again.');
+        throw new Error('Resume preview element not found. Please refresh the page.');
       }
 
-      // Make sure element is visible and properly sized
+      // Make sure element is visible and properly rendered
       resumeElement.style.display = 'block';
       resumeElement.style.visibility = 'visible';
       resumeElement.style.opacity = '1';
       
-      // Scroll to element and wait
+      // Check if element has content
+      if (resumeElement.innerHTML.trim().length === 0) {
+        throw new Error('Resume content is empty. Please make sure your resume data is complete.');
+      }
+      
+      // Scroll to make sure element is in view
       resumeElement.scrollIntoView({ behavior: 'instant', block: 'start' });
-      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Wait for any dynamic content to load
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      console.log('Generating PDF from resume content...');
+      console.log('Generating PDF...');
       const pdf = await generatePDF(data, selectedTemplate);
       
       if (!pdf) {
         throw new Error('PDF generation failed. Please try again.');
       }
 
-      // Create filename
+      // Download PDF
       const name = data.personalInfo?.fullName || 'Resume';
       const cleanName = name.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
       const fileName = `${cleanName}_Resume.pdf`;
       
-      console.log('Downloading PDF:', fileName);
       pdf.save(fileName);
       
       toast({
@@ -109,19 +114,15 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
       
       // Restore edit mode if needed
       if (wasInEditMode) {
-        setTimeout(() => setIsEditMode(true), 300);
+        setTimeout(() => setIsEditMode(true), 500);
       }
       
     } catch (error) {
       console.error('PDF download failed:', error);
       
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : 'Failed to generate PDF. Please try again.';
-      
       toast({
         title: "Download Failed", 
-        description: errorMessage,
+        description: error instanceof Error ? error.message : 'Failed to generate PDF. Please try again.',
         variant: "destructive"
       });
     } finally {
@@ -257,22 +258,23 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
           <CardContent className="p-0">
             <div 
               id="resume-preview" 
-              className="bg-white overflow-visible"
+              className="bg-white"
               style={{ 
-                width: '794px', // A4 width
-                minHeight: '1123px', // A4 height
+                width: '794px',
+                minHeight: '1123px',
                 maxWidth: '100%',
                 margin: '0 auto',
-                transform: !isEditMode ? 'scale(0.8)' : 'scale(1)',
+                transform: 'scale(0.75)',
                 transformOrigin: 'top center',
-                transition: 'transform 0.3s ease',
-                visibility: 'visible',
-                opacity: 1,
-                position: 'relative',
-                zIndex: 1,
                 backgroundColor: '#ffffff',
                 boxSizing: 'border-box',
-                padding: '20px'
+                padding: '40px',
+                fontFamily: 'Arial, sans-serif',
+                fontSize: '14px',
+                lineHeight: '1.6',
+                color: '#333333',
+                position: 'relative',
+                overflow: 'visible'
               }}
             >
               <SelectedTemplate 
