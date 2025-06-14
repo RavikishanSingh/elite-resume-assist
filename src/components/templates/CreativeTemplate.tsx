@@ -13,9 +13,9 @@ const CreativeTemplate = ({ data, onUpdate, isEditing = false }: CreativeTemplat
 
   return (
     <div className="max-w-4xl mx-auto bg-white p-8 shadow-lg min-h-[297mm]">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6 rounded-lg mb-8">
-        <h1 className="text-4xl font-bold mb-2">
+      {/* Header with Better Spacing */}
+      <header className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-8 rounded-lg mb-10" style={{ pageBreakInside: 'avoid' }}>
+        <h1 className="text-4xl font-bold mb-4">
           <EditableText
             value={personalInfo?.fullName || ''}
             onSave={(value) => onUpdate?.('personalInfo', 'fullName', value)}
@@ -24,10 +24,10 @@ const CreativeTemplate = ({ data, onUpdate, isEditing = false }: CreativeTemplat
             className="inline-block text-white"
           />
         </h1>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
           {personalInfo?.email && (
-            <div className="flex items-center space-x-1">
-              <Mail className="w-3 h-3" />
+            <div className="flex items-center space-x-3">
+              <Mail className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.email}
                 onSave={(value) => onUpdate?.('personalInfo', 'email', value)}
@@ -38,8 +38,8 @@ const CreativeTemplate = ({ data, onUpdate, isEditing = false }: CreativeTemplat
             </div>
           )}
           {personalInfo?.phone && (
-            <div className="flex items-center space-x-1">
-              <Phone className="w-3 h-3" />
+            <div className="flex items-center space-x-3">
+              <Phone className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.phone}
                 onSave={(value) => onUpdate?.('personalInfo', 'phone', value)}
@@ -50,8 +50,8 @@ const CreativeTemplate = ({ data, onUpdate, isEditing = false }: CreativeTemplat
             </div>
           )}
           {personalInfo?.location && (
-            <div className="flex items-center space-x-1">
-              <MapPin className="w-3 h-3" />
+            <div className="flex items-center space-x-3">
+              <MapPin className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.location}
                 onSave={(value) => onUpdate?.('personalInfo', 'location', value)}
@@ -62,8 +62,8 @@ const CreativeTemplate = ({ data, onUpdate, isEditing = false }: CreativeTemplat
             </div>
           )}
           {personalInfo?.linkedIn && (
-            <div className="flex items-center space-x-1">
-              <Linkedin className="w-3 h-3" />
+            <div className="flex items-center space-x-3">
+              <Linkedin className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.linkedIn}
                 onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
@@ -74,8 +74,8 @@ const CreativeTemplate = ({ data, onUpdate, isEditing = false }: CreativeTemplat
             </div>
           )}
           {personalInfo?.portfolio && (
-            <div className="flex items-center space-x-1">
-              <Globe className="w-3 h-3" />
+            <div className="flex items-center space-x-3">
+              <Globe className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.portfolio}
                 onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
@@ -88,12 +88,12 @@ const CreativeTemplate = ({ data, onUpdate, isEditing = false }: CreativeTemplat
         </div>
       </header>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-3 gap-8">
         {/* Left Column */}
-        <div className="col-span-1 space-y-6">
+        <div className="col-span-1 space-y-8">
           {/* Summary */}
           {personalInfo?.summary && (
-            <section>
+            <section style={{ pageBreakInside: 'avoid' }}>
               <h2 className="text-lg font-bold text-purple-600 mb-3 border-b-2 border-purple-200 pb-1">
                 About Me
               </h2>
@@ -112,13 +112,13 @@ const CreativeTemplate = ({ data, onUpdate, isEditing = false }: CreativeTemplat
 
           {/* Skills */}
           {skills?.length > 0 && (
-            <section>
+            <section style={{ pageBreakInside: 'avoid' }}>
               <h2 className="text-lg font-bold text-purple-600 mb-3 border-b-2 border-purple-200 pb-1">
                 Skills
               </h2>
               <div className="space-y-2">
                 {skills.map((skill: string, index: number) => (
-                  <div key={index} className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm">
+                  <div key={index} className="bg-purple-100 text-purple-800 px-3 py-2 rounded text-sm">
                     <EditableText
                       value={skill || ''}
                       onSave={(value) => {
@@ -138,16 +138,16 @@ const CreativeTemplate = ({ data, onUpdate, isEditing = false }: CreativeTemplat
         </div>
 
         {/* Right Column */}
-        <div className="col-span-2 space-y-6">
+        <div className="col-span-2 space-y-8">
           {/* Experience */}
           {experience?.length > 0 && (
             <section>
-              <h2 className="text-xl font-bold text-purple-600 mb-4 border-b-2 border-purple-200 pb-2">
+              <h2 className="text-xl font-bold text-purple-600 mb-4 border-b-2 border-purple-200 pb-2" style={{ pageBreakAfter: 'avoid' }}>
                 Experience
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {experience.map((exp: any, index: number) => (
-                  <div key={index} className="bg-gray-50 p-4 rounded-lg">
+                  <div key={index} className="bg-gray-50 p-6 rounded-lg" style={{ pageBreakInside: 'avoid', orphans: 3, widows: 3 }}>
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <h3 className="font-semibold text-gray-900">
@@ -208,12 +208,12 @@ const CreativeTemplate = ({ data, onUpdate, isEditing = false }: CreativeTemplat
           {/* Projects */}
           {projects?.length > 0 && (
             <section>
-              <h2 className="text-xl font-bold text-purple-600 mb-4 border-b-2 border-purple-200 pb-2">
+              <h2 className="text-xl font-bold text-purple-600 mb-4 border-b-2 border-purple-200 pb-2" style={{ pageBreakAfter: 'avoid' }}>
                 Projects
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {projects.map((project: any, index: number) => (
-                  <div key={index} className="bg-gray-50 p-4 rounded-lg">
+                  <div key={index} className="bg-gray-50 p-6 rounded-lg" style={{ pageBreakInside: 'avoid', orphans: 2, widows: 2 }}>
                     <h3 className="font-semibold text-gray-900 mb-1">
                       <EditableText
                         value={project.name || ''}
@@ -234,9 +234,9 @@ const CreativeTemplate = ({ data, onUpdate, isEditing = false }: CreativeTemplat
                       />
                     </div>
                     {project.technologies && (
-                      <div className="flex flex-wrap gap-1 mt-2">
+                      <div className="flex flex-wrap gap-2 mt-2">
                         {project.technologies.split(',').map((tech: string, i: number) => (
-                          <span key={i} className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">
+                          <span key={i} className="bg-purple-100 text-purple-800 px-3 py-1 rounded text-xs">
                             {tech.trim()}
                           </span>
                         ))}
@@ -250,13 +250,13 @@ const CreativeTemplate = ({ data, onUpdate, isEditing = false }: CreativeTemplat
 
           {/* Education */}
           {education?.length > 0 && (
-            <section>
+            <section style={{ pageBreakInside: 'avoid' }}>
               <h2 className="text-xl font-bold text-purple-600 mb-4 border-b-2 border-purple-200 pb-2">
                 Education
               </h2>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {education.map((edu: any, index: number) => (
-                  <div key={index} className="bg-gray-50 p-4 rounded-lg">
+                  <div key={index} className="bg-gray-50 p-6 rounded-lg" style={{ pageBreakInside: 'avoid' }}>
                     <h3 className="font-semibold text-gray-900">
                       <EditableText
                         value={edu.degree || ''}

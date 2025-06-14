@@ -13,9 +13,9 @@ const ClassicTemplate = ({ data, onUpdate, isEditing = false }: ClassicTemplateP
 
   return (
     <div className="max-w-4xl mx-auto bg-white p-8 shadow-lg min-h-[297mm]">
-      {/* Header */}
-      <header className="text-center border-b-2 border-gray-300 pb-6 mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+      {/* Header with Improved Spacing */}
+      <header className="text-center border-b-2 border-gray-300 pb-8 mb-10" style={{ pageBreakInside: 'avoid' }}>
+        <h1 className="text-4xl font-bold text-gray-900 mb-6">
           <EditableText
             value={personalInfo?.fullName || ''}
             onSave={(value) => onUpdate?.('personalInfo', 'fullName', value)}
@@ -24,10 +24,10 @@ const ClassicTemplate = ({ data, onUpdate, isEditing = false }: ClassicTemplateP
             className="inline-block"
           />
         </h1>
-        <div className="flex flex-wrap justify-center gap-4 text-gray-600">
+        <div className="flex flex-wrap justify-center gap-6 text-gray-600">
           {personalInfo?.email && (
-            <div className="flex items-center space-x-1">
-              <Mail className="w-4 h-4" />
+            <div className="flex items-center space-x-2 px-3 py-1">
+              <Mail className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.email}
                 onSave={(value) => onUpdate?.('personalInfo', 'email', value)}
@@ -38,8 +38,8 @@ const ClassicTemplate = ({ data, onUpdate, isEditing = false }: ClassicTemplateP
             </div>
           )}
           {personalInfo?.phone && (
-            <div className="flex items-center space-x-1">
-              <Phone className="w-4 h-4" />
+            <div className="flex items-center space-x-2 px-3 py-1">
+              <Phone className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.phone}
                 onSave={(value) => onUpdate?.('personalInfo', 'phone', value)}
@@ -50,8 +50,8 @@ const ClassicTemplate = ({ data, onUpdate, isEditing = false }: ClassicTemplateP
             </div>
           )}
           {personalInfo?.location && (
-            <div className="flex items-center space-x-1">
-              <MapPin className="w-4 h-4" />
+            <div className="flex items-center space-x-2 px-3 py-1">
+              <MapPin className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.location}
                 onSave={(value) => onUpdate?.('personalInfo', 'location', value)}
@@ -61,36 +61,42 @@ const ClassicTemplate = ({ data, onUpdate, isEditing = false }: ClassicTemplateP
               />
             </div>
           )}
-          {personalInfo?.linkedIn && (
-            <div className="flex items-center space-x-1">
-              <Linkedin className="w-4 h-4" />
-              <EditableText
-                value={personalInfo.linkedIn}
-                onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
-                isEditing={isEditing}
-                className="inline-block"
-                placeholder="LinkedIn Profile"
-              />
-            </div>
-          )}
-          {personalInfo?.portfolio && (
-            <div className="flex items-center space-x-1">
-              <Globe className="w-4 h-4" />
-              <EditableText
-                value={personalInfo.portfolio}
-                onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
-                isEditing={isEditing}
-                className="inline-block"
-                placeholder="Portfolio URL"
-              />
-            </div>
-          )}
         </div>
+        
+        {/* Second row for web links */}
+        {(personalInfo?.linkedIn || personalInfo?.portfolio) && (
+          <div className="flex flex-wrap justify-center gap-6 text-gray-600 mt-4">
+            {personalInfo?.linkedIn && (
+              <div className="flex items-center space-x-2 px-3 py-1">
+                <Linkedin className="w-4 h-4 flex-shrink-0" />
+                <EditableText
+                  value={personalInfo.linkedIn}
+                  onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
+                  isEditing={isEditing}
+                  className="inline-block"
+                  placeholder="LinkedIn Profile"
+                />
+              </div>
+            )}
+            {personalInfo?.portfolio && (
+              <div className="flex items-center space-x-2 px-3 py-1">
+                <Globe className="w-4 h-4 flex-shrink-0" />
+                <EditableText
+                  value={personalInfo.portfolio}
+                  onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
+                  isEditing={isEditing}
+                  className="inline-block"
+                  placeholder="Portfolio URL"
+                />
+              </div>
+            )}
+          </div>
+        )}
       </header>
 
       {/* Summary */}
       {personalInfo?.summary && (
-        <section className="mb-8">
+        <section className="mb-10" style={{ pageBreakInside: 'avoid' }}>
           <h2 className="text-xl font-bold text-gray-900 mb-4 uppercase tracking-wide border-b border-gray-300 pb-2">
             Professional Summary
           </h2>
@@ -109,13 +115,13 @@ const ClassicTemplate = ({ data, onUpdate, isEditing = false }: ClassicTemplateP
 
       {/* Experience */}
       {experience?.length > 0 && (
-        <section className="mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide border-b border-gray-300 pb-2">
+        <section className="mb-10">
+          <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide border-b border-gray-300 pb-2" style={{ pageBreakAfter: 'avoid' }}>
             Professional Experience
           </h2>
-          <div className="space-y-6">
+          <div className="space-y-8">
             {experience.map((exp: any, index: number) => (
-              <div key={index}>
+              <div key={index} style={{ pageBreakInside: 'avoid', orphans: 3, widows: 3 }}>
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <h3 className="text-lg font-bold text-gray-900">
@@ -177,13 +183,13 @@ const ClassicTemplate = ({ data, onUpdate, isEditing = false }: ClassicTemplateP
 
       {/* Projects */}
       {projects?.length > 0 && (
-        <section className="mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide border-b border-gray-300 pb-2">
+        <section className="mb-10">
+          <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide border-b border-gray-300 pb-2" style={{ pageBreakAfter: 'avoid' }}>
             Projects
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-6">
             {projects.map((project: any, index: number) => (
-              <div key={index}>
+              <div key={index} style={{ pageBreakInside: 'avoid', orphans: 2, widows: 2 }}>
                 <h3 className="text-lg font-bold text-gray-900">
                   <EditableText
                     value={project.name || ''}
@@ -216,13 +222,13 @@ const ClassicTemplate = ({ data, onUpdate, isEditing = false }: ClassicTemplateP
 
       {/* Education */}
       {education?.length > 0 && (
-        <section className="mb-8">
+        <section className="mb-10" style={{ pageBreakInside: 'avoid' }}>
           <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide border-b border-gray-300 pb-2">
             Education
           </h2>
           <div className="space-y-4">
             {education.map((edu: any, index: number) => (
-              <div key={index} className="flex justify-between items-start">
+              <div key={index} className="flex justify-between items-start" style={{ pageBreakInside: 'avoid' }}>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">
                     <EditableText
@@ -262,15 +268,15 @@ const ClassicTemplate = ({ data, onUpdate, isEditing = false }: ClassicTemplateP
 
       {/* Skills */}
       {skills?.length > 0 && (
-        <section className="mb-8">
+        <section className="mb-8" style={{ pageBreakInside: 'avoid' }}>
           <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide border-b border-gray-300 pb-2">
             Skills
           </h2>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             {skills.map((skill: string, index: number) => (
               <span
                 key={index}
-                className="px-3 py-1 bg-gray-200 text-gray-800 rounded text-sm font-medium"
+                className="px-3 py-2 bg-gray-200 text-gray-800 rounded text-sm font-medium"
               >
                 <EditableText
                   value={skill || ''}

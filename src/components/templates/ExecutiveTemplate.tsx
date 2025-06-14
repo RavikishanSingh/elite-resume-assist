@@ -13,11 +13,11 @@ const ExecutiveTemplate = ({ data, onUpdate, isEditing = false }: ExecutiveTempl
 
   return (
     <div className="max-w-4xl mx-auto bg-white p-8 shadow-lg min-h-[297mm]">
-      {/* Header */}
-      <header className="border-b-4 border-gray-800 pb-6 mb-8">
+      {/* Header with Better Layout */}
+      <header className="border-b-4 border-gray-800 pb-8 mb-10" style={{ pageBreakInside: 'avoid' }}>
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
               <EditableText
                 value={personalInfo?.fullName || ''}
                 onSave={(value) => onUpdate?.('personalInfo', 'fullName', value)}
@@ -26,10 +26,10 @@ const ExecutiveTemplate = ({ data, onUpdate, isEditing = false }: ExecutiveTempl
                 className="inline-block"
               />
             </h1>
-            <div className="space-y-1 text-gray-600">
+            <div className="space-y-3 text-gray-600">
               {personalInfo?.email && (
-                <div className="flex items-center space-x-2">
-                  <Mail className="w-4 h-4" />
+                <div className="flex items-center space-x-3">
+                  <Mail className="w-4 h-4 flex-shrink-0" />
                   <EditableText
                     value={personalInfo.email}
                     onSave={(value) => onUpdate?.('personalInfo', 'email', value)}
@@ -40,8 +40,8 @@ const ExecutiveTemplate = ({ data, onUpdate, isEditing = false }: ExecutiveTempl
                 </div>
               )}
               {personalInfo?.phone && (
-                <div className="flex items-center space-x-2">
-                  <Phone className="w-4 h-4" />
+                <div className="flex items-center space-x-3">
+                  <Phone className="w-4 h-4 flex-shrink-0" />
                   <EditableText
                     value={personalInfo.phone}
                     onSave={(value) => onUpdate?.('personalInfo', 'phone', value)}
@@ -53,41 +53,47 @@ const ExecutiveTemplate = ({ data, onUpdate, isEditing = false }: ExecutiveTempl
               )}
             </div>
           </div>
-          <div className="text-right text-gray-600">
+          <div className="text-right text-gray-600 space-y-3">
             {personalInfo?.location && (
-              <div className="flex items-center space-x-2 justify-end">
-                <MapPin className="w-4 h-4" />
-                <EditableText
-                  value={personalInfo.location}
-                  onSave={(value) => onUpdate?.('personalInfo', 'location', value)}
-                  isEditing={isEditing}
-                  className="inline-block"
-                  placeholder="Location"
-                />
+              <div className="flex items-center space-x-3 justify-end">
+                <span className="text-right">
+                  <EditableText
+                    value={personalInfo.location}
+                    onSave={(value) => onUpdate?.('personalInfo', 'location', value)}
+                    isEditing={isEditing}
+                    className="inline-block"
+                    placeholder="Location"
+                  />
+                </span>
+                <MapPin className="w-4 h-4 flex-shrink-0" />
               </div>
             )}
             {personalInfo?.linkedIn && (
-              <div className="flex items-center space-x-2 justify-end mt-1">
-                <Linkedin className="w-4 h-4" />
-                <EditableText
-                  value={personalInfo.linkedIn}
-                  onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
-                  isEditing={isEditing}
-                  className="inline-block"
-                  placeholder="LinkedIn URL"
-                />
+              <div className="flex items-center space-x-3 justify-end">
+                <span className="text-right">
+                  <EditableText
+                    value={personalInfo.linkedIn}
+                    onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
+                    isEditing={isEditing}
+                    className="inline-block"
+                    placeholder="LinkedIn URL"
+                  />
+                </span>
+                <Linkedin className="w-4 h-4 flex-shrink-0" />
               </div>
             )}
             {personalInfo?.portfolio && (
-              <div className="flex items-center space-x-2 justify-end mt-1">
-                <Globe className="w-4 h-4" />
-                <EditableText
-                  value={personalInfo.portfolio}
-                  onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
-                  isEditing={isEditing}
-                  className="inline-block"
-                  placeholder="Portfolio URL"
-                />
+              <div className="flex items-center space-x-3 justify-end">
+                <span className="text-right">
+                  <EditableText
+                    value={personalInfo.portfolio}
+                    onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
+                    isEditing={isEditing}
+                    className="inline-block"
+                    placeholder="Portfolio URL"
+                  />
+                </span>
+                <Globe className="w-4 h-4 flex-shrink-0" />
               </div>
             )}
           </div>
@@ -96,7 +102,7 @@ const ExecutiveTemplate = ({ data, onUpdate, isEditing = false }: ExecutiveTempl
 
       {/* Executive Summary */}
       {personalInfo?.summary && (
-        <section className="mb-8">
+        <section className="mb-10" style={{ pageBreakInside: 'avoid' }}>
           <h2 className="text-xl font-bold text-gray-900 mb-4 uppercase tracking-wide">
             Executive Summary
           </h2>
@@ -115,7 +121,7 @@ const ExecutiveTemplate = ({ data, onUpdate, isEditing = false }: ExecutiveTempl
 
       {/* Core Competencies */}
       {skills?.length > 0 && (
-        <section className="mb-8">
+        <section className="mb-10" style={{ pageBreakInside: 'avoid' }}>
           <h2 className="text-xl font-bold text-gray-900 mb-4 uppercase tracking-wide">
             Core Competencies
           </h2>
@@ -141,13 +147,13 @@ const ExecutiveTemplate = ({ data, onUpdate, isEditing = false }: ExecutiveTempl
 
       {/* Professional Experience */}
       {experience?.length > 0 && (
-        <section className="mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide">
+        <section className="mb-10">
+          <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide" style={{ pageBreakAfter: 'avoid' }}>
             Professional Experience
           </h2>
-          <div className="space-y-6">
+          <div className="space-y-8">
             {experience.map((exp: any, index: number) => (
-              <div key={index}>
+              <div key={index} style={{ pageBreakInside: 'avoid', orphans: 3, widows: 3 }}>
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="text-lg font-bold text-gray-900">
                     <EditableText
@@ -205,13 +211,13 @@ const ExecutiveTemplate = ({ data, onUpdate, isEditing = false }: ExecutiveTempl
 
       {/* Key Projects */}
       {projects?.length > 0 && (
-        <section className="mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide">
+        <section className="mb-10">
+          <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide" style={{ pageBreakAfter: 'avoid' }}>
             Key Projects
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-6">
             {projects.map((project: any, index: number) => (
-              <div key={index} className="border-l-4 border-gray-800 pl-4">
+              <div key={index} className="border-l-4 border-gray-800 pl-4" style={{ pageBreakInside: 'avoid', orphans: 2, widows: 2 }}>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">
                   <EditableText
                     value={project.name || ''}
@@ -244,13 +250,13 @@ const ExecutiveTemplate = ({ data, onUpdate, isEditing = false }: ExecutiveTempl
 
       {/* Education */}
       {education?.length > 0 && (
-        <section>
+        <section style={{ pageBreakInside: 'avoid' }}>
           <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide">
             Education
           </h2>
           <div className="space-y-4">
             {education.map((edu: any, index: number) => (
-              <div key={index} className="flex justify-between items-center">
+              <div key={index} className="flex justify-between items-center" style={{ pageBreakInside: 'avoid' }}>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">
                     <EditableText

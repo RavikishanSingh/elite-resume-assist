@@ -12,9 +12,9 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
 
   return (
     <div className="max-w-4xl mx-auto bg-white p-8 shadow-lg min-h-[297mm] font-light">
-      {/* Header */}
-      <header className="text-center mb-8">
-        <h1 className="text-5xl font-thin text-gray-900 mb-4 tracking-wide">
+      {/* Header with Better Spacing */}
+      <header className="text-center mb-10" style={{ pageBreakInside: 'avoid' }}>
+        <h1 className="text-5xl font-thin text-gray-900 mb-6 tracking-wide">
           <EditableText
             value={personalInfo?.fullName || ''}
             onSave={(value) => onUpdate?.('personalInfo', 'fullName', value)}
@@ -23,57 +23,67 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
             className="inline-block w-full text-center"
           />
         </h1>
-        <div className="flex justify-center space-x-4 text-gray-600 text-sm flex-wrap">
+        <div className="flex justify-center space-x-6 text-gray-600 text-sm flex-wrap mb-4">
           {personalInfo?.email && (
-            <EditableText
-              value={personalInfo.email}
-              onSave={(value) => onUpdate?.('personalInfo', 'email', value)}
-              isEditing={isEditing}
-              className="inline-block"
-              placeholder="email@example.com"
-            />
+            <span className="px-2">
+              <EditableText
+                value={personalInfo.email}
+                onSave={(value) => onUpdate?.('personalInfo', 'email', value)}
+                isEditing={isEditing}
+                className="inline-block"
+                placeholder="email@example.com"
+              />
+            </span>
           )}
           {personalInfo?.phone && personalInfo?.email && <span>•</span>}
           {personalInfo?.phone && (
-            <EditableText
-              value={personalInfo.phone}
-              onSave={(value) => onUpdate?.('personalInfo', 'phone', value)}
-              isEditing={isEditing}
-              className="inline-block"
-              placeholder="Phone number"
-            />
+            <span className="px-2">
+              <EditableText
+                value={personalInfo.phone}
+                onSave={(value) => onUpdate?.('personalInfo', 'phone', value)}
+                isEditing={isEditing}
+                className="inline-block"
+                placeholder="Phone number"
+              />
+            </span>
           )}
           {personalInfo?.location && (personalInfo?.phone || personalInfo?.email) && <span>•</span>}
           {personalInfo?.location && (
-            <EditableText
-              value={personalInfo.location}
-              onSave={(value) => onUpdate?.('personalInfo', 'location', value)}
-              isEditing={isEditing}
-              className="inline-block"
-              placeholder="City, State"
-            />
+            <span className="px-2">
+              <EditableText
+                value={personalInfo.location}
+                onSave={(value) => onUpdate?.('personalInfo', 'location', value)}
+                isEditing={isEditing}
+                className="inline-block"
+                placeholder="City, State"
+              />
+            </span>
           )}
         </div>
         {(personalInfo?.linkedIn || personalInfo?.portfolio) && (
-          <div className="flex justify-center space-x-4 text-gray-600 text-sm mt-2 flex-wrap">
+          <div className="flex justify-center space-x-6 text-gray-600 text-sm flex-wrap">
             {personalInfo?.linkedIn && (
-              <EditableText
-                value={personalInfo.linkedIn}
-                onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
-                isEditing={isEditing}
-                className="inline-block"
-                placeholder="LinkedIn URL"
-              />
+              <span className="px-2">
+                <EditableText
+                  value={personalInfo.linkedIn}
+                  onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
+                  isEditing={isEditing}
+                  className="inline-block"
+                  placeholder="LinkedIn URL"
+                />
+              </span>
             )}
             {personalInfo?.portfolio && personalInfo?.linkedIn && <span>•</span>}
             {personalInfo?.portfolio && (
-              <EditableText
-                value={personalInfo.portfolio}
-                onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
-                isEditing={isEditing}
-                className="inline-block"
-                placeholder="Portfolio URL"
-              />
+              <span className="px-2">
+                <EditableText
+                  value={personalInfo.portfolio}
+                  onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
+                  isEditing={isEditing}
+                  className="inline-block"
+                  placeholder="Portfolio URL"
+                />
+              </span>
             )}
           </div>
         )}
@@ -81,7 +91,7 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
 
       {/* Summary */}
       {personalInfo?.summary && (
-        <section className="mb-8">
+        <section className="mb-10" style={{ pageBreakInside: 'avoid' }}>
           <div className="text-gray-700 leading-relaxed text-center italic">
             <EditableText
               value={personalInfo.summary}
@@ -97,13 +107,13 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
 
       {/* Experience */}
       {experience?.length > 0 && (
-        <section className="mb-8">
-          <h2 className="text-2xl font-thin text-gray-900 mb-6 text-center">
+        <section className="mb-10">
+          <h2 className="text-2xl font-thin text-gray-900 mb-8 text-center" style={{ pageBreakAfter: 'avoid' }}>
             EXPERIENCE
           </h2>
-          <div className="space-y-6">
+          <div className="space-y-10">
             {experience.map((exp: any, index: number) => (
-              <div key={index} className="text-center mb-8">
+              <div key={index} className="text-center" style={{ pageBreakInside: 'avoid', orphans: 3, widows: 3 }}>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   <EditableText
                     value={exp.jobTitle || ''}
@@ -122,7 +132,7 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
                     placeholder="Company Name"
                   />
                 </p>
-                <p className="text-gray-600 text-sm mb-3">
+                <p className="text-gray-600 text-sm mb-4">
                   <EditableText
                     value={exp.startDate || ''}
                     onSave={(value) => onUpdate?.('experience', 'startDate', value, index)}
@@ -159,13 +169,13 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
 
       {/* Projects */}
       {projects?.length > 0 && (
-        <section className="mb-8">
-          <h2 className="text-2xl font-thin text-gray-900 mb-6 text-center">
+        <section className="mb-10">
+          <h2 className="text-2xl font-thin text-gray-900 mb-8 text-center" style={{ pageBreakAfter: 'avoid' }}>
             PROJECTS
           </h2>
-          <div className="space-y-6">
+          <div className="space-y-8">
             {projects.map((project: any, index: number) => (
-              <div key={index} className="text-center">
+              <div key={index} className="text-center" style={{ pageBreakInside: 'avoid', orphans: 2, widows: 2 }}>
                 <h3 className="text-lg font-medium text-gray-900">
                   <EditableText
                     value={project.name || ''}
@@ -197,10 +207,10 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
       )}
 
       {/* Skills & Education */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
         {skills?.length > 0 && (
-          <section>
-            <h2 className="text-2xl font-thin text-gray-900 mb-6 text-center">
+          <section style={{ pageBreakInside: 'avoid' }}>
+            <h2 className="text-2xl font-thin text-gray-900 mb-8 text-center">
               SKILLS
             </h2>
             <div className="text-center">
@@ -227,13 +237,13 @@ const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateP
         )}
 
         {education?.length > 0 && (
-          <section>
-            <h2 className="text-2xl font-thin text-gray-900 mb-6 text-center">
+          <section style={{ pageBreakInside: 'avoid' }}>
+            <h2 className="text-2xl font-thin text-gray-900 mb-8 text-center">
               EDUCATION
             </h2>
-            <div className="space-y-3 text-center">
+            <div className="space-y-4 text-center">
               {education.map((edu: any, index: number) => (
-                <div key={index}>
+                <div key={index} style={{ pageBreakInside: 'avoid' }}>
                   <h3 className="font-medium text-gray-900">
                     <EditableText
                       value={edu.degree || ''}

@@ -1,3 +1,4 @@
+
 import { Mail, Phone, MapPin, Globe, Linkedin } from "lucide-react";
 import EditableText from "../EditableText";
 
@@ -12,10 +13,10 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
 
   return (
     <div className="w-full bg-white text-gray-800" style={{ fontFamily: 'Inter, Segoe UI, Tahoma, Geneva, Verdana, sans-serif' }}>
-      {/* Professional Header */}
-      <header className="border-b-3 border-blue-600 pb-6 mb-8">
+      {/* Professional Header with Better Spacing */}
+      <header className="border-b-3 border-blue-600 pb-8 mb-10" style={{ pageBreakInside: 'avoid' }}>
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-3 tracking-tight">
+          <h1 className="text-3xl font-bold text-gray-900 mb-6 tracking-tight">
             <EditableText
               value={personalInfo?.fullName || ''}
               onSave={(value) => onUpdate?.('personalInfo', 'fullName', value)}
@@ -25,10 +26,10 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
             />
           </h1>
           
-          <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-600">
+          <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-600 px-4">
             {personalInfo?.email && (
-              <div className="flex items-center space-x-2">
-                <Mail className="w-4 h-4 text-blue-600" />
+              <div className="flex items-center space-x-3 px-2 py-1">
+                <Mail className="w-4 h-4 text-blue-600 flex-shrink-0" />
                 <EditableText
                   value={personalInfo.email}
                   onSave={(value) => onUpdate?.('personalInfo', 'email', value)}
@@ -39,8 +40,8 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
               </div>
             )}
             {personalInfo?.phone && (
-              <div className="flex items-center space-x-2">
-                <Phone className="w-4 h-4 text-blue-600" />
+              <div className="flex items-center space-x-3 px-2 py-1">
+                <Phone className="w-4 h-4 text-blue-600 flex-shrink-0" />
                 <EditableText
                   value={personalInfo.phone}
                   onSave={(value) => onUpdate?.('personalInfo', 'phone', value)}
@@ -51,8 +52,8 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
               </div>
             )}
             {personalInfo?.location && (
-              <div className="flex items-center space-x-2">
-                <MapPin className="w-4 h-4 text-blue-600" />
+              <div className="flex items-center space-x-3 px-2 py-1">
+                <MapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
                 <EditableText
                   value={personalInfo.location}
                   onSave={(value) => onUpdate?.('personalInfo', 'location', value)}
@@ -62,37 +63,43 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
                 />
               </div>
             )}
-            {personalInfo?.linkedIn && (
-              <div className="flex items-center space-x-2">
-                <Linkedin className="w-4 h-4 text-blue-600" />
-                <EditableText
-                  value={personalInfo.linkedIn}
-                  onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
-                  isEditing={isEditing}
-                  className="inline-block"
-                  placeholder="linkedin.com/in/username"
-                />
-              </div>
-            )}
-            {personalInfo?.portfolio && (
-              <div className="flex items-center space-x-2">
-                <Globe className="w-4 h-4 text-blue-600" />
-                <EditableText
-                  value={personalInfo.portfolio}
-                  onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
-                  isEditing={isEditing}
-                  className="inline-block"
-                  placeholder="portfolio.com"
-                />
-              </div>
-            )}
           </div>
+          
+          {/* Second row for web links with better spacing */}
+          {(personalInfo?.linkedIn || personalInfo?.portfolio) && (
+            <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-600 mt-4 px-4">
+              {personalInfo?.linkedIn && (
+                <div className="flex items-center space-x-3 px-2 py-1">
+                  <Linkedin className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                  <EditableText
+                    value={personalInfo.linkedIn}
+                    onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
+                    isEditing={isEditing}
+                    className="inline-block"
+                    placeholder="linkedin.com/in/username"
+                  />
+                </div>
+              )}
+              {personalInfo?.portfolio && (
+                <div className="flex items-center space-x-3 px-2 py-1">
+                  <Globe className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                  <EditableText
+                    value={personalInfo.portfolio}
+                    onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
+                    isEditing={isEditing}
+                    className="inline-block"
+                    placeholder="portfolio.com"
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </header>
 
       {/* Professional Summary */}
       {personalInfo?.summary && (
-        <section className="mb-8">
+        <section className="mb-10" style={{ pageBreakInside: 'avoid' }}>
           <h2 className="text-xl font-semibold text-blue-600 mb-4 flex items-center">
             <div className="w-2 h-6 bg-blue-600 mr-3"></div>
             Professional Summary
@@ -112,15 +119,15 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
 
       {/* Professional Experience */}
       {experience?.length > 0 && (
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center">
+        <section className="mb-10">
+          <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center" style={{ pageBreakAfter: 'avoid' }}>
             <div className="w-2 h-6 bg-blue-600 mr-3"></div>
             Professional Experience
           </h2>
-          <div className="space-y-6 pl-5">
+          <div className="space-y-8 pl-5">
             {experience.map((exp: any, index: number) => (
-              <div key={index} className="relative">
-                <div className="flex justify-between items-start mb-2">
+              <div key={index} className="relative" style={{ pageBreakInside: 'avoid', orphans: 3, widows: 3 }}>
+                <div className="flex justify-between items-start mb-3">
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-gray-900">
                       <EditableText
@@ -181,13 +188,13 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
 
       {/* Skills */}
       {skills?.length > 0 && (
-        <section className="mb-8">
+        <section className="mb-10" style={{ pageBreakInside: 'avoid' }}>
           <h2 className="text-xl font-semibold text-blue-600 mb-4 flex items-center">
             <div className="w-2 h-6 bg-blue-600 mr-3"></div>
             Core Competencies
           </h2>
           <div className="pl-5">
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-3">
               {skills.map((skill: string, index: number) => (
                 <span
                   key={index}
@@ -213,14 +220,14 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
 
       {/* Projects */}
       {projects?.length > 0 && (
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center">
+        <section className="mb-10">
+          <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center" style={{ pageBreakAfter: 'avoid' }}>
             <div className="w-2 h-6 bg-blue-600 mr-3"></div>
             Key Projects
           </h2>
-          <div className="space-y-4 pl-5">
+          <div className="space-y-6 pl-5">
             {projects.map((project: any, index: number) => (
-              <div key={index}>
+              <div key={index} style={{ pageBreakInside: 'avoid', orphans: 2, widows: 2 }}>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   <EditableText
                     value={project.name || ''}
@@ -253,14 +260,14 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
 
       {/* Education */}
       {education?.length > 0 && (
-        <section className="mb-6">
+        <section className="mb-6" style={{ pageBreakInside: 'avoid' }}>
           <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center">
             <div className="w-2 h-6 bg-blue-600 mr-3"></div>
             Education
           </h2>
           <div className="space-y-4 pl-5">
             {education.map((edu: any, index: number) => (
-              <div key={index} className="flex justify-between items-start">
+              <div key={index} className="flex justify-between items-start" style={{ pageBreakInside: 'avoid' }}>
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-900">
                     <EditableText
