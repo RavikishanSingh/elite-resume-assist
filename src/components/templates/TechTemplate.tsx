@@ -13,9 +13,9 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
 
   return (
     <div className="max-w-4xl mx-auto bg-gray-900 text-white p-8 shadow-lg min-h-[297mm]">
-      {/* Header */}
+      {/* Enhanced Header */}
       <header className="bg-gradient-to-r from-green-400 to-blue-500 p-6 rounded-lg mb-8">
-        <h1 className="text-4xl font-bold mb-2">
+        <h1 className="text-4xl font-bold mb-4">
           <EditableText
             value={personalInfo?.fullName || ''}
             onSave={(value) => onUpdate?.('personalInfo', 'fullName', value)}
@@ -24,10 +24,12 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
             className="inline-block text-white"
           />
         </h1>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+        
+        {/* Enhanced Contact Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
           {personalInfo?.email && (
-            <div className="flex items-center space-x-1">
-              <Mail className="w-3 h-3" />
+            <div className="flex items-center space-x-2">
+              <Mail className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.email}
                 onSave={(value) => onUpdate?.('personalInfo', 'email', value)}
@@ -38,8 +40,8 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
             </div>
           )}
           {personalInfo?.phone && (
-            <div className="flex items-center space-x-1">
-              <Phone className="w-3 h-3" />
+            <div className="flex items-center space-x-2">
+              <Phone className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.phone}
                 onSave={(value) => onUpdate?.('personalInfo', 'phone', value)}
@@ -50,8 +52,8 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
             </div>
           )}
           {personalInfo?.location && (
-            <div className="flex items-center space-x-1">
-              <MapPin className="w-3 h-3" />
+            <div className="flex items-center space-x-2">
+              <MapPin className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.location}
                 onSave={(value) => onUpdate?.('personalInfo', 'location', value)}
@@ -62,8 +64,8 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
             </div>
           )}
           {personalInfo?.linkedIn && (
-            <div className="flex items-center space-x-1">
-              <Linkedin className="w-3 h-3" />
+            <div className="flex items-center space-x-2">
+              <Linkedin className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.linkedIn}
                 onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
@@ -74,8 +76,8 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
             </div>
           )}
           {personalInfo?.portfolio && (
-            <div className="flex items-center space-x-1">
-              <Globe className="w-3 h-3" />
+            <div className="flex items-center space-x-2">
+              <Globe className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.portfolio}
                 onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
@@ -88,21 +90,21 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
         </div>
       </header>
 
-      <div className="grid grid-cols-3 gap-6">
-        {/* Left Sidebar */}
-        <div className="col-span-1 space-y-6">
-          {/* Tech Stack */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Enhanced Left Sidebar */}
+        <div className="lg:col-span-1 space-y-8">
+          {/* Enhanced Tech Stack */}
           {skills?.length > 0 && (
             <section>
-              <h2 className="text-lg font-bold text-green-400 mb-3 border-b border-green-400 pb-1">
+              <h2 className="text-lg font-bold text-green-400 mb-4 border-b border-green-400 pb-2">
                 <span className="flex items-center space-x-2">
                   <span>{'</>'}</span>
                   <span>Tech Stack</span>
                 </span>
               </h2>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {skills.map((skill: string, index: number) => (
-                  <div key={index} className="bg-gray-800 border border-green-400 px-3 py-1 rounded text-sm font-mono">
+                  <div key={index} className="bg-gray-800 border border-green-400 px-4 py-2 rounded-lg text-sm font-mono">
                     <EditableText
                       value={skill || ''}
                       onSave={(value) => {
@@ -111,7 +113,7 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
                         onUpdate?.('skills', '', updatedSkills.join(','));
                       }}
                       isEditing={isEditing}
-                      className="inline-block"
+                      className="inline-block text-white"
                       placeholder="Skill"
                     />
                   </div>
@@ -120,10 +122,10 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
             </section>
           )}
 
-          {/* Summary */}
+          {/* Enhanced Summary */}
           {personalInfo?.summary && (
             <section>
-              <h2 className="text-lg font-bold text-green-400 mb-3 border-b border-green-400 pb-1">
+              <h2 className="text-lg font-bold text-green-400 mb-4 border-b border-green-400 pb-2">
                 About
               </h2>
               <div className="text-gray-300 text-sm leading-relaxed">
@@ -132,7 +134,7 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
                   onSave={(value) => onUpdate?.('personalInfo', 'summary', value)}
                   multiline
                   isEditing={isEditing}
-                  className="inline-block w-full"
+                  className="inline-block w-full text-gray-300"
                   placeholder="Summary"
                 />
               </div>
@@ -140,40 +142,40 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
           )}
         </div>
 
-        {/* Main Content */}
-        <div className="col-span-2 space-y-6">
-          {/* Projects */}
+        {/* Enhanced Main Content */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Enhanced Projects */}
           {projects?.length > 0 && (
             <section>
-              <h2 className="text-xl font-bold text-green-400 mb-4 border-b border-green-400 pb-2">
+              <h2 className="text-xl font-bold text-green-400 mb-6 border-b border-green-400 pb-2">
                 Projects
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {projects.map((project: any, index: number) => (
-                  <div key={index} className="bg-gray-800 border border-gray-700 p-4 rounded-lg">
-                    <h3 className="font-bold text-white">
+                  <div key={index} className="bg-gray-800 border border-gray-700 p-6 rounded-lg">
+                    <h3 className="font-bold text-white text-lg mb-2">
                       <EditableText
                         value={project.name || ''}
                         onSave={(value) => onUpdate?.('projects', 'name', value, index)}
                         isEditing={isEditing}
-                        className="inline-block"
+                        className="inline-block text-white"
                         placeholder="Project Name"
                       />
                     </h3>
-                    <div className="text-gray-300 text-sm mb-2 whitespace-pre-line">
+                    <div className="text-gray-300 text-sm mb-4 whitespace-pre-line leading-relaxed">
                       <EditableText
                         value={project.description || ''}
                         onSave={(value) => onUpdate?.('projects', 'description', value, index)}
                         multiline
                         isEditing={isEditing}
-                        className="inline-block w-full"
+                        className="inline-block w-full text-gray-300"
                         placeholder="Project Description"
                       />
                     </div>
                     {project.technologies && (
-                      <div className="flex flex-wrap gap-1">
+                      <div className="flex flex-wrap gap-2">
                         {project.technologies.split(',').map((tech: string, i: number) => (
-                          <span key={i} className="bg-green-900 text-green-300 px-2 py-1 rounded text-xs font-mono">
+                          <span key={i} className="bg-green-900 text-green-300 px-3 py-1 rounded-full text-xs font-mono">
                             {tech.trim()}
                           </span>
                         ))}
@@ -185,23 +187,23 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
             </section>
           )}
 
-          {/* Experience */}
+          {/* Enhanced Experience */}
           {experience?.length > 0 && (
             <section>
-              <h2 className="text-xl font-bold text-green-400 mb-4 border-b border-green-400 pb-2">
+              <h2 className="text-xl font-bold text-green-400 mb-6 border-b border-green-400 pb-2">
                 Experience
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {experience.map((exp: any, index: number) => (
-                  <div key={index} className="bg-gray-800 border border-gray-700 p-4 rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h3 className="font-bold text-white">
+                  <div key={index} className="bg-gray-800 border border-gray-700 p-6 rounded-lg">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-grow">
+                        <h3 className="font-bold text-white text-lg mb-1">
                           <EditableText
                             value={exp.jobTitle || ''}
                             onSave={(value) => onUpdate?.('experience', 'jobTitle', value, index)}
                             isEditing={isEditing}
-                            className="inline-block"
+                            className="inline-block text-white"
                             placeholder="Job Title"
                           />
                         </h3>
@@ -210,17 +212,17 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
                             value={exp.company || ''}
                             onSave={(value) => onUpdate?.('experience', 'company', value, index)}
                             isEditing={isEditing}
-                            className="inline-block"
+                            className="inline-block text-green-400"
                             placeholder="Company Name"
                           />
                         </p>
                       </div>
-                      <span className="text-gray-400 text-sm">
+                      <span className="text-gray-400 text-sm ml-4 whitespace-nowrap">
                         <EditableText
                           value={exp.startDate || ''}
                           onSave={(value) => onUpdate?.('experience', 'startDate', value, index)}
                           isEditing={isEditing}
-                          className="inline-block"
+                          className="inline-block text-gray-400"
                           placeholder="Start Date"
                         />
                         {' - '}
@@ -229,19 +231,19 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
                             value={exp.endDate || ''}
                             onSave={(value) => onUpdate?.('experience', 'endDate', value, index)}
                             isEditing={isEditing}
-                            className="inline-block"
+                            className="inline-block text-gray-400"
                             placeholder="End Date"
                           />
                         )}
                       </span>
                     </div>
-                    <div className="text-gray-300 text-sm whitespace-pre-line">
+                    <div className="text-gray-300 text-sm whitespace-pre-line leading-relaxed">
                       <EditableText
                         value={exp.description || ''}
                         onSave={(value) => onUpdate?.('experience', 'description', value, index)}
                         multiline
                         isEditing={isEditing}
-                        className="inline-block w-full"
+                        className="inline-block w-full text-gray-300"
                         placeholder="Job Description"
                       />
                     </div>
@@ -251,42 +253,46 @@ const TechTemplate = ({ data, onUpdate, isEditing = false }: TechTemplateProps) 
             </section>
           )}
 
-          {/* Education */}
+          {/* Enhanced Education */}
           {education?.length > 0 && (
             <section>
-              <h2 className="text-xl font-bold text-green-400 mb-4 border-b border-green-400 pb-2">
+              <h2 className="text-xl font-bold text-green-400 mb-6 border-b border-green-400 pb-2">
                 Education
               </h2>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {education.map((edu: any, index: number) => (
-                  <div key={index} className="bg-gray-800 border border-gray-700 p-4 rounded-lg">
-                    <h3 className="font-bold text-white">
-                      <EditableText
-                        value={edu.degree || ''}
-                        onSave={(value) => onUpdate?.('education', 'degree', value, index)}
-                        isEditing={isEditing}
-                        className="inline-block"
-                        placeholder="Degree"
-                      />
-                    </h3>
-                    <p className="text-green-400 font-medium">
-                      <EditableText
-                        value={edu.school || ''}
-                        onSave={(value) => onUpdate?.('education', 'school', value, index)}
-                        isEditing={isEditing}
-                        className="inline-block"
-                        placeholder="School Name"
-                      />
-                    </p>
-                    <p className="text-gray-400 text-sm">
-                      <EditableText
-                        value={edu.graduationDate || ''}
-                        onSave={(value) => onUpdate?.('education', 'graduationDate', value, index)}
-                        isEditing={isEditing}
-                        className="inline-block"
-                        placeholder="Graduation Date"
-                      />
-                    </p>
+                  <div key={index} className="bg-gray-800 border border-gray-700 p-6 rounded-lg">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-grow">
+                        <h3 className="font-bold text-white text-lg mb-1">
+                          <EditableText
+                            value={edu.degree || ''}
+                            onSave={(value) => onUpdate?.('education', 'degree', value, index)}
+                            isEditing={isEditing}
+                            className="inline-block text-white"
+                            placeholder="Degree"
+                          />
+                        </h3>
+                        <p className="text-green-400 font-medium">
+                          <EditableText
+                            value={edu.school || ''}
+                            onSave={(value) => onUpdate?.('education', 'school', value, index)}
+                            isEditing={isEditing}
+                            className="inline-block text-green-400"
+                            placeholder="School Name"
+                          />
+                        </p>
+                      </div>
+                      <p className="text-gray-400 text-sm ml-4 whitespace-nowrap">
+                        <EditableText
+                          value={edu.graduationDate || ''}
+                          onSave={(value) => onUpdate?.('education', 'graduationDate', value, index)}
+                          isEditing={isEditing}
+                          className="inline-block text-gray-400"
+                          placeholder="Graduation Date"
+                        />
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>

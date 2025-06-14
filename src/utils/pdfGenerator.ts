@@ -1,7 +1,7 @@
 
 import jsPDF from 'jspdf';
 
-// Template-specific styling configurations with consistent color properties
+// Enhanced template configurations with better spacing and layout
 const templateConfigs = {
   modern: {
     colors: {
@@ -14,15 +14,16 @@ const templateConfigs = {
       background: [255, 255, 255]
     },
     fonts: {
-      header: { size: 32, weight: 'bold' },
-      subheader: { size: 18, weight: 'bold' },
-      body: { size: 10, weight: 'normal' },
-      small: { size: 9, weight: 'normal' }
+      header: { size: 28, weight: 'bold' },
+      subheader: { size: 16, weight: 'bold' },
+      body: { size: 11, weight: 'normal' },
+      small: { size: 10, weight: 'normal' }
     },
     spacing: {
-      section: 12,
-      item: 8,
-      line: 4
+      section: 15,
+      item: 10,
+      line: 5,
+      margin: 20
     }
   },
   classic: {
@@ -36,15 +37,16 @@ const templateConfigs = {
       background: [255, 255, 255]
     },
     fonts: {
-      header: { size: 28, weight: 'bold' },
-      subheader: { size: 16, weight: 'bold' },
-      body: { size: 10, weight: 'normal' },
-      small: { size: 9, weight: 'normal' }
+      header: { size: 26, weight: 'bold' },
+      subheader: { size: 15, weight: 'bold' },
+      body: { size: 11, weight: 'normal' },
+      small: { size: 10, weight: 'normal' }
     },
     spacing: {
-      section: 10,
-      item: 6,
-      line: 4
+      section: 12,
+      item: 8,
+      line: 5,
+      margin: 20
     }
   },
   creative: {
@@ -58,15 +60,16 @@ const templateConfigs = {
       background: [255, 255, 255]
     },
     fonts: {
-      header: { size: 28, weight: 'bold' },
-      subheader: { size: 14, weight: 'bold' },
-      body: { size: 9, weight: 'normal' },
-      small: { size: 8, weight: 'normal' }
+      header: { size: 26, weight: 'bold' },
+      subheader: { size: 15, weight: 'bold' },
+      body: { size: 10, weight: 'normal' },
+      small: { size: 9, weight: 'normal' }
     },
     spacing: {
-      section: 8,
-      item: 6,
-      line: 3
+      section: 12,
+      item: 8,
+      line: 4,
+      margin: 20
     }
   },
   minimal: {
@@ -80,15 +83,16 @@ const templateConfigs = {
       background: [255, 255, 255]
     },
     fonts: {
-      header: { size: 36, weight: 'normal' },
+      header: { size: 32, weight: 'normal' },
       subheader: { size: 16, weight: 'normal' },
-      body: { size: 10, weight: 'normal' },
-      small: { size: 9, weight: 'normal' }
+      body: { size: 11, weight: 'normal' },
+      small: { size: 10, weight: 'normal' }
     },
     spacing: {
-      section: 15,
-      item: 10,
-      line: 5
+      section: 18,
+      item: 12,
+      line: 6,
+      margin: 25
     }
   },
   executive: {
@@ -102,15 +106,16 @@ const templateConfigs = {
       background: [255, 255, 255]
     },
     fonts: {
-      header: { size: 32, weight: 'bold' },
+      header: { size: 30, weight: 'bold' },
       subheader: { size: 16, weight: 'bold' },
-      body: { size: 10, weight: 'normal' },
-      small: { size: 9, weight: 'normal' }
+      body: { size: 11, weight: 'normal' },
+      small: { size: 10, weight: 'normal' }
     },
     spacing: {
-      section: 12,
-      item: 8,
-      line: 4
+      section: 15,
+      item: 10,
+      line: 5,
+      margin: 20
     }
   },
   tech: {
@@ -124,21 +129,22 @@ const templateConfigs = {
       background: [31, 41, 55]
     },
     fonts: {
-      header: { size: 28, weight: 'bold' },
-      subheader: { size: 14, weight: 'bold' },
-      body: { size: 9, weight: 'normal' },
-      small: { size: 8, weight: 'normal' }
+      header: { size: 26, weight: 'bold' },
+      subheader: { size: 15, weight: 'bold' },
+      body: { size: 10, weight: 'normal' },
+      small: { size: 9, weight: 'normal' }
     },
     spacing: {
-      section: 8,
-      item: 6,
-      line: 3
+      section: 12,
+      item: 8,
+      line: 4,
+      margin: 20
     }
   }
 };
 
 export const generatePDF = async (data: any, templateName: string = 'modern') => {
-  console.log('=== Perfect Template-Matched PDF Generation ===');
+  console.log('=== Enhanced PDF Generation with Perfect Layout ===');
   console.log('Template:', templateName);
 
   try {
@@ -156,14 +162,24 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
     const pageHeight = pdf.internal.pageSize.getHeight();
     const config = templateConfigs[templateName as keyof typeof templateConfigs] || templateConfigs.modern;
     
-    let currentY = 20;
-    const margins = { left: 20, right: 20, top: 20, bottom: 20 };
+    let currentY = config.spacing.margin;
+    const margins = { 
+      left: config.spacing.margin, 
+      right: config.spacing.margin, 
+      top: config.spacing.margin, 
+      bottom: config.spacing.margin 
+    };
 
     // Helper functions
     const checkPageBreak = (requiredSpace: number) => {
       if (currentY + requiredSpace > pageHeight - margins.bottom) {
         pdf.addPage();
         currentY = margins.top;
+        // Re-apply background for tech template
+        if (templateName === 'tech') {
+          setFillColor(config.colors.background);
+          pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+        }
         return true;
       }
       return false;
@@ -183,82 +199,111 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       pdf.line(x1, y1, x2, y2);
     };
 
+    const drawIcon = (iconType: string, x: number, y: number, size: number = 3) => {
+      pdf.setDrawColor(config.colors.secondary[0], config.colors.secondary[1], config.colors.secondary[2]);
+      pdf.setLineWidth(0.3);
+      
+      switch (iconType) {
+        case 'email':
+          pdf.rect(x, y - size/2, size, size * 0.7, 'S');
+          pdf.line(x, y - size/2, x + size/2, y);
+          pdf.line(x + size/2, y, x + size, y - size/2);
+          break;
+        case 'phone':
+          pdf.roundedRect(x, y - size/2, size * 0.6, size, 0.5, 0.5, 'S');
+          break;
+        case 'location':
+          pdf.circle(x + size/2, y - size/4, size/2, 'S');
+          pdf.circle(x + size/2, y - size/3, size/6, 'F');
+          break;
+        case 'linkedin':
+          pdf.rect(x, y - size/2, size, size, 'S');
+          pdf.text('in', x + size/4, y + size/6);
+          break;
+        case 'portfolio':
+          pdf.circle(x + size/2, y, size/2, 'S');
+          pdf.line(x + size/4, y - size/4, x + 3*size/4, y + size/4);
+          break;
+      }
+    };
+
     // Tech template background setup
     if (templateName === 'tech') {
       setFillColor(config.colors.background);
       pdf.rect(0, 0, pageWidth, pageHeight, 'F');
     }
 
-    // Template-specific header rendering
+    // Enhanced header rendering with proper icon spacing
     switch (templateName) {
       case 'modern':
-        // Modern template with blue theme and timeline design
+        // Modern template with enhanced layout
         pdf.setFontSize(config.fonts.header.size);
         pdf.setFont('helvetica', config.fonts.header.weight);
         setColor(config.colors.text);
         pdf.text(data.personalInfo?.fullName || '', margins.left, currentY);
-        currentY += 8;
-
-        // Blue underline
-        drawLine(margins.left, currentY, pageWidth - margins.right, currentY, config.colors.primary, 2);
         currentY += 10;
 
-        // Contact info in horizontal layout
+        // Enhanced blue underline
+        drawLine(margins.left, currentY, pageWidth - margins.right, currentY, config.colors.primary, 3);
+        currentY += 12;
+
+        // Contact info with proper icon spacing
         if (data.personalInfo) {
           pdf.setFontSize(config.fonts.small.size);
           setColor(config.colors.secondary);
           
           const contacts = [
-            data.personalInfo.email,
-            data.personalInfo.phone,
-            data.personalInfo.location,
-            data.personalInfo.linkedIn,
-            data.personalInfo.portfolio
-          ].filter(Boolean);
+            { value: data.personalInfo.email, icon: 'email' },
+            { value: data.personalInfo.phone, icon: 'phone' },
+            { value: data.personalInfo.location, icon: 'location' },
+            { value: data.personalInfo.linkedIn, icon: 'linkedin' },
+            { value: data.personalInfo.portfolio, icon: 'portfolio' }
+          ].filter(contact => contact.value);
 
-          let contactX = margins.left;
           contacts.forEach((contact, index) => {
-            if (contactX + pdf.getTextWidth(contact) > pageWidth - margins.right) {
+            if (index > 0 && index % 2 === 0) {
               currentY += config.spacing.line;
-              contactX = margins.left;
             }
-            pdf.text(contact, contactX, currentY);
-            contactX += pdf.getTextWidth(contact) + 15;
+            
+            const xPos = margins.left + (index % 2) * ((pageWidth - margins.left - margins.right) / 2);
+            drawIcon(contact.icon, xPos, currentY, 3);
+            pdf.text(contact.value, xPos + 8, currentY);
           });
+          
           currentY += config.spacing.section;
         }
         break;
 
       case 'classic':
-        // Classic centered header with border
+        // Classic centered header with enhanced border
         pdf.setFontSize(config.fonts.header.size);
         pdf.setFont('helvetica', config.fonts.header.weight);
         setColor(config.colors.text);
         
         const nameWidth = pdf.getTextWidth(data.personalInfo?.fullName || '');
         pdf.text(data.personalInfo?.fullName || '', (pageWidth - nameWidth) / 2, currentY);
-        currentY += 8;
+        currentY += 10;
 
-        // Classic border line
+        // Enhanced classic border
         drawLine(margins.left, currentY, pageWidth - margins.right, currentY, config.colors.border, 2);
-        currentY += 8;
+        currentY += 10;
 
-        // Contact info centered
+        // Contact info centered with icons
         if (data.personalInfo) {
           pdf.setFontSize(config.fonts.small.size);
           setColor(config.colors.secondary);
           
           const contacts = [
-            data.personalInfo.email,
-            data.personalInfo.phone,
-            data.personalInfo.location,
-            data.personalInfo.linkedIn,
-            data.personalInfo.portfolio
-          ].filter(Boolean);
+            { value: data.personalInfo.email, icon: 'email' },
+            { value: data.personalInfo.phone, icon: 'phone' },
+            { value: data.personalInfo.location, icon: 'location' }
+          ].filter(contact => contact.value);
 
           contacts.forEach(contact => {
-            const contactWidth = pdf.getTextWidth(contact);
-            pdf.text(contact, (pageWidth - contactWidth) / 2, currentY);
+            const contactWidth = pdf.getTextWidth(contact.value);
+            const startX = (pageWidth - contactWidth - 8) / 2;
+            drawIcon(contact.icon, startX, currentY, 3);
+            pdf.text(contact.value, startX + 8, currentY);
             currentY += config.spacing.line;
           });
           currentY += config.spacing.section;
@@ -266,60 +311,54 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
         break;
 
       case 'creative':
-        // Creative template with purple gradient header
+        // Creative template with enhanced gradient header
         setFillColor(config.colors.primary);
-        pdf.rect(margins.left - 5, currentY - 8, pageWidth - margins.left - margins.right + 10, 25, 'F');
+        pdf.rect(0, currentY - 10, pageWidth, 30, 'F');
         
         pdf.setFontSize(config.fonts.header.size);
         pdf.setFont('helvetica', config.fonts.header.weight);
         pdf.setTextColor(255, 255, 255);
-        pdf.text(data.personalInfo?.fullName || '', margins.left, currentY + 8);
+        pdf.text(data.personalInfo?.fullName || '', margins.left, currentY + 5);
         currentY += 25;
 
-        // Contact info in creative layout
+        // Contact info in creative grid layout
         if (data.personalInfo) {
           pdf.setFontSize(config.fonts.small.size);
           setColor(config.colors.text);
           
           const contacts = [
-            data.personalInfo.email,
-            data.personalInfo.phone,
-            data.personalInfo.location,
-            data.personalInfo.linkedIn,
-            data.personalInfo.portfolio
-          ].filter(Boolean);
+            { value: data.personalInfo.email, icon: 'email' },
+            { value: data.personalInfo.phone, icon: 'phone' },
+            { value: data.personalInfo.location, icon: 'location' },
+            { value: data.personalInfo.linkedIn, icon: 'linkedin' },
+            { value: data.personalInfo.portfolio, icon: 'portfolio' }
+          ].filter(contact => contact.value);
 
           const itemsPerRow = 3;
-          let itemCount = 0;
-          let rowY = currentY;
-          
-          contacts.forEach(contact => {
+          contacts.forEach((contact, index) => {
             const colWidth = (pageWidth - margins.left - margins.right) / itemsPerRow;
-            const x = margins.left + (itemCount % itemsPerRow) * colWidth;
+            const x = margins.left + (index % itemsPerRow) * colWidth;
+            const y = currentY + Math.floor(index / itemsPerRow) * config.spacing.line;
             
-            pdf.text(contact, x, rowY);
-            itemCount++;
-            
-            if (itemCount % itemsPerRow === 0) {
-              rowY += config.spacing.line;
-            }
+            drawIcon(contact.icon, x, y, 3);
+            pdf.text(contact.value, x + 8, y);
           });
           
-          currentY = rowY + config.spacing.section;
+          currentY += Math.ceil(contacts.length / itemsPerRow) * config.spacing.line + config.spacing.section;
         }
         break;
 
       case 'minimal':
-        // Minimal centered design
+        // Minimal centered design with enhanced spacing
         pdf.setFontSize(config.fonts.header.size);
         pdf.setFont('helvetica', config.fonts.header.weight);
         setColor(config.colors.text);
         
         const minimalNameWidth = pdf.getTextWidth(data.personalInfo?.fullName || '');
         pdf.text(data.personalInfo?.fullName || '', (pageWidth - minimalNameWidth) / 2, currentY);
-        currentY += 15;
+        currentY += 20;
 
-        // Contact info centered and spaced
+        // Contact info centered and elegantly spaced
         if (data.personalInfo) {
           pdf.setFontSize(config.fonts.small.size);
           setColor(config.colors.secondary);
@@ -327,9 +366,7 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
           const contacts = [
             data.personalInfo.email,
             data.personalInfo.phone,
-            data.personalInfo.location,
-            data.personalInfo.linkedIn,
-            data.personalInfo.portfolio
+            data.personalInfo.location
           ].filter(Boolean);
 
           const contactsText = contacts.join(' • ');
@@ -340,98 +377,90 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
         break;
 
       case 'executive':
-        // Executive bold header
+        // Executive bold header with enhanced layout
         pdf.setFontSize(config.fonts.header.size);
         pdf.setFont('helvetica', config.fonts.header.weight);
         setColor(config.colors.primary);
         pdf.text(data.personalInfo?.fullName || '', margins.left, currentY);
-        currentY += 8;
+        currentY += 10;
 
         // Thick executive line
         drawLine(margins.left, currentY, pageWidth - margins.right, currentY, config.colors.border, 4);
-        currentY += 12;
+        currentY += 15;
 
-        // Contact layout for executive
+        // Two-column contact layout
         if (data.personalInfo) {
           pdf.setFontSize(config.fonts.small.size);
           setColor(config.colors.secondary);
           
-          // Left side contacts
-          let leftY = currentY;
-          if (data.personalInfo.email) {
-            pdf.text(data.personalInfo.email, margins.left, leftY);
-            leftY += config.spacing.line;
-          }
-          if (data.personalInfo.phone) {
-            pdf.text(data.personalInfo.phone, margins.left, leftY);
-            leftY += config.spacing.line;
-          }
+          const leftContacts = [
+            { value: data.personalInfo.email, icon: 'email' },
+            { value: data.personalInfo.phone, icon: 'phone' }
+          ].filter(contact => contact.value);
 
-          // Right side contacts
+          const rightContacts = [
+            { value: data.personalInfo.location, icon: 'location' },
+            { value: data.personalInfo.linkedIn, icon: 'linkedin' }
+          ].filter(contact => contact.value);
+
+          let leftY = currentY;
+          leftContacts.forEach(contact => {
+            drawIcon(contact.icon, margins.left, leftY, 3);
+            pdf.text(contact.value, margins.left + 8, leftY);
+            leftY += config.spacing.line;
+          });
+
           let rightY = currentY;
-          if (data.personalInfo.location) {
-            const locWidth = pdf.getTextWidth(data.personalInfo.location);
-            pdf.text(data.personalInfo.location, pageWidth - margins.right - locWidth, rightY);
+          rightContacts.forEach(contact => {
+            const textWidth = pdf.getTextWidth(contact.value);
+            drawIcon(contact.icon, pageWidth - margins.right - textWidth - 8, rightY, 3);
+            pdf.text(contact.value, pageWidth - margins.right - textWidth, rightY);
             rightY += config.spacing.line;
-          }
-          if (data.personalInfo.linkedIn) {
-            const linkedInWidth = pdf.getTextWidth(data.personalInfo.linkedIn);
-            pdf.text(data.personalInfo.linkedIn, pageWidth - margins.right - linkedInWidth, rightY);
-            rightY += config.spacing.line;
-          }
+          });
 
           currentY = Math.max(leftY, rightY) + config.spacing.section;
         }
         break;
 
       case 'tech':
-        // Green header bar
+        // Tech template with enhanced header bar
         setFillColor(config.colors.primary);
-        pdf.rect(margins.left - 5, currentY - 8, pageWidth - margins.left - margins.right + 10, 25, 'F');
+        pdf.rect(0, currentY - 10, pageWidth, 30, 'F');
         
         pdf.setFontSize(config.fonts.header.size);
         pdf.setFont('helvetica', config.fonts.header.weight);
         pdf.setTextColor(255, 255, 255);
-        pdf.text(data.personalInfo?.fullName || '', margins.left, currentY + 8);
+        pdf.text(data.personalInfo?.fullName || '', margins.left, currentY + 5);
         currentY += 25;
 
-        // Tech contact grid
+        // Tech contact grid with enhanced spacing
         if (data.personalInfo) {
           pdf.setFontSize(config.fonts.small.size);
           setColor(config.colors.text);
           
           const contacts = [
-            data.personalInfo.email,
-            data.personalInfo.phone,
-            data.personalInfo.location,
-            data.personalInfo.linkedIn,
-            data.personalInfo.portfolio
-          ].filter(Boolean);
+            { value: data.personalInfo.email, icon: 'email' },
+            { value: data.personalInfo.phone, icon: 'phone' },
+            { value: data.personalInfo.location, icon: 'location' }
+          ].filter(contact => contact.value);
 
-          const itemsPerRow = 3;
-          let itemCount = 0;
-          let rowY = currentY;
-          
-          contacts.forEach(contact => {
-            const colWidth = (pageWidth - margins.left - margins.right) / itemsPerRow;
-            const x = margins.left + (itemCount % itemsPerRow) * colWidth;
+          contacts.forEach((contact, index) => {
+            const colWidth = (pageWidth - margins.left - margins.right) / 3;
+            const x = margins.left + (index % 3) * colWidth;
+            const y = currentY + Math.floor(index / 3) * config.spacing.line;
             
-            pdf.text(contact, x, rowY);
-            itemCount++;
-            
-            if (itemCount % itemsPerRow === 0) {
-              rowY += config.spacing.line;
-            }
+            drawIcon(contact.icon, x, y, 3);
+            pdf.text(contact.value, x + 8, y);
           });
           
-          currentY = rowY + config.spacing.section;
+          currentY += Math.ceil(contacts.length / 3) * config.spacing.line + config.spacing.section;
         }
         break;
     }
 
-    // Render sections with template-specific styling
+    // Enhanced section rendering function
     const renderSection = (title: string, content: () => void) => {
-      checkPageBreak(15);
+      checkPageBreak(20);
       
       pdf.setFontSize(config.fonts.subheader.size);
       pdf.setFont('helvetica', config.fonts.subheader.weight);
@@ -441,36 +470,36 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
           setColor(config.colors.primary);
           pdf.text(title, margins.left, currentY);
           currentY += 6;
-          drawLine(margins.left, currentY, margins.left + 40, currentY, config.colors.primary, 2);
-          currentY += 8;
+          drawLine(margins.left, currentY, margins.left + 50, currentY, config.colors.primary, 2);
+          currentY += 10;
           break;
         case 'creative':
           setColor(config.colors.primary);
           pdf.text(title, margins.left, currentY);
-          currentY += 4;
-          drawLine(margins.left, currentY, margins.left + 30, currentY, config.colors.secondary, 2);
-          currentY += 6;
+          currentY += 5;
+          drawLine(margins.left, currentY, margins.left + 40, currentY, config.colors.secondary, 2);
+          currentY += 8;
           break;
         case 'tech':
           setColor(config.colors.primary);
           pdf.text(title, margins.left, currentY);
-          currentY += 4;
-          drawLine(margins.left, currentY, margins.left + 30, currentY, config.colors.primary, 1);
-          currentY += 6;
+          currentY += 5;
+          drawLine(margins.left, currentY, margins.left + 40, currentY, config.colors.primary, 1);
+          currentY += 8;
           break;
         default:
           setColor(config.colors.primary);
           pdf.text(title.toUpperCase(), margins.left, currentY);
-          currentY += 4;
+          currentY += 5;
           drawLine(margins.left, currentY, pageWidth - margins.right, currentY, config.colors.primary, 1);
-          currentY += 8;
+          currentY += 10;
       }
       
       content();
       currentY += config.spacing.section;
     };
 
-    // Professional Summary
+    // Professional Summary with enhanced formatting
     if (data.personalInfo?.summary) {
       renderSection('PROFESSIONAL SUMMARY', () => {
         pdf.setFontSize(config.fonts.body.size);
@@ -479,50 +508,43 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
         
         const summaryLines = pdf.splitTextToSize(data.personalInfo.summary, pageWidth - margins.left - margins.right);
         summaryLines.forEach((line: string, index: number) => {
-          checkPageBreak(4);
+          checkPageBreak(5);
           pdf.text(line, margins.left, currentY + (index * config.spacing.line));
         });
         currentY += summaryLines.length * config.spacing.line;
       });
     }
 
-    // Experience Section
+    // Enhanced Experience Section
     if (data.experience?.length > 0) {
-      renderSection('EXPERIENCE', () => {
+      renderSection('PROFESSIONAL EXPERIENCE', () => {
         data.experience.forEach((exp: any, expIndex: number) => {
           if (exp.jobTitle && exp.company) {
-            checkPageBreak(20);
+            checkPageBreak(25);
             
-            // Modern template timeline design
+            // Timeline design for modern template
             if (templateName === 'modern') {
-              // Timeline dot
               setFillColor(config.colors.primary);
-              pdf.circle(margins.left + 2, currentY, 1.5, 'F');
+              pdf.circle(margins.left + 3, currentY, 2, 'F');
               
-              // Timeline line (if not last item)
               if (expIndex < data.experience.length - 1) {
-                drawLine(margins.left + 2, currentY + 2, margins.left + 2, currentY + 25, config.colors.light, 1);
+                drawLine(margins.left + 3, currentY + 3, margins.left + 3, currentY + 30, config.colors.light, 1);
               }
             }
             
-            const contentX = templateName === 'modern' ? margins.left + 8 : margins.left;
+            const contentX = templateName === 'modern' ? margins.left + 12 : margins.left;
             
-            // Job title
+            // Job title with enhanced formatting
             pdf.setFontSize(config.fonts.body.size + 2);
             pdf.setFont('helvetica', 'bold');
             setColor(config.colors.text);
             pdf.text(exp.jobTitle, contentX, currentY);
-            currentY += 5;
+            currentY += 6;
 
-            // Company and dates
+            // Company and dates with better layout
             pdf.setFontSize(config.fonts.body.size);
             pdf.setFont('helvetica', 'normal');
-            
-            if (templateName === 'modern') {
-              setColor(config.colors.primary);
-            } else {
-              setColor(config.colors.secondary);
-            }
+            setColor(templateName === 'modern' ? config.colors.primary : config.colors.secondary);
             
             pdf.text(exp.company, contentX, currentY);
             
@@ -531,16 +553,16 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
               const dateWidth = pdf.getTextWidth(dateText);
               pdf.text(dateText, pageWidth - margins.right - dateWidth, currentY);
             }
-            currentY += 5;
+            currentY += 6;
 
-            // Description
+            // Enhanced description formatting
             if (exp.description) {
               pdf.setFontSize(config.fonts.body.size);
               setColor(config.colors.text);
-              const descLines = pdf.splitTextToSize(exp.description, pageWidth - margins.left - margins.right - (templateName === 'modern' ? 8 : 0));
+              const descLines = pdf.splitTextToSize(exp.description, pageWidth - margins.left - margins.right - (templateName === 'modern' ? 12 : 0));
               
               descLines.forEach((line: string, index: number) => {
-                checkPageBreak(4);
+                checkPageBreak(5);
                 pdf.text(line, contentX, currentY + (index * config.spacing.line));
               });
               currentY += descLines.length * config.spacing.line + config.spacing.item;
@@ -550,39 +572,39 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       });
     }
 
-    // Projects Section
+    // Enhanced Projects Section
     if (data.projects?.length > 0) {
       renderSection('PROJECTS', () => {
         data.projects.forEach((project: any, projIndex: number) => {
           if (project.name) {
-            checkPageBreak(15);
+            checkPageBreak(20);
             
-            // Modern template timeline design for projects
+            // Timeline design for modern template
             if (templateName === 'modern') {
               setFillColor(config.colors.primary);
-              pdf.circle(margins.left + 2, currentY, 1.5, 'F');
+              pdf.circle(margins.left + 3, currentY, 2, 'F');
               
               if (projIndex < data.projects.length - 1) {
-                drawLine(margins.left + 2, currentY + 2, margins.left + 2, currentY + 20, config.colors.light, 1);
+                drawLine(margins.left + 3, currentY + 3, margins.left + 3, currentY + 25, config.colors.light, 1);
               }
             }
             
-            const contentX = templateName === 'modern' ? margins.left + 8 : margins.left;
+            const contentX = templateName === 'modern' ? margins.left + 12 : margins.left;
             
             pdf.setFontSize(config.fonts.body.size + 1);
             pdf.setFont('helvetica', 'bold');
             setColor(config.colors.text);
             pdf.text(project.name, contentX, currentY);
-            currentY += 5;
+            currentY += 6;
 
             if (project.description) {
               pdf.setFontSize(config.fonts.body.size);
               pdf.setFont('helvetica', 'normal');
               setColor(config.colors.text);
-              const projLines = pdf.splitTextToSize(project.description, pageWidth - margins.left - margins.right - (templateName === 'modern' ? 8 : 0));
+              const projLines = pdf.splitTextToSize(project.description, pageWidth - margins.left - margins.right - (templateName === 'modern' ? 12 : 0));
               
               projLines.forEach((line: string, index: number) => {
-                checkPageBreak(4);
+                checkPageBreak(5);
                 pdf.text(line, contentX, currentY + (index * config.spacing.line));
               });
               currentY += projLines.length * config.spacing.line + 3;
@@ -599,95 +621,95 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       });
     }
 
-    // Education Section
+    // Enhanced Education Section with better data handling
     if (data.education?.length > 0) {
       renderSection('EDUCATION', () => {
         data.education.forEach((edu: any, eduIndex: number) => {
-          if (edu.degree && edu.school) {
-            checkPageBreak(12);
+          // Handle cases where degree or school might be missing
+          const degree = edu.degree || 'Degree Not Specified';
+          const school = edu.school || 'Institution Not Specified';
+          const graduationDate = edu.graduationDate || 'Date Not Specified';
+          
+          checkPageBreak(15);
+          
+          // Timeline design for modern template
+          if (templateName === 'modern') {
+            setFillColor(config.colors.primary);
+            pdf.circle(margins.left + 3, currentY, 2, 'F');
             
-            // Modern template timeline design for education
-            if (templateName === 'modern') {
-              setFillColor(config.colors.primary);
-              pdf.circle(margins.left + 2, currentY, 1.5, 'F');
-              
-              if (eduIndex < data.education.length - 1) {
-                drawLine(margins.left + 2, currentY + 2, margins.left + 2, currentY + 15, config.colors.light, 1);
-              }
+            if (eduIndex < data.education.length - 1) {
+              drawLine(margins.left + 3, currentY + 3, margins.left + 3, currentY + 20, config.colors.light, 1);
             }
-            
-            const contentX = templateName === 'modern' ? margins.left + 8 : margins.left;
-            
-            pdf.setFontSize(config.fonts.body.size + 1);
-            pdf.setFont('helvetica', 'bold');
-            setColor(config.colors.text);
-            pdf.text(edu.degree, contentX, currentY);
-            currentY += 4;
-
-            pdf.setFont('helvetica', 'normal');
-            if (templateName === 'modern') {
-              setColor(config.colors.primary);
-            } else {
-              setColor(config.colors.secondary);
-            }
-            
-            pdf.text(edu.school, contentX, currentY);
-            
-            if (edu.graduationDate) {
-              const gradWidth = pdf.getTextWidth(edu.graduationDate);
-              pdf.text(edu.graduationDate, pageWidth - margins.right - gradWidth, currentY);
-            }
-            currentY += config.spacing.item;
           }
+          
+          const contentX = templateName === 'modern' ? margins.left + 12 : margins.left;
+          
+          pdf.setFontSize(config.fonts.body.size + 1);
+          pdf.setFont('helvetica', 'bold');
+          setColor(config.colors.text);
+          pdf.text(degree, contentX, currentY);
+          currentY += 5;
+
+          pdf.setFont('helvetica', 'normal');
+          setColor(templateName === 'modern' ? config.colors.primary : config.colors.secondary);
+          
+          pdf.text(school, contentX, currentY);
+          
+          if (graduationDate !== 'Date Not Specified') {
+            const gradWidth = pdf.getTextWidth(graduationDate);
+            pdf.text(graduationDate, pageWidth - margins.right - gradWidth, currentY);
+          }
+          currentY += config.spacing.item;
         });
       });
     }
 
-    // Skills Section
+    // Enhanced Skills Section with better layout
     if (data.skills?.length > 0) {
       renderSection('SKILLS', () => {
         const validSkills = data.skills.filter((skill: string) => skill && skill.trim());
         
         if (templateName === 'creative' || templateName === 'tech') {
-          // Skills as badges for creative and tech templates
+          // Enhanced skills badges
           pdf.setFontSize(config.fonts.small.size);
           pdf.setFont('helvetica', 'normal');
           
           let skillX = margins.left;
           let skillY = currentY;
+          const maxWidth = pageWidth - margins.left - margins.right;
           
           validSkills.forEach((skill: string) => {
-            const skillWidth = pdf.getTextWidth(skill) + 6;
+            const skillWidth = pdf.getTextWidth(skill) + 8;
             
-            if (skillX + skillWidth > pageWidth - margins.right) {
+            if (skillX + skillWidth > maxWidth + margins.left) {
               skillX = margins.left;
-              skillY += 8;
-              checkPageBreak(8);
+              skillY += 10;
+              checkPageBreak(10);
             }
             
-            // Draw skill background
+            // Enhanced skill background
             if (templateName === 'tech') {
-              setFillColor(config.colors.background);
+              setFillColor([45, 55, 72]); // Darker background for tech
             } else {
               setFillColor(config.colors.light);
             }
-            pdf.rect(skillX, skillY - 3, skillWidth, 6, 'F');
+            pdf.roundedRect(skillX, skillY - 4, skillWidth, 8, 2, 2, 'F');
             
-            // Draw skill border
+            // Enhanced skill border
             pdf.setDrawColor(config.colors.primary[0], config.colors.primary[1], config.colors.primary[2]);
-            pdf.setLineWidth(0.2);
-            pdf.rect(skillX, skillY - 3, skillWidth, 6, 'S');
+            pdf.setLineWidth(0.3);
+            pdf.roundedRect(skillX, skillY - 4, skillWidth, 8, 2, 2, 'S');
             
-            // Draw skill text
+            // Skill text
             setColor(config.colors.text);
-            pdf.text(skill, skillX + 3, skillY + 1);
+            pdf.text(skill, skillX + 4, skillY + 1);
             
-            skillX += skillWidth + 4;
+            skillX += skillWidth + 6;
           });
           
-          currentY = skillY + 6;
+          currentY = skillY + 8;
         } else {
-          // Skills as bullet points for other templates
+          // Enhanced bullet point layout for other templates
           const skillsText = validSkills.join(' • ');
           
           pdf.setFontSize(config.fonts.body.size);
@@ -696,7 +718,7 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
           
           const skillLines = pdf.splitTextToSize(skillsText, pageWidth - margins.left - margins.right);
           skillLines.forEach((line: string, index: number) => {
-            checkPageBreak(4);
+            checkPageBreak(5);
             pdf.text(line, margins.left, currentY + (index * config.spacing.line));
           });
           currentY += skillLines.length * config.spacing.line;
@@ -704,11 +726,11 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
       });
     }
 
-    console.log('Perfect template-matched PDF generation completed');
+    console.log('Enhanced PDF generation completed with perfect layout matching');
     return pdf;
 
   } catch (error) {
-    console.error('PDF generation error:', error);
-    throw new Error('Failed to generate perfect PDF: ' + (error as Error).message);
+    console.error('Enhanced PDF generation error:', error);
+    throw new Error('Failed to generate enhanced PDF: ' + (error as Error).message);
   }
 };

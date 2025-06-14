@@ -13,9 +13,9 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
 
   return (
     <div className="max-w-4xl mx-auto bg-white p-8 shadow-lg min-h-[297mm]">
-      {/* Header */}
+      {/* Enhanced Header with Better Layout */}
       <header className="border-b-4 border-blue-600 pb-6 mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">
           <EditableText
             value={personalInfo?.fullName || ''}
             onSave={(value) => onUpdate?.('personalInfo', 'fullName', value)}
@@ -24,10 +24,12 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
             className="inline-block"
           />
         </h1>
-        <div className="flex flex-wrap gap-4 text-gray-600">
+        
+        {/* Enhanced Contact Info Grid */}
+        <div className="grid grid-cols-2 gap-4 text-gray-600">
           {personalInfo?.email && (
-            <div className="flex items-center space-x-2">
-              <Mail className="w-4 h-4" />
+            <div className="flex items-center space-x-3">
+              <Mail className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.email}
                 onSave={(value) => onUpdate?.('personalInfo', 'email', value)}
@@ -38,8 +40,8 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
             </div>
           )}
           {personalInfo?.phone && (
-            <div className="flex items-center space-x-2">
-              <Phone className="w-4 h-4" />
+            <div className="flex items-center space-x-3">
+              <Phone className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.phone}
                 onSave={(value) => onUpdate?.('personalInfo', 'phone', value)}
@@ -50,8 +52,8 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
             </div>
           )}
           {personalInfo?.location && (
-            <div className="flex items-center space-x-2">
-              <MapPin className="w-4 h-4" />
+            <div className="flex items-center space-x-3">
+              <MapPin className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.location}
                 onSave={(value) => onUpdate?.('personalInfo', 'location', value)}
@@ -62,8 +64,8 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
             </div>
           )}
           {personalInfo?.linkedIn && (
-            <div className="flex items-center space-x-2">
-              <Linkedin className="w-4 h-4" />
+            <div className="flex items-center space-x-3">
+              <Linkedin className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.linkedIn}
                 onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
@@ -74,8 +76,8 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
             </div>
           )}
           {personalInfo?.portfolio && (
-            <div className="flex items-center space-x-2">
-              <Globe className="w-4 h-4" />
+            <div className="flex items-center space-x-3">
+              <Globe className="w-4 h-4 flex-shrink-0" />
               <EditableText
                 value={personalInfo.portfolio}
                 onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
@@ -88,7 +90,7 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
         </div>
       </header>
 
-      {/* Summary */}
+      {/* Enhanced Summary Section */}
       {personalInfo?.summary && (
         <section className="mb-8">
           <h2 className="text-2xl font-bold text-blue-600 mb-4 border-l-4 border-blue-600 pl-4">
@@ -107,7 +109,7 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
         </section>
       )}
 
-      {/* Experience */}
+      {/* Enhanced Experience Section */}
       {experience?.length > 0 && (
         <section className="mb-8">
           <h2 className="text-2xl font-bold text-blue-600 mb-6 border-l-4 border-blue-600 pl-4">
@@ -117,9 +119,9 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
             {experience.map((exp: any, index: number) => (
               <div key={index} className="border-l-2 border-gray-200 pl-6 relative">
                 <div className="absolute w-3 h-3 bg-blue-600 rounded-full -left-2 top-1"></div>
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-grow">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-1">
                       <EditableText
                         value={exp.jobTitle || ''}
                         onSave={(value) => onUpdate?.('experience', 'jobTitle', value, index)}
@@ -138,8 +140,8 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
                       />
                     </p>
                   </div>
-                  <div className="text-right text-gray-600">
-                    <p className="font-medium">
+                  <div className="text-right text-gray-600 ml-4">
+                    <p className="font-medium whitespace-nowrap">
                       <EditableText
                         value={exp.startDate || ''}
                         onSave={(value) => onUpdate?.('experience', 'startDate', value, index)}
@@ -176,7 +178,7 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
         </section>
       )}
 
-      {/* Projects */}
+      {/* Enhanced Projects Section */}
       {projects?.length > 0 && (
         <section className="mb-8">
           <h2 className="text-2xl font-bold text-blue-600 mb-6 border-l-4 border-blue-600 pl-4">
@@ -186,7 +188,7 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
             {projects.map((project: any, index: number) => (
               <div key={index} className="border-l-2 border-gray-200 pl-6 relative">
                 <div className="absolute w-3 h-3 bg-blue-600 rounded-full -left-2 top-1"></div>
-                <h3 className="text-xl font-semibold text-gray-900">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
                   <EditableText
                     value={project.name || ''}
                     onSave={(value) => onUpdate?.('projects', 'name', value, index)}
@@ -195,7 +197,7 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
                     placeholder="Project Name"
                   />
                 </h3>
-                <div className="text-gray-700 leading-relaxed whitespace-pre-line mb-2">
+                <div className="text-gray-700 leading-relaxed whitespace-pre-line mb-3">
                   <EditableText
                     value={project.description || ''}
                     onSave={(value) => onUpdate?.('projects', 'description', value, index)}
@@ -206,11 +208,11 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
                   />
                 </div>
                 {project.technologies && (
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-2">
                     {project.technologies.split(',').map((tech: string, i: number) => (
                       <span
                         key={i}
-                        className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium"
+                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
                       >
                         {tech.trim()}
                       </span>
@@ -223,7 +225,7 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
         </section>
       )}
 
-      {/* Education */}
+      {/* Enhanced Education Section */}
       {education?.length > 0 && (
         <section className="mb-8">
           <h2 className="text-2xl font-bold text-blue-600 mb-6 border-l-4 border-blue-600 pl-4">
@@ -234,8 +236,8 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
               <div key={index} className="border-l-2 border-gray-200 pl-6 relative">
                 <div className="absolute w-3 h-3 bg-blue-600 rounded-full -left-2 top-1"></div>
                 <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
+                  <div className="flex-grow">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
                       <EditableText
                         value={edu.degree || ''}
                         onSave={(value) => onUpdate?.('education', 'degree', value, index)}
@@ -254,8 +256,8 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
                       />
                     </p>
                   </div>
-                  <div className="text-gray-600">
-                    <p className="font-medium">
+                  <div className="text-gray-600 ml-4">
+                    <p className="font-medium whitespace-nowrap">
                       <EditableText
                         value={edu.graduationDate || ''}
                         onSave={(value) => onUpdate?.('education', 'graduationDate', value, index)}
@@ -272,17 +274,17 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false }: ModernTemplatePro
         </section>
       )}
 
-      {/* Skills */}
+      {/* Enhanced Skills Section */}
       {skills?.length > 0 && (
         <section className="mb-8">
           <h2 className="text-2xl font-bold text-blue-600 mb-6 border-l-4 border-blue-600 pl-4">
             Skills
           </h2>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             {skills.map((skill: string, index: number) => (
               <span
                 key={index}
-                className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+                className="px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
               >
                 <EditableText
                   value={skill || ''}
