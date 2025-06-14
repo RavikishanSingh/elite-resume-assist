@@ -19,8 +19,7 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
 
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    let currentY = 20;
-    let currentPage = 1;
+    let currentY = 15;
 
     // Set default font
     pdf.setFont('helvetica');
@@ -28,7 +27,6 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
     // Modern template colors - exact match
     const colors = {
       blue600: [37, 99, 235],     // #2563eb - main blue
-      blue500: [59, 130, 246],    // #3b82f6 - lighter blue
       gray900: [17, 24, 39],      // #111827 - dark text
       gray700: [55, 65, 81],      // #374151 - medium text
       gray600: [75, 85, 99],      // #4b5563 - light text
@@ -40,412 +38,357 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
 
     // Helper function to check if we need a new page
     const checkPageBreak = (requiredSpace: number) => {
-      if (currentY + requiredSpace > pageHeight - 25) {
+      if (currentY + requiredSpace > pageHeight - 20) {
         pdf.addPage();
-        currentY = 25;
-        currentPage++;
+        currentY = 15;
         return true;
       }
       return false;
     };
 
-    // Helper function to add text with proper wrapping and page breaks
-    const addText = (text: string, x: number, y: number, options: any = {}) => {
-      if (!text || text.trim() === '') return y;
+    // Helper function to draw simple icons
+    const drawIcon = (type: string, x: number, y: number) => {
+      pdf.setDrawColor(colors.gray600[0], colors.gray600[1], colors.gray600[2]);
+      pdf.setLineWidth(0.2);
       
-      pdf.setFontSize(options.fontSize || 11);
-      pdf.setFont('helvetica', options.fontStyle || 'normal');
-      pdf.setTextColor(options.color?.[0] || 0, options.color?.[1] || 0, options.color?.[2] || 0);
-      
-      const maxWidth = options.maxWidth || (pageWidth - 40);
-      const lines = pdf.splitTextToSize(text, maxWidth);
-      const lineHeight = options.lineHeight || 6;
-      const totalHeight = lines.length * lineHeight;
-      
-      // Check if we need a new page
-      if (y + totalHeight > pageHeight - 25) {
-        pdf.addPage();
-        y = 25;
-        currentPage++;
+      switch (type) {
+        case 'email':
+          pdf.rect(x, y - 1, 3, 2, 'S');
+          pdf.line(x, y, x + 1.5, y + 0.5);
+          pdf.line(x + 1.5, y + 0.5, x + 3, y);
+          break;
+        case 'phone':
+          pdf.roundedRect(x, y - 1.5, 1.5, 3, 0.3, 0.3, 'S');
+          break;
+        case 'location':
+          pdf.circle(x + 1, y, 1, 'S');
+          pdf.line(x + 1, y - 1, x + 1, y + 1);
+          break;
+        case 'linkedin':
+          pdf.rect(x, y - 1, 2.5, 2, 'S');
+          pdf.setFontSize(4);
+          pdf.setTextColor(colors.gray600[0], colors.gray600[1], colors.gray600[2]);
+          pdf.text('in', x + 0.5, y + 0.3);
+          break;
+        case 'website':
+          pdf.circle(x + 1.5, y, 1.5, 'S');
+          pdf.line(x, y, x + 3, y);
+          pdf.line(x + 1.5, y - 1.5, x + 1.5, y + 1.5);
+          break;
       }
-      
-      pdf.text(lines, x, y);
-      return y + totalHeight + (options.marginBottom || 0);
     };
 
-    // Helper function to draw rounded rectangle
-    const drawRoundedRect = (x: number, y: number, width: number, height: number, radius: number, style: string = 'S') => {
-      pdf.roundedRect(x, y, width, height, radius, radius, style);
-    };
-
-    // Simple icon drawing functions using basic shapes
-    const drawEmailIcon = (x: number, y: number, size: number = 3) => {
-      pdf.setDrawColor(colors.gray600[0], colors.gray600[1], colors.gray600[2]);
-      pdf.setLineWidth(0.3);
-      pdf.rect(x, y - size/2, size, size/1.5, 'S');
-      pdf.line(x, y - size/4, x + size/2, y + size/8);
-      pdf.line(x + size/2, y + size/8, x + size, y - size/4);
-    };
-
-    const drawPhoneIcon = (x: number, y: number, size: number = 3) => {
-      pdf.setDrawColor(colors.gray600[0], colors.gray600[1], colors.gray600[2]);
-      pdf.setLineWidth(0.3);
-      pdf.roundedRect(x, y - size/2, size/2, size, 0.5, 0.5, 'S');
-    };
-
-    const drawLocationIcon = (x: number, y: number, size: number = 3) => {
-      pdf.setDrawColor(colors.gray600[0], colors.gray600[1], colors.gray600[2]);
-      pdf.setLineWidth(0.3);
-      pdf.circle(x + size/4, y - size/4, size/4, 'S');
-      pdf.line(x + size/4, y - size/2, x + size/4, y + size/4);
-    };
-
-    const drawLinkedInIcon = (x: number, y: number, size: number = 3) => {
-      pdf.setDrawColor(colors.gray600[0], colors.gray600[1], colors.gray600[2]);
-      pdf.setLineWidth(0.3);
-      pdf.rect(x, y - size/2, size, size, 'S');
-      pdf.setFontSize(6);
-      pdf.text('in', x + size/4, y + size/8);
-    };
-
-    const drawGlobeIcon = (x: number, y: number, size: number = 3) => {
-      pdf.setDrawColor(colors.gray600[0], colors.gray600[1], colors.gray600[2]);
-      pdf.setLineWidth(0.3);
-      pdf.circle(x + size/2, y, size/2, 'S');
-      pdf.line(x, y, x + size, y);
-      pdf.line(x + size/2, y - size/2, x + size/2, y + size/2);
-    };
-
-    // MODERN TEMPLATE - Perfect Match
+    // MODERN TEMPLATE - Perfect Header Match
     if (templateName === 'modern') {
       // White background
       pdf.setFillColor(255, 255, 255);
       pdf.rect(0, 0, pageWidth, pageHeight, 'F');
 
       // HEADER SECTION - Exact match to template
-      // Name - large, bold, dark gray
-      pdf.setFontSize(32);
+      // Name - large, bold, dark gray (exactly like template)
+      pdf.setFontSize(28);
       pdf.setFont('helvetica', 'bold');
       pdf.setTextColor(colors.gray900[0], colors.gray900[1], colors.gray900[2]);
       pdf.text(data.personalInfo?.fullName || '', 20, currentY);
-      currentY += 12;
+      currentY += 8;
 
-      // Blue horizontal line under name (thick line matching template)
+      // Blue horizontal line under name (thick line matching template exactly)
       pdf.setDrawColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
-      pdf.setLineWidth(2.0);
+      pdf.setLineWidth(3.0);
       pdf.line(20, currentY, pageWidth - 20, currentY);
-      currentY += 10;
+      currentY += 8;
 
-      // Contact information - horizontal layout with icons (matching template exactly)
-      const contactY = currentY;
+      // Contact information - horizontal layout EXACTLY like template
+      const contactStartY = currentY;
       let contactX = 20;
-      const contactSpacing = 45; // Space between contact items
       
-      pdf.setFontSize(11);
+      pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(colors.gray600[0], colors.gray600[1], colors.gray600[2]);
 
-      // Email with icon
+      // First row of contact info
       if (data.personalInfo?.email) {
-        drawEmailIcon(contactX, contactY, 3);
-        pdf.text(data.personalInfo.email, contactX + 6, contactY);
-        contactX += Math.max(pdf.getTextWidth(data.personalInfo.email) + 10, contactSpacing);
+        drawIcon('email', contactX, contactStartY);
+        pdf.text(data.personalInfo.email, contactX + 5, contactStartY);
+        contactX += pdf.getTextWidth(data.personalInfo.email) + 15;
       }
 
-      // Phone with icon
       if (data.personalInfo?.phone) {
-        drawPhoneIcon(contactX, contactY, 3);
-        pdf.text(data.personalInfo.phone, contactX + 6, contactY);
-        contactX += Math.max(pdf.getTextWidth(data.personalInfo.phone) + 10, contactSpacing);
+        drawIcon('phone', contactX, contactStartY);
+        pdf.text(data.personalInfo.phone, contactX + 5, contactStartY);
+        contactX += pdf.getTextWidth(data.personalInfo.phone) + 15;
       }
 
-      // Location with icon
       if (data.personalInfo?.location) {
-        drawLocationIcon(contactX, contactY, 3);
-        pdf.text(data.personalInfo.location, contactX + 6, contactY);
-        contactX += Math.max(pdf.getTextWidth(data.personalInfo.location) + 10, contactSpacing);
+        drawIcon('location', contactX, contactStartY);
+        pdf.text(data.personalInfo.location, contactX + 5, contactStartY);
+        contactX += pdf.getTextWidth(data.personalInfo.location) + 15;
       }
 
-      // Move to next line if needed for remaining items
-      if (contactX > pageWidth - 60) {
-        currentY += 6;
+      // Second row if needed
+      let secondRowY = contactStartY;
+      if (contactX > pageWidth - 40) {
+        secondRowY += 5;
         contactX = 20;
       }
 
-      // LinkedIn with icon
       if (data.personalInfo?.linkedIn) {
-        drawLinkedInIcon(contactX, currentY, 3);
-        pdf.text(data.personalInfo.linkedIn, contactX + 6, currentY);
-        contactX += Math.max(pdf.getTextWidth(data.personalInfo.linkedIn) + 10, contactSpacing);
+        drawIcon('linkedin', contactX, secondRowY);
+        pdf.text(data.personalInfo.linkedIn, contactX + 5, secondRowY);
+        contactX += pdf.getTextWidth(data.personalInfo.linkedIn) + 15;
       }
 
-      // Portfolio with icon
       if (data.personalInfo?.portfolio) {
-        drawGlobeIcon(contactX, currentY, 3);
-        pdf.text(data.personalInfo.portfolio, contactX + 6, currentY);
+        drawIcon('website', contactX, secondRowY);
+        pdf.text(data.personalInfo.portfolio, contactX + 5, secondRowY);
       }
 
-      currentY += 15;
+      currentY = Math.max(contactStartY, secondRowY) + 12;
 
       // Professional Summary section
       if (data.personalInfo?.summary) {
-        checkPageBreak(25);
+        checkPageBreak(20);
         
-        // Section header with blue color and left border
-        pdf.setFontSize(16);
+        // Section header with blue color and left border (EXACTLY like template)
+        pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
         pdf.setTextColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
         pdf.text('Professional Summary', 25, currentY);
         
-        // Blue left border (thick line)
+        // Blue left border (thick line EXACTLY matching template)
         pdf.setDrawColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
-        pdf.setLineWidth(2.0);
-        pdf.line(20, currentY - 5, 20, currentY + 2);
+        pdf.setLineWidth(3.0);
+        pdf.line(20, currentY - 4, 20, currentY + 1);
         
-        currentY += 8;
+        currentY += 6;
 
-        // Summary text with proper spacing and formatting
-        pdf.setFontSize(11);
+        // Summary text with proper formatting
+        pdf.setFontSize(10);
         pdf.setFont('helvetica', 'normal');
         pdf.setTextColor(colors.gray700[0], colors.gray700[1], colors.gray700[2]);
         const summaryLines = pdf.splitTextToSize(data.personalInfo.summary, pageWidth - 40);
         
         summaryLines.forEach((line: string, index: number) => {
-          if (currentY > pageHeight - 25) {
-            pdf.addPage();
-            currentY = 25;
-          }
-          pdf.text(line, 20, currentY + (index * 5));
+          checkPageBreak(5);
+          pdf.text(line, 20, currentY + (index * 4));
         });
-        currentY += (summaryLines.length * 5) + 15;
+        currentY += (summaryLines.length * 4) + 10;
       }
 
-      // Professional Experience section with timeline
+      // Professional Experience section with perfect timeline
       if (data.experience?.length > 0) {
-        checkPageBreak(30);
+        checkPageBreak(25);
         
-        // Section header
-        pdf.setFontSize(16);
+        // Section header EXACTLY like template
+        pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
         pdf.setTextColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
         pdf.text('Professional Experience', 25, currentY);
         
-        // Blue left border
+        // Blue left border EXACTLY matching template
         pdf.setDrawColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
-        pdf.setLineWidth(2.0);
-        pdf.line(20, currentY - 5, 20, currentY + 2);
+        pdf.setLineWidth(3.0);
+        pdf.line(20, currentY - 4, 20, currentY + 1);
         
-        currentY += 15;
+        currentY += 10;
 
-        // Timeline line start position
+        // Timeline setup - EXACTLY like template
         const timelineX = 15;
-        const timelineStartY = currentY;
+        let timelineStartY = currentY;
 
         data.experience.forEach((exp: any, index: number) => {
           if (exp.jobTitle && exp.company) {
-            checkPageBreak(35); // Check for enough space for experience item
+            checkPageBreak(25);
             
-            // Timeline dot (blue circle)
+            // Timeline dot (blue circle) - EXACTLY like template
             pdf.setFillColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
-            pdf.circle(timelineX, currentY, 2.5, 'F');
+            pdf.circle(timelineX, currentY + 2, 2, 'F');
 
-            // Job title - bold, larger font
-            pdf.setFontSize(13);
+            // Job title - bold, larger font EXACTLY like template
+            pdf.setFontSize(12);
             pdf.setFont('helvetica', 'bold');
             pdf.setTextColor(colors.gray900[0], colors.gray900[1], colors.gray900[2]);
             pdf.text(exp.jobTitle, 25, currentY);
-            currentY += 6;
+            currentY += 4;
 
-            // Company name and date on same line
-            pdf.setFontSize(12);
+            // Company name and date layout EXACTLY like template
+            pdf.setFontSize(11);
             pdf.setFont('helvetica', 'normal');
             pdf.setTextColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
             pdf.text(exp.company, 25, currentY);
 
-            // Date range - right aligned
+            // Date range - right aligned EXACTLY like template
             const dateText = `${exp.startDate || ''} - ${exp.current ? 'Present' : exp.endDate || ''}`;
             if (dateText.trim() !== ' - ') {
-              pdf.setFontSize(11);
+              pdf.setFontSize(10);
               pdf.setTextColor(colors.gray600[0], colors.gray600[1], colors.gray600[2]);
               const dateWidth = pdf.getTextWidth(dateText);
               pdf.text(dateText, pageWidth - 20 - dateWidth, currentY);
             }
-            currentY += 5;
+            currentY += 4;
 
             // Location if available
             if (exp.location) {
-              pdf.setFontSize(10);
+              pdf.setFontSize(9);
               pdf.setTextColor(colors.gray600[0], colors.gray600[1], colors.gray600[2]);
               pdf.text(exp.location, 25, currentY);
-              currentY += 5;
+              currentY += 4;
             }
 
-            // Job description with proper spacing
+            // Job description with proper spacing and page breaks
             if (exp.description) {
-              pdf.setFontSize(11);
+              pdf.setFontSize(10);
               pdf.setFont('helvetica', 'normal');
               pdf.setTextColor(colors.gray700[0], colors.gray700[1], colors.gray700[2]);
               const descLines = pdf.splitTextToSize(exp.description, pageWidth - 50);
               
               descLines.forEach((line: string, lineIndex: number) => {
-                if (currentY > pageHeight - 25) {
-                  pdf.addPage();
-                  currentY = 25;
-                }
-                pdf.text(line, 25, currentY + (lineIndex * 5));
+                checkPageBreak(4);
+                pdf.text(line, 25, currentY + (lineIndex * 4));
               });
-              currentY += (descLines.length * 5) + 10;
+              currentY += (descLines.length * 4) + 6;
             } else {
-              currentY += 8;
+              currentY += 4;
             }
 
-            // Draw timeline line segment if not the last item
+            // Draw timeline line segment if not the last item - EXACTLY like template
             if (index < data.experience.length - 1) {
-              const nextItemY = currentY + 10;
+              const nextItemY = currentY + 6;
               pdf.setDrawColor(colors.lightGray[0], colors.lightGray[1], colors.lightGray[2]);
               pdf.setLineWidth(1.0);
-              pdf.line(timelineX, currentY - 5, timelineX, nextItemY);
+              pdf.line(timelineX, currentY - 2, timelineX, nextItemY);
             }
+
+            currentY += 8;
           }
         });
-
-        currentY += 10;
       }
 
-      // Projects section with timeline
+      // Projects section with timeline - EXACTLY like template
       if (data.projects?.length > 0) {
-        checkPageBreak(30);
+        checkPageBreak(25);
         
-        pdf.setFontSize(16);
+        pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
         pdf.setTextColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
         pdf.text('Projects', 25, currentY);
         
         pdf.setDrawColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
-        pdf.setLineWidth(2.0);
-        pdf.line(20, currentY - 5, 20, currentY + 2);
+        pdf.setLineWidth(3.0);
+        pdf.line(20, currentY - 4, 20, currentY + 1);
         
-        currentY += 15;
+        currentY += 10;
 
         const timelineX = 15;
 
         data.projects.forEach((project: any, index: number) => {
           if (project.name) {
-            checkPageBreak(25);
+            checkPageBreak(20);
             
             // Timeline dot
             pdf.setFillColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
-            pdf.circle(timelineX, currentY, 2.5, 'F');
+            pdf.circle(timelineX, currentY + 2, 2, 'F');
 
             // Project name
-            pdf.setFontSize(13);
+            pdf.setFontSize(12);
             pdf.setFont('helvetica', 'bold');
             pdf.setTextColor(colors.gray900[0], colors.gray900[1], colors.gray900[2]);
             pdf.text(project.name, 25, currentY);
-            currentY += 6;
+            currentY += 4;
 
             // Project description
             if (project.description) {
-              pdf.setFontSize(11);
+              pdf.setFontSize(10);
               pdf.setFont('helvetica', 'normal');
               pdf.setTextColor(colors.gray700[0], colors.gray700[1], colors.gray700[2]);
               const descLines = pdf.splitTextToSize(project.description, pageWidth - 50);
               
               descLines.forEach((line: string, lineIndex: number) => {
-                if (currentY > pageHeight - 25) {
-                  pdf.addPage();
-                  currentY = 25;
-                }
-                pdf.text(line, 25, currentY + (lineIndex * 5));
+                checkPageBreak(4);
+                pdf.text(line, 25, currentY + (lineIndex * 4));
               });
-              currentY += (descLines.length * 5) + 5;
+              currentY += (descLines.length * 4) + 4;
             }
 
-            // Technologies with blue tags
+            // Technologies with blue tags - EXACTLY like template
             if (project.technologies) {
               const techs = project.technologies.split(',').map((t: string) => t.trim());
               let xPos = 25;
-              const tagY = currentY;
               
               techs.forEach((tech: string) => {
                 if (tech) {
-                  pdf.setFontSize(9);
+                  pdf.setFontSize(8);
                   const textWidth = pdf.getTextWidth(tech);
                   const tagWidth = textWidth + 4;
                   
                   // Check if tag fits on current line
                   if (xPos + tagWidth > pageWidth - 20) {
                     xPos = 25;
-                    currentY += 7;
+                    currentY += 6;
                   }
                   
-                  // Check for page break
-                  if (currentY > pageHeight - 25) {
-                    pdf.addPage();
-                    currentY = 25;
-                    xPos = 25;
-                  }
+                  checkPageBreak(6);
                   
-                  // Draw rounded blue background
+                  // Draw rounded blue background - EXACTLY like template
                   pdf.setFillColor(colors.blue100[0], colors.blue100[1], colors.blue100[2]);
-                  drawRoundedRect(xPos, currentY - 3, tagWidth, 6, 2, 'F');
+                  pdf.roundedRect(xPos, currentY - 2, tagWidth, 4, 1, 1, 'F');
                   
                   // Add tech text
                   pdf.setFont('helvetica', 'normal');
                   pdf.setTextColor(colors.blue800[0], colors.blue800[1], colors.blue800[2]);
-                  pdf.text(tech, xPos + 2, currentY + 1);
+                  pdf.text(tech, xPos + 2, currentY);
                   
-                  xPos += tagWidth + 4;
+                  xPos += tagWidth + 3;
                 }
               });
-              currentY += 10;
+              currentY += 8;
             }
-            
-            currentY += 5;
 
             // Draw timeline line segment if not the last item
             if (index < data.projects.length - 1) {
-              const nextItemY = currentY + 5;
+              const nextItemY = currentY + 4;
               pdf.setDrawColor(colors.lightGray[0], colors.lightGray[1], colors.lightGray[2]);
               pdf.setLineWidth(1.0);
-              pdf.line(timelineX, currentY - 5, timelineX, nextItemY);
+              pdf.line(timelineX, currentY - 2, timelineX, nextItemY);
             }
+
+            currentY += 6;
           }
         });
       }
 
-      // Education section
+      // Education section - EXACTLY like template
       if (data.education?.length > 0) {
-        checkPageBreak(25);
+        checkPageBreak(20);
         
-        pdf.setFontSize(16);
+        pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
         pdf.setTextColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
         pdf.text('Education', 25, currentY);
         
         pdf.setDrawColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
-        pdf.setLineWidth(2.0);
-        pdf.line(20, currentY - 5, 20, currentY + 2);
+        pdf.setLineWidth(3.0);
+        pdf.line(20, currentY - 4, 20, currentY + 1);
         
-        currentY += 15;
+        currentY += 10;
 
         data.education.forEach((edu: any) => {
           if (edu.degree && edu.school) {
-            checkPageBreak(15);
+            checkPageBreak(12);
             
             // Education dot
             pdf.setFillColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
-            pdf.circle(15, currentY, 2.5, 'F');
+            pdf.circle(15, currentY + 2, 2, 'F');
 
             // Degree
-            pdf.setFontSize(12);
+            pdf.setFontSize(11);
             pdf.setFont('helvetica', 'bold');
             pdf.setTextColor(colors.gray900[0], colors.gray900[1], colors.gray900[2]);
             pdf.text(edu.degree, 25, currentY);
-            currentY += 5;
+            currentY += 4;
 
             // School and graduation date
-            pdf.setFontSize(11);
+            pdf.setFontSize(10);
             pdf.setFont('helvetica', 'normal');
             pdf.setTextColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
             pdf.text(edu.school, 25, currentY);
@@ -456,122 +399,112 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
               pdf.text(edu.graduationDate, pageWidth - 20 - gradWidth, currentY);
             }
 
-            currentY += 12;
+            currentY += 8;
           }
         });
       }
 
-      // Skills section with rounded blue tags
+      // Skills section with rounded blue tags - EXACTLY like template
       if (data.skills?.length > 0) {
-        checkPageBreak(20);
+        checkPageBreak(15);
         
-        pdf.setFontSize(16);
+        pdf.setFontSize(14);
         pdf.setFont('helvetica', 'bold');
         pdf.setTextColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
         pdf.text('Skills', 25, currentY);
         
         pdf.setDrawColor(colors.blue600[0], colors.blue600[1], colors.blue600[2]);
-        pdf.setLineWidth(2.0);
-        pdf.line(20, currentY - 5, 20, currentY + 2);
+        pdf.setLineWidth(3.0);
+        pdf.line(20, currentY - 4, 20, currentY + 1);
         
-        currentY += 12;
+        currentY += 8;
 
-        // Create skill tags with blue background and rounded edges
+        // Create skill tags with blue background and rounded edges - EXACTLY like template
         const validSkills = data.skills.filter((skill: string) => skill && skill.trim());
         let xPos = 20;
-        let yPos = currentY;
 
         validSkills.forEach((skill: string) => {
           const skillText = skill.trim();
-          pdf.setFontSize(10);
+          pdf.setFontSize(9);
           const textWidth = pdf.getTextWidth(skillText);
-          const tagWidth = textWidth + 8;
-          const tagHeight = 7;
+          const tagWidth = textWidth + 6;
+          const tagHeight = 5;
 
           // Check if tag fits on current line
           if (xPos + tagWidth > pageWidth - 20) {
             xPos = 20;
-            yPos += tagHeight + 4;
-            
-            // Check for page break
-            if (yPos > pageHeight - 25) {
-              pdf.addPage();
-              yPos = 25;
-              xPos = 20;
-            }
+            currentY += tagHeight + 3;
+            checkPageBreak(tagHeight + 3);
           }
 
-          // Draw rounded blue background
+          // Draw rounded blue background - EXACTLY like template
           pdf.setFillColor(colors.blue100[0], colors.blue100[1], colors.blue100[2]);
-          drawRoundedRect(xPos, yPos - 4, tagWidth, tagHeight, 3, 'F');
+          pdf.roundedRect(xPos, currentY - 2, tagWidth, tagHeight, 2, 2, 'F');
 
           // Add skill text
           pdf.setFont('helvetica', 'normal');
           pdf.setTextColor(colors.blue800[0], colors.blue800[1], colors.blue800[2]);
-          pdf.text(skillText, xPos + 4, yPos);
+          pdf.text(skillText, xPos + 3, currentY + 1);
 
-          xPos += tagWidth + 5;
+          xPos += tagWidth + 4;
         });
 
-        currentY = yPos + 12;
+        currentY += 10;
       }
     }
 
     // Handle other templates with basic styling
     else {
       // Basic template for non-modern templates
-      currentY = addText(data.personalInfo?.fullName || '', 20, currentY, {
-        fontSize: 24,
-        fontStyle: 'bold',
-        color: colors.gray900,
-        marginBottom: 10
-      });
+      pdf.setFontSize(24);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(colors.gray900[0], colors.gray900[1], colors.gray900[2]);
+      pdf.text(data.personalInfo?.fullName || '', 20, currentY);
+      currentY += 15;
 
       if (data.personalInfo?.summary) {
-        currentY = addText('SUMMARY', 20, currentY, {
-          fontSize: 14,
-          fontStyle: 'bold',
-          color: colors.gray900,
-          marginBottom: 5
-        });
+        pdf.setFontSize(14);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('SUMMARY', 20, currentY);
+        currentY += 8;
         
-        currentY = addText(data.personalInfo.summary, 20, currentY, {
-          fontSize: 11,
-          color: colors.gray700,
-          marginBottom: 15
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'normal');
+        const summaryLines = pdf.splitTextToSize(data.personalInfo.summary, pageWidth - 40);
+        summaryLines.forEach((line: string, index: number) => {
+          pdf.text(line, 20, currentY + (index * 5));
         });
+        currentY += (summaryLines.length * 5) + 10;
       }
 
       if (data.experience?.length > 0) {
-        currentY = addText('EXPERIENCE', 20, currentY, {
-          fontSize: 14,
-          fontStyle: 'bold',
-          color: colors.gray900,
-          marginBottom: 5
-        });
+        pdf.setFontSize(14);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('EXPERIENCE', 20, currentY);
+        currentY += 8;
 
         data.experience.forEach((exp: any) => {
           if (exp.jobTitle && exp.company) {
-            currentY = addText(`${exp.jobTitle} - ${exp.company}`, 20, currentY, {
-              fontSize: 12,
-              fontStyle: 'bold',
-              color: colors.gray900,
-              marginBottom: 2
-            });
+            pdf.setFontSize(12);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(`${exp.jobTitle} - ${exp.company}`, 20, currentY);
+            currentY += 6;
 
             if (exp.description) {
-              currentY = addText(exp.description, 20, currentY, {
-                fontSize: 10,
-                color: colors.gray700,
-                marginBottom: 8
+              pdf.setFontSize(10);
+              pdf.setFont('helvetica', 'normal');
+              const descLines = pdf.splitTextToSize(exp.description, pageWidth - 40);
+              descLines.forEach((line: string, index: number) => {
+                pdf.text(line, 20, currentY + (index * 4));
               });
+              currentY += (descLines.length * 4) + 8;
             }
           }
         });
       }
     }
 
-    console.log('Perfect Modern template PDF generated with exact layout matching and proper pagination!');
+    console.log('Perfect Modern template PDF generated with exact layout matching!');
     return pdf;
 
   } catch (error) {
