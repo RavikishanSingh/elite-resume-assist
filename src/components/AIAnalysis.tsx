@@ -34,14 +34,14 @@ const AIAnalysis = ({ resumeData }: AIAnalysisProps) => {
     if (data.experience?.length > 0) {
       resumeText += 'Experience:\n';
       data.experience.forEach((exp: any) => {
-        resumeText += `${exp.jobTitle} at ${exp.company}\n${exp.description}\n\n`;
+        resumeText += `${exp.jobTitle || 'Position'} at ${exp.company || 'Company'}\n${exp.description || 'No description'}\n\n`;
       });
     }
     
     if (data.education?.length > 0) {
       resumeText += 'Education:\n';
       data.education.forEach((edu: any) => {
-        resumeText += `${edu.degree} from ${edu.school}\n`;
+        resumeText += `${edu.degree || 'Degree'} from ${edu.school || 'Institution'}\n`;
       });
       resumeText += '\n';
     }
@@ -63,32 +63,54 @@ const AIAnalysis = ({ resumeData }: AIAnalysisProps) => {
       return;
     }
 
+    // Validate API key format
+    if (!apiKey.startsWith('sk-')) {
+      toast({
+        title: "Invalid API Key",
+        description: "OpenAI API keys should start with 'sk-'. Please check your API key.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsAnalyzing(true);
     
     try {
       const resumeText = generateResumeText(resumeData);
       
+      if (!resumeText.trim()) {
+        toast({
+          title: "No Resume Data",
+          description: "Please complete your resume before requesting analysis.",
+          variant: "destructive"
+        });
+        setIsAnalyzing(false);
+        return;
+      }
+
       const prompt = `
         Analyze this resume and provide detailed feedback. ${jobTitle ? `The target job title is: ${jobTitle}` : ''} ${jobDescription ? `Job description: ${jobDescription}` : ''}
         
         Resume:
         ${resumeText}
         
-        Please provide analysis in the following JSON format:
+        Please provide analysis in the following JSON format only, no additional text:
         {
-          "overallScore": number (1-100),
-          "strengths": ["strength1", "strength2", ...],
-          "improvements": ["improvement1", "improvement2", ...],
-          "keywordMatches": ["keyword1", "keyword2", ...],
-          "missingKeywords": ["missing1", "missing2", ...],
-          "suggestions": ["suggestion1", "suggestion2", ...]
+          "overallScore": 75,
+          "strengths": ["Clear professional experience", "Well-structured format"],
+          "improvements": ["Add more quantifiable achievements", "Include more relevant keywords"],
+          "keywordMatches": ["experience", "skills", "management"],
+          "missingKeywords": ["leadership", "project management", "analytics"],
+          "suggestions": ["Consider adding metrics to achievements", "Tailor content to job description", "Include more action verbs"]
         }
       `;
+
+      console.log('Sending request to OpenAI API...');
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
+          'Authorization': `Bearer ${apiKey.trim()}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -96,7 +118,7 @@ const AIAnalysis = ({ resumeData }: AIAnalysisProps) => {
           messages: [
             {
               role: 'system',
-              content: 'You are a professional resume reviewer with expertise in various industries. Provide constructive, actionable feedback.'
+              content: 'You are a professional resume reviewer with expertise in various industries. Provide constructive, actionable feedback in valid JSON format only.'
             },
             {
               role: 'user',
@@ -104,18 +126,47 @@ const AIAnalysis = ({ resumeData }: AIAnalysisProps) => {
             }
           ],
           temperature: 0.3,
+          max_tokens: 1000
         }),
       });
 
+      console.log('Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error('Failed to analyze resume');
+        const errorData = await response.text();
+        console.error('API Error:', errorData);
+        
+        if (response.status === 401) {
+          throw new Error('Invalid API key. Please check your OpenAI API key.');
+        } else if (response.status === 429) {
+          throw new Error('Rate limit exceeded. Please try again later.');
+        } else if (response.status === 403) {
+          throw new Error('API access forbidden. Please check your API key permissions.');
+        } else {
+          throw new Error(`API request failed with status ${response.status}`);
+        }
       }
 
       const data = await response.json();
+      console.log('API Response:', data);
+      
+      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        throw new Error('Invalid response format from OpenAI API');
+      }
+
       const analysisText = data.choices[0].message.content;
+      console.log('Analysis text:', analysisText);
       
       try {
-        const parsedAnalysis = JSON.parse(analysisText);
+        // Clean the response text to ensure it's valid JSON
+        const cleanedText = analysisText.trim().replace(/```json\n?/, '').replace(/```\n?$/, '');
+        const parsedAnalysis = JSON.parse(cleanedText);
+        
+        // Validate the parsed analysis has required fields
+        if (!parsedAnalysis.overallScore || !Array.isArray(parsedAnalysis.strengths)) {
+          throw new Error('Invalid analysis format');
+        }
+        
         setAnalysis(parsedAnalysis);
         
         toast({
@@ -123,22 +174,40 @@ const AIAnalysis = ({ resumeData }: AIAnalysisProps) => {
           description: "Your resume has been analyzed with AI-powered insights.",
         });
       } catch (parseError) {
-        // Fallback if JSON parsing fails
+        console.error('JSON Parse Error:', parseError);
+        // Fallback analysis if JSON parsing fails
         setAnalysis({
           overallScore: 75,
-          strengths: ["Professional formatting", "Clear structure"],
-          improvements: ["Add more quantifiable achievements", "Include more relevant keywords"],
-          keywordMatches: ["experience", "skills"],
-          missingKeywords: ["leadership", "project management"],
-          suggestions: ["Consider adding metrics to achievements", "Tailor content to job description"]
+          strengths: ["Professional formatting", "Clear structure", "Relevant experience included"],
+          improvements: ["Add more quantifiable achievements", "Include more relevant keywords", "Optimize for ATS systems"],
+          keywordMatches: ["experience", "skills", "education"],
+          missingKeywords: ["leadership", "project management", "analytics", "results-driven"],
+          suggestions: [
+            "Consider adding metrics to achievements (e.g., 'Increased sales by 20%')",
+            "Tailor content to specific job descriptions", 
+            "Include more action verbs at the beginning of bullet points",
+            "Add relevant certifications or professional development"
+          ]
+        });
+        
+        toast({
+          title: "Analysis Complete!",
+          description: "Your resume has been analyzed. Note: Using fallback analysis due to response format.",
+          variant: "default"
         });
       }
       
     } catch (error) {
       console.error('Error analyzing resume:', error);
+      
+      let errorMessage = 'There was an error analyzing your resume. Please try again.';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Analysis Failed",
-        description: "There was an error analyzing your resume. Please check your API key and try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
