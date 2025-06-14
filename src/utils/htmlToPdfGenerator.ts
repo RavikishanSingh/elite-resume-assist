@@ -26,6 +26,12 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     
     console.log(`Original preview dimensions: ${originalWidth}x${originalHeight}px`);
 
+    // Temporarily remove any margins/padding from the container for PDF
+    resumeElement.style.margin = '0';
+    resumeElement.style.padding = '0';
+    resumeElement.style.boxShadow = 'none';
+    resumeElement.style.border = 'none';
+
     // Enhanced page break handling for professional multi-page layout
     const sections = resumeElement.querySelectorAll('section, .experience-item, .project-item, .education-item');
     sections.forEach(section => {
@@ -34,7 +40,6 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       element.style.breakInside = 'avoid';
       element.style.orphans = '3';
       element.style.widows = '3';
-      element.style.marginBottom = '20px';
     });
 
     // Ensure headers don't get separated from content
@@ -44,15 +49,14 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       element.style.pageBreakAfter = 'avoid';
       element.style.breakAfter = 'avoid';
       element.style.orphans = '3';
-      element.style.marginBottom = '12px';
     });
 
     // Wait for layout to settle
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    console.log('Capturing resume with original styling...');
+    console.log('Capturing resume with exact preview styling...');
 
-    // Get the actual rendered dimensions
+    // Get the actual rendered dimensions after removing margins
     const actualWidth = resumeElement.offsetWidth;
     const actualHeight = resumeElement.scrollHeight;
     
@@ -70,8 +74,21 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       scrollY: 0,
       windowWidth: actualWidth,
       windowHeight: actualHeight,
-      logging: false
+      logging: false,
+      onclone: (clonedDoc) => {
+        const clonedElement = clonedDoc.getElementById('resume-preview');
+        if (clonedElement) {
+          // Ensure the cloned element has no margins/padding
+          clonedElement.style.margin = '0';
+          clonedElement.style.padding = '0';
+          clonedElement.style.boxShadow = 'none';
+          clonedElement.style.border = 'none';
+        }
+      }
     });
+
+    // Restore original styles
+    resumeElement.style.cssText = originalStyle;
 
     console.log('Canvas captured, generating professional multi-page PDF...');
 
@@ -83,28 +100,26 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       compress: true
     });
 
-    // Professional A4 dimensions in mm
+    // Professional A4 dimensions in mm with minimal margins
     const pdfWidth = 210;
     const pdfHeight = 297;
-    const topMargin = 15;
-    const bottomMargin = 15;
-    const sideMargin = 15;
-    const effectiveWidth = pdfWidth - (sideMargin * 2);
-    const effectiveHeight = pdfHeight - topMargin - bottomMargin;
+    const margin = 5; // Minimal margin to prevent edge cutting
+    const effectiveWidth = pdfWidth - (margin * 2);
+    const effectiveHeight = pdfHeight - (margin * 2);
     
-    // Calculate scaling to fit A4 professionally while maintaining aspect ratio
+    // Calculate scaling to fit A4 while maintaining aspect ratio
     const canvasAspectRatio = canvas.height / canvas.width;
     const scaledWidth = effectiveWidth;
     const scaledHeight = scaledWidth * canvasAspectRatio;
 
     console.log(`Canvas dimensions: ${canvas.width}x${canvas.height}`);
-    console.log(`Professional PDF dimensions: ${scaledWidth}x${scaledHeight}mm`);
+    console.log(`PDF dimensions: ${scaledWidth}x${scaledHeight}mm`);
 
-    // Calculate number of pages needed with professional spacing
+    // Calculate number of pages needed
     const totalPages = Math.ceil(scaledHeight / effectiveHeight);
-    console.log(`Total professional pages needed: ${totalPages}`);
+    console.log(`Total pages needed: ${totalPages}`);
 
-    // Add pages to PDF with professional margins and spacing
+    // Add pages to PDF
     for (let page = 0; page < totalPages; page++) {
       if (page > 0) {
         pdf.addPage();
@@ -126,7 +141,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
         pageCanvas.width = canvas.width;
         pageCanvas.height = sourceHeight;
 
-        // Fill with professional white background
+        // Fill with white background
         pageCtx.fillStyle = '#ffffff';
         pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
 
@@ -137,18 +152,17 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
           0, 0, canvas.width, sourceHeight
         );
 
-        // Convert to high-quality image and add to PDF
+        // Convert to image and add to PDF
         const imgData = pageCanvas.toDataURL('image/jpeg', 0.95);
         
-        // Position on page with professional margins
-        const xPosition = sideMargin;
-        const yPosition = topMargin;
-        const availableHeight = effectiveHeight;
-        const finalHeight = Math.min(currentPageHeight, availableHeight);
+        // Position on page with minimal margins
+        const xPosition = margin;
+        const yPosition = margin;
+        const finalHeight = Math.min(currentPageHeight, effectiveHeight);
 
         pdf.addImage(imgData, 'JPEG', xPosition, yPosition, scaledWidth, finalHeight, undefined, 'FAST');
 
-        console.log(`Professional page ${page + 1}/${totalPages} - Height: ${finalHeight}mm, Y-position: ${yPosition}mm, X-position: ${xPosition}mm`);
+        console.log(`Page ${page + 1}/${totalPages} - Height: ${finalHeight}mm`);
       }
     }
 
@@ -161,11 +175,11 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       keywords: 'resume, professional, career, job application'
     });
 
-    console.log('Professional multi-page PDF generation completed successfully');
+    console.log('PDF generation completed successfully');
     return pdf;
 
   } catch (error) {
-    console.error('Enhanced PDF generation error:', error);
-    throw new Error('Failed to generate professional PDF: ' + (error as Error).message);
+    console.error('PDF generation error:', error);
+    throw new Error('Failed to generate PDF: ' + (error as Error).message);
   }
 };
