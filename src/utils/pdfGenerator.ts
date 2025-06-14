@@ -8,47 +8,109 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
     // Try to capture the resume preview element
     const resumeElement = document.getElementById('resume-preview');
     if (resumeElement) {
-      // Use html2canvas to capture the styled resume
+      // Ensure the element is visible and properly styled
+      const originalDisplay = resumeElement.style.display;
+      const originalTransform = resumeElement.style.transform;
+      const originalScale = resumeElement.style.scale;
+      
+      // Temporarily reset any transformations for better capture
+      resumeElement.style.display = 'block';
+      resumeElement.style.transform = 'none';
+      resumeElement.style.scale = '1';
+      
+      // Wait for any pending renders
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Use html2canvas with optimized settings
       const canvas = await html2canvas(resumeElement, {
-        scale: 2, // Higher quality
+        scale: 3, // Higher quality
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        width: resumeElement.scrollWidth,
-        height: resumeElement.scrollHeight
+        logging: false,
+        imageTimeout: 0,
+        removeContainer: true,
+        foreignObjectRendering: true,
+        width: 794, // A4 width in pixels at 96 DPI
+        height: 1123, // A4 height in pixels at 96 DPI
+        windowWidth: 794,
+        windowHeight: 1123,
+        scrollX: 0,
+        scrollY: 0
       });
       
-      const imgData = canvas.toDataURL('image/png');
+      // Restore original styles
+      resumeElement.style.display = originalDisplay;
+      resumeElement.style.transform = originalTransform;
+      resumeElement.style.scale = originalScale;
+      
+      const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF('p', 'pt', 'a4');
       
-      const pageWidth = 595;
-      const pageHeight = 842;
+      const pageWidth = 595.28; // A4 width in points
+      const pageHeight = 841.89; // A4 height in points
+      const margin = 0; // No margin for full page
+      
+      // Calculate dimensions to fit the page perfectly
       const imgWidth = pageWidth;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
-      let heightLeft = imgHeight;
-      let position = 0;
-      
-      // Add first page
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-      
-      // Add additional pages if needed
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+      // If content fits on one page
+      if (imgHeight <= pageHeight) {
+        pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight, undefined, 'FAST');
+      } else {
+        // Handle multi-page content with smart page breaks
+        const pageRatio = pageHeight / imgHeight;
+        const scaledImgHeight = pageHeight;
+        const scaledImgWidth = canvas.width * pageRatio;
+        
+        let yOffset = 0;
+        let pageNumber = 0;
+        
+        while (yOffset < canvas.height) {
+          if (pageNumber > 0) {
+            pdf.addPage();
+          }
+          
+          // Create a section of the canvas for this page
+          const sectionHeight = Math.min(canvas.height / pageRatio, canvas.height - yOffset);
+          
+          // Calculate the portion of the image to show on this page
+          const sourceY = yOffset;
+          const sourceHeight = sectionHeight;
+          
+          // Add the image section to the PDF
+          pdf.addImage(
+            imgData, 
+            'PNG', 
+            margin, 
+            margin, 
+            imgWidth, 
+            scaledImgHeight,
+            undefined,
+            'FAST',
+            0, // rotation
+            sourceY / canvas.height, // sx - source x ratio
+            0, // sy - source y ratio  
+            1, // sWidth ratio
+            sourceHeight / canvas.height // sHeight ratio
+          );
+          
+          yOffset += sectionHeight;
+          pageNumber++;
+          
+          // Safety break to prevent infinite loops
+          if (pageNumber > 10) break;
+        }
       }
       
       return pdf;
     } else {
-      // Fallback to text-based PDF if canvas capture fails
+      console.error('Resume preview element not found');
       return generateTextPDF(data);
     }
   } catch (error) {
     console.error('Error generating PDF with template:', error);
-    // Fallback to text-based PDF
     return generateTextPDF(data);
   }
 };
@@ -57,100 +119,96 @@ const generateTextPDF = async (data: any) => {
   const { default: jsPDF } = await import('jspdf');
   
   const pdf = new jsPDF('p', 'pt', 'a4');
-  const pageWidth = 595;
-  const pageHeight = 842;
-  const margin = 50;
-  const lineHeight = 14;
+  const pageWidth = 595.28;
+  const pageHeight = 841.89;
+  const margin = 40;
+  const lineHeight = 16;
   let yPos = margin;
 
   // Helper to add text with automatic page breaks
-  const addText = (text: string, x: number, fontSize: number = 12, fontWeight: string = 'normal', maxWidth?: number) => {
+  const addText = (text: string, x: number, fontSize: number = 11, fontWeight: string = 'normal', maxWidth?: number) => {
+    if (!text) return yPos;
+    
     pdf.setFontSize(fontSize);
     pdf.setFont('helvetica', fontWeight);
     
-    if (maxWidth && text) {
-      const lines = pdf.splitTextToSize(text, maxWidth);
-      
-      // Check if we need a new page
-      if (yPos + (lines.length * lineHeight) > pageHeight - margin) {
-        pdf.addPage();
-        yPos = margin;
-      }
-      
-      pdf.text(lines, x, yPos);
-      yPos += lines.length * lineHeight + 5;
-    } else if (text) {
-      if (yPos + lineHeight > pageHeight - margin) {
-        pdf.addPage();
-        yPos = margin;
-      }
-      pdf.text(text, x, yPos);
-      yPos += lineHeight + 5;
+    const effectiveMaxWidth = maxWidth || (pageWidth - 2 * margin);
+    const lines = pdf.splitTextToSize(text, effectiveMaxWidth);
+    
+    // Check if we need a new page
+    if (yPos + (lines.length * lineHeight) > pageHeight - margin) {
+      pdf.addPage();
+      yPos = margin;
     }
+    
+    pdf.text(lines, x, yPos);
+    yPos += lines.length * lineHeight + 8;
     
     return yPos;
   };
 
   const addSection = (title: string) => {
-    yPos += 10;
+    yPos += 15;
     if (yPos + 30 > pageHeight - margin) {
       pdf.addPage();
       yPos = margin;
     }
     
     // Section line
-    pdf.setDrawColor(100, 100, 100);
+    pdf.setDrawColor(60, 60, 60);
+    pdf.setLineWidth(1);
     pdf.line(margin, yPos, pageWidth - margin, yPos);
-    yPos += 15;
+    yPos += 20;
     
     addText(title, margin, 14, 'bold');
-    yPos += 10;
+    yPos += 5;
   };
 
-  // Header
+  // Header with name
   if (data.personalInfo?.fullName) {
-    addText(data.personalInfo.fullName, margin, 20, 'bold');
+    addText(data.personalInfo.fullName, margin, 22, 'bold');
     yPos += 5;
   }
 
-  // Contact info
+  // Contact information in a clean format
   const contactInfo = [];
-  if (data.personalInfo?.email) contactInfo.push(data.personalInfo.email);
-  if (data.personalInfo?.phone) contactInfo.push(data.personalInfo.phone);
-  if (data.personalInfo?.location) contactInfo.push(data.personalInfo.location);
+  if (data.personalInfo?.email) contactInfo.push(`Email: ${data.personalInfo.email}`);
+  if (data.personalInfo?.phone) contactInfo.push(`Phone: ${data.personalInfo.phone}`);
+  if (data.personalInfo?.location) contactInfo.push(`Location: ${data.personalInfo.location}`);
   
-  if (contactInfo.length > 0) {
-    addText(contactInfo.join(' | '), margin, 10);
+  contactInfo.forEach(info => {
+    addText(info, margin, 10);
+  });
+
+  // Professional links
+  if (data.personalInfo?.linkedIn) {
+    addText(`LinkedIn: ${data.personalInfo.linkedIn}`, margin, 10);
+  }
+  if (data.personalInfo?.portfolio) {
+    addText(`Portfolio: ${data.personalInfo.portfolio}`, margin, 10);
   }
 
-  // Links
-  const links = [];
-  if (data.personalInfo?.linkedIn) links.push(data.personalInfo.linkedIn);
-  if (data.personalInfo?.portfolio) links.push(data.personalInfo.portfolio);
-  
-  if (links.length > 0) {
-    addText(links.join(' | '), margin, 10);
-  }
-
-  // Summary
+  // Professional Summary
   if (data.personalInfo?.summary) {
-    addSection('SUMMARY');
+    addSection('PROFESSIONAL SUMMARY');
     addText(data.personalInfo.summary, margin, 11, 'normal', pageWidth - 2 * margin);
   }
 
-  // Experience
+  // Experience Section
   if (data.experience?.length > 0) {
-    addSection('EXPERIENCE');
+    addSection('PROFESSIONAL EXPERIENCE');
     
     data.experience.forEach((exp: any) => {
       if (exp.jobTitle || exp.company) {
         // Job title and company
-        const jobLine = `${exp.jobTitle || ''}${exp.jobTitle && exp.company ? ' at ' : ''}${exp.company || ''}`;
+        const jobLine = `${exp.jobTitle || ''} ${exp.jobTitle && exp.company ? '|' : ''} ${exp.company || ''}`;
         addText(jobLine, margin, 12, 'bold');
         
-        // Dates
+        // Duration and location
         const dateRange = `${exp.startDate || ''} - ${exp.current ? 'Present' : exp.endDate || ''}`;
-        if (dateRange.trim() !== ' - ') {
+        if (exp.location) {
+          addText(`${dateRange} | ${exp.location}`, margin, 10, 'italic');
+        } else if (dateRange.trim() !== ' - ') {
           addText(dateRange, margin, 10, 'italic');
         }
         
@@ -164,9 +222,9 @@ const generateTextPDF = async (data: any) => {
     });
   }
 
-  // Projects
+  // Projects Section
   if (data.projects?.length > 0) {
-    addSection('PROJECTS');
+    addSection('KEY PROJECTS');
     
     data.projects.forEach((project: any) => {
       if (project.name) {
@@ -180,22 +238,11 @@ const generateTextPDF = async (data: any) => {
           addText(`Technologies: ${project.technologies}`, margin, 9, 'italic');
         }
         
-        yPos += 10;
-      }
-    });
-  }
-
-  // Education
-  if (data.education?.length > 0) {
-    addSection('EDUCATION');
-    
-    data.education.forEach((edu: any) => {
-      if (edu.degree || edu.school) {
-        const eduLine = `${edu.degree || ''}${edu.degree && edu.school ? ' - ' : ''}${edu.school || ''}`;
-        addText(eduLine, margin, 11, 'bold');
-        
-        if (edu.graduationDate) {
-          addText(edu.current ? 'Currently Pursuing' : edu.graduationDate, margin, 10);
+        if (project.url || project.github) {
+          const links = [];
+          if (project.url) links.push(`Demo: ${project.url}`);
+          if (project.github) links.push(`Code: ${project.github}`);
+          addText(links.join(' | '), margin, 9);
         }
         
         yPos += 10;
@@ -203,11 +250,29 @@ const generateTextPDF = async (data: any) => {
     });
   }
 
-  // Skills
+  // Education Section
+  if (data.education?.length > 0) {
+    addSection('EDUCATION');
+    
+    data.education.forEach((edu: any) => {
+      if (edu.degree || edu.school) {
+        const eduLine = `${edu.degree || ''} ${edu.degree && edu.school ? '|' : ''} ${edu.school || ''}`;
+        addText(eduLine, margin, 11, 'bold');
+        
+        if (edu.graduationDate) {
+          addText(edu.current ? 'Expected Graduation' : edu.graduationDate, margin, 10);
+        }
+        
+        yPos += 8;
+      }
+    });
+  }
+
+  // Skills Section
   if (data.skills?.length > 0) {
-    const skillsText = data.skills.filter((skill: string) => skill.trim()).join(', ');
+    const skillsText = data.skills.filter((skill: string) => skill.trim()).join(' • ');
     if (skillsText) {
-      addSection('SKILLS');
+      addSection('TECHNICAL SKILLS');
       addText(skillsText, margin, 10, 'normal', pageWidth - 2 * margin);
     }
   }

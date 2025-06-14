@@ -1,3 +1,4 @@
+
 import { Mail, Phone, MapPin, Globe, Linkedin } from "lucide-react";
 import EditableText from "../EditableText";
 
@@ -77,6 +78,18 @@ const ExecutiveTemplate = ({ data, onUpdate, isEditing = false }: ExecutiveTempl
                 />
               </div>
             )}
+            {personalInfo?.portfolio && (
+              <div className="flex items-center space-x-2 justify-end mt-1">
+                <Globe className="w-4 h-4" />
+                <EditableText
+                  value={personalInfo.portfolio}
+                  onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
+                  isEditing={isEditing}
+                  className="inline-block"
+                  placeholder="Portfolio URL"
+                />
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -87,9 +100,16 @@ const ExecutiveTemplate = ({ data, onUpdate, isEditing = false }: ExecutiveTempl
           <h2 className="text-xl font-bold text-gray-900 mb-4 uppercase tracking-wide">
             Executive Summary
           </h2>
-          <p className="text-gray-700 leading-relaxed text-lg">
-            {personalInfo.summary}
-          </p>
+          <div className="text-gray-700 leading-relaxed text-lg">
+            <EditableText
+              value={personalInfo.summary}
+              onSave={(value) => onUpdate?.('personalInfo', 'summary', value)}
+              multiline
+              isEditing={isEditing}
+              className="inline-block w-full"
+              placeholder="Executive summary"
+            />
+          </div>
         </section>
       )}
 
@@ -102,7 +122,17 @@ const ExecutiveTemplate = ({ data, onUpdate, isEditing = false }: ExecutiveTempl
           <div className="grid grid-cols-3 gap-4">
             {skills.map((skill: string, index: number) => (
               <div key={index} className="text-gray-700 font-medium">
-                • {skill}
+                • <EditableText
+                  value={skill || ''}
+                  onSave={(value) => {
+                    const updatedSkills = [...skills];
+                    updatedSkills[index] = value;
+                    onUpdate?.('skills', '', updatedSkills.join(','));
+                  }}
+                  isEditing={isEditing}
+                  className="inline-block"
+                  placeholder="Skill"
+                />
               </div>
             ))}
           </div>
@@ -119,14 +149,53 @@ const ExecutiveTemplate = ({ data, onUpdate, isEditing = false }: ExecutiveTempl
             {experience.map((exp: any, index: number) => (
               <div key={index}>
                 <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-lg font-bold text-gray-900">{exp.jobTitle}</h3>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    <EditableText
+                      value={exp.jobTitle || ''}
+                      onSave={(value) => onUpdate?.('experience', 'jobTitle', value, index)}
+                      isEditing={isEditing}
+                      className="inline-block"
+                      placeholder="Job Title"
+                    />
+                  </h3>
                   <span className="text-gray-600 font-medium">
-                    {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
+                    <EditableText
+                      value={exp.startDate || ''}
+                      onSave={(value) => onUpdate?.('experience', 'startDate', value, index)}
+                      isEditing={isEditing}
+                      className="inline-block"
+                      placeholder="Start Date"
+                    />
+                    {' - '}
+                    {exp.current ? 'Present' : (
+                      <EditableText
+                        value={exp.endDate || ''}
+                        onSave={(value) => onUpdate?.('experience', 'endDate', value, index)}
+                        isEditing={isEditing}
+                        className="inline-block"
+                        placeholder="End Date"
+                      />
+                    )}
                   </span>
                 </div>
-                <p className="text-lg font-semibold text-gray-800 mb-3">{exp.company}</p>
+                <p className="text-lg font-semibold text-gray-800 mb-3">
+                  <EditableText
+                    value={exp.company || ''}
+                    onSave={(value) => onUpdate?.('experience', 'company', value, index)}
+                    isEditing={isEditing}
+                    className="inline-block"
+                    placeholder="Company Name"
+                  />
+                </p>
                 <div className="text-gray-700 leading-relaxed whitespace-pre-line pl-4 border-l-2 border-gray-300">
-                  {exp.description}
+                  <EditableText
+                    value={exp.description || ''}
+                    onSave={(value) => onUpdate?.('experience', 'description', value, index)}
+                    multiline
+                    isEditing={isEditing}
+                    className="inline-block w-full"
+                    placeholder="Job description"
+                  />
                 </div>
               </div>
             ))}
@@ -143,13 +212,34 @@ const ExecutiveTemplate = ({ data, onUpdate, isEditing = false }: ExecutiveTempl
           <div className="space-y-4">
             {projects.map((project: any, index: number) => (
               <div key={index} className="border-l-4 border-gray-800 pl-4">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">{project.name}</h3>
-                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                  {project.description}
-                </p>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                  <EditableText
+                    value={project.name || ''}
+                    onSave={(value) => onUpdate?.('projects', 'name', value, index)}
+                    isEditing={isEditing}
+                    className="inline-block"
+                    placeholder="Project Name"
+                  />
+                </h3>
+                <div className="text-gray-700 leading-relaxed whitespace-pre-line">
+                  <EditableText
+                    value={project.description || ''}
+                    onSave={(value) => onUpdate?.('projects', 'description', value, index)}
+                    multiline
+                    isEditing={isEditing}
+                    className="inline-block w-full"
+                    placeholder="Project description"
+                  />
+                </div>
                 {project.technologies && (
                   <p className="text-gray-600 mt-2 font-medium">
-                    Technologies: {project.technologies}
+                    Technologies: <EditableText
+                      value={project.technologies || ''}
+                      onSave={(value) => onUpdate?.('projects', 'technologies', value, index)}
+                      isEditing={isEditing}
+                      className="inline-block"
+                      placeholder="Technologies used"
+                    />
                   </p>
                 )}
               </div>
@@ -168,10 +258,34 @@ const ExecutiveTemplate = ({ data, onUpdate, isEditing = false }: ExecutiveTempl
             {education.map((edu: any, index: number) => (
               <div key={index} className="flex justify-between items-center">
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">{edu.degree}</h3>
-                  <p className="text-gray-700 font-medium">{edu.school}</p>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    <EditableText
+                      value={edu.degree || ''}
+                      onSave={(value) => onUpdate?.('education', 'degree', value, index)}
+                      isEditing={isEditing}
+                      className="inline-block"
+                      placeholder="Degree"
+                    />
+                  </h3>
+                  <p className="text-gray-700 font-medium">
+                    <EditableText
+                      value={edu.school || ''}
+                      onSave={(value) => onUpdate?.('education', 'school', value, index)}
+                      isEditing={isEditing}
+                      className="inline-block"
+                      placeholder="School Name"
+                    />
+                  </p>
                 </div>
-                <span className="text-gray-600 font-medium">{edu.graduationDate}</span>
+                <span className="text-gray-600 font-medium">
+                  <EditableText
+                    value={edu.graduationDate || ''}
+                    onSave={(value) => onUpdate?.('education', 'graduationDate', value, index)}
+                    isEditing={isEditing}
+                    className="inline-block"
+                    placeholder="Graduation Date"
+                  />
+                </span>
               </div>
             ))}
           </div>

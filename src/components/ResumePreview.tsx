@@ -60,9 +60,22 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
   const handleDownload = async () => {
     setIsGeneratingPDF(true);
     try {
+      // Ensure we're not in edit mode for PDF generation
+      const wasInEditMode = isEditMode;
+      if (isEditMode) {
+        setIsEditMode(false);
+        // Wait for the component to re-render without edit mode
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+
       const pdf = await generatePDF(data, selectedTemplate);
       const fileName = `${data.personalInfo?.fullName?.replace(/\s+/g, '_') || 'Resume'}_Resume.pdf`;
       pdf.save(fileName);
+      
+      // Restore edit mode if it was active
+      if (wasInEditMode) {
+        setIsEditMode(true);
+      }
       
       toast({
         title: "PDF Generated Successfully",
@@ -212,8 +225,12 @@ const ResumePreview = ({ data, onUpdate }: ResumePreviewProps) => {
           <CardContent className="p-0">
             <div 
               id="resume-preview" 
-              className={`bg-white overflow-hidden ${!isEditMode ? 'transform scale-75 origin-top' : ''} transition-transform`}
-              style={{ minHeight: isEditMode ? 'auto' : '297mm' }}
+              className={`bg-white overflow-hidden print:scale-100 ${!isEditMode ? 'transform scale-75 origin-top' : ''} transition-transform`}
+              style={{ 
+                minHeight: isEditMode ? 'auto' : '1123px', 
+                width: isEditMode ? 'auto' : '794px',
+                maxWidth: '100%'
+              }}
             >
               <SelectedTemplate 
                 data={data} 
