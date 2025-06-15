@@ -21,19 +21,46 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
 
     // Store original styles to restore later
     const originalStyle = resumeElement.style.cssText;
-    const originalWidth = resumeElement.offsetWidth;
-    const originalHeight = resumeElement.offsetHeight;
     
-    console.log(`Original preview dimensions: ${originalWidth}x${originalHeight}px`);
+    console.log(`Original preview dimensions: ${resumeElement.offsetWidth}x${resumeElement.offsetHeight}px`);
 
-    // Temporarily remove any margins/padding from the container for PDF
-    resumeElement.style.margin = '0';
-    resumeElement.style.padding = '0';
-    resumeElement.style.boxShadow = 'none';
-    resumeElement.style.border = 'none';
+    // Create a clone for PDF generation to avoid affecting the preview
+    const clonedElement = resumeElement.cloneNode(true) as HTMLElement;
+    clonedElement.id = 'resume-pdf-clone';
+    
+    // Apply PDF-specific styles to the clone
+    clonedElement.style.position = 'absolute';
+    clonedElement.style.top = '-9999px';
+    clonedElement.style.left = '-9999px';
+    clonedElement.style.width = '210mm';
+    clonedElement.style.minHeight = '297mm';
+    clonedElement.style.margin = '0';
+    clonedElement.style.padding = '0';
+    clonedElement.style.boxShadow = 'none';
+    clonedElement.style.border = 'none';
+    clonedElement.style.background = '#ffffff';
+    clonedElement.style.fontSize = '12px';
+    clonedElement.style.lineHeight = '1.5';
+    clonedElement.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    
+    // Ensure all text is visible and not cut off
+    clonedElement.style.overflow = 'visible';
+    clonedElement.style.wordWrap = 'break-word';
+    clonedElement.style.hyphens = 'auto';
+    
+    // Fix text rendering issues
+    const allTextElements = clonedElement.querySelectorAll('*');
+    allTextElements.forEach(element => {
+      const el = element as HTMLElement;
+      el.style.overflow = 'visible';
+      el.style.textOverflow = 'clip';
+      el.style.whiteSpace = 'normal';
+      el.style.wordBreak = 'normal';
+      el.style.overflowWrap = 'break-word';
+    });
 
     // Enhanced page break handling for professional multi-page layout
-    const sections = resumeElement.querySelectorAll('section, .experience-item, .project-item, .education-item');
+    const sections = clonedElement.querySelectorAll('section, .experience-item, .project-item, .education-item');
     sections.forEach(section => {
       const element = section as HTMLElement;
       element.style.pageBreakInside = 'avoid';
@@ -43,7 +70,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     });
 
     // Ensure headers don't get separated from content
-    const headers = resumeElement.querySelectorAll('h1, h2, h3, h4');
+    const headers = clonedElement.querySelectorAll('h1, h2, h3, h4');
     headers.forEach(header => {
       const element = header as HTMLElement;
       element.style.pageBreakAfter = 'avoid';
@@ -51,20 +78,23 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       element.style.orphans = '3';
     });
 
-    // Wait for layout to settle
-    await new Promise(resolve => setTimeout(resolve, 800));
+    // Add clone to document for rendering
+    document.body.appendChild(clonedElement);
 
-    console.log('Capturing resume with exact preview styling...');
+    // Wait for layout to settle and fonts to load
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
-    // Get the actual rendered dimensions after removing margins
-    const actualWidth = resumeElement.offsetWidth;
-    const actualHeight = resumeElement.scrollHeight;
+    console.log('Capturing resume with enhanced text rendering...');
+
+    // Get the actual rendered dimensions of the clone
+    const actualWidth = clonedElement.offsetWidth;
+    const actualHeight = clonedElement.scrollHeight;
     
     console.log(`PDF capture dimensions: ${actualWidth}x${actualHeight}px`);
 
-    // Configure html2canvas for high-quality professional capture
-    const canvas = await html2canvas(resumeElement, {
-      scale: 2,
+    // Configure html2canvas for high-quality professional capture with better text rendering
+    const canvas = await html2canvas(clonedElement, {
+      scale: 3, // Higher scale for better text quality
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
@@ -75,20 +105,30 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       windowWidth: actualWidth,
       windowHeight: actualHeight,
       logging: false,
+      letterRendering: true, // Better text rendering
+      foreignObjectRendering: true, // Better rendering for complex elements
       onclone: (clonedDoc) => {
-        const clonedElement = clonedDoc.getElementById('resume-preview');
-        if (clonedElement) {
-          // Ensure the cloned element has no margins/padding
-          clonedElement.style.margin = '0';
-          clonedElement.style.padding = '0';
-          clonedElement.style.boxShadow = 'none';
-          clonedElement.style.border = 'none';
+        const clonedDocElement = clonedDoc.getElementById('resume-pdf-clone');
+        if (clonedDocElement) {
+          // Ensure proper font loading in the cloned document
+          clonedDocElement.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+          clonedDocElement.style.fontSize = '12px';
+          clonedDocElement.style.lineHeight = '1.5';
+          
+          // Fix any text rendering issues in the clone
+          const textElements = clonedDocElement.querySelectorAll('*');
+          textElements.forEach(el => {
+            const element = el as HTMLElement;
+            element.style.overflow = 'visible';
+            element.style.textOverflow = 'clip';
+            element.style.whiteSpace = 'normal';
+          });
         }
       }
     });
 
-    // Restore original styles
-    resumeElement.style.cssText = originalStyle;
+    // Remove the clone from document
+    document.body.removeChild(clonedElement);
 
     console.log('Canvas captured, generating professional multi-page PDF...');
 
@@ -100,14 +140,14 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       compress: true
     });
 
-    // Professional A4 dimensions in mm with minimal margins
+    // Professional A4 dimensions in mm with proper margins
     const pdfWidth = 210;
     const pdfHeight = 297;
-    const margin = 5; // Minimal margin to prevent edge cutting
+    const margin = 10; // Standard professional margin
     const effectiveWidth = pdfWidth - (margin * 2);
     const effectiveHeight = pdfHeight - (margin * 2);
     
-    // Calculate scaling to fit A4 while maintaining aspect ratio
+    // Calculate scaling to fit A4 while maintaining aspect ratio and preventing text cutoff
     const canvasAspectRatio = canvas.height / canvas.width;
     const scaledWidth = effectiveWidth;
     const scaledHeight = scaledWidth * canvasAspectRatio;
@@ -119,7 +159,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     const totalPages = Math.ceil(scaledHeight / effectiveHeight);
     console.log(`Total pages needed: ${totalPages}`);
 
-    // Add pages to PDF
+    // Add pages to PDF with proper content distribution
     for (let page = 0; page < totalPages; page++) {
       if (page > 0) {
         pdf.addPage();
@@ -145,6 +185,10 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
         pageCtx.fillStyle = '#ffffff';
         pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
 
+        // Apply smoothing for better text quality
+        pageCtx.imageSmoothingEnabled = true;
+        pageCtx.imageSmoothingQuality = 'high';
+
         // Draw the portion of the original canvas
         pageCtx.drawImage(
           canvas,
@@ -152,10 +196,10 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
           0, 0, canvas.width, sourceHeight
         );
 
-        // Convert to image and add to PDF
-        const imgData = pageCanvas.toDataURL('image/jpeg', 0.95);
+        // Convert to image and add to PDF with high quality
+        const imgData = pageCanvas.toDataURL('image/jpeg', 0.98);
         
-        // Position on page with minimal margins
+        // Position on page with proper margins
         const xPosition = margin;
         const yPosition = margin;
         const finalHeight = Math.min(currentPageHeight, effectiveHeight);
