@@ -26,10 +26,10 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     clonedElement.style.position = 'absolute';
     clonedElement.style.top = '-9999px';
     clonedElement.style.left = '0';
-    clonedElement.style.width = '210mm'; // A4 width
-    clonedElement.style.minHeight = 'auto'; // Let content determine height
+    clonedElement.style.width = '210mm';
+    clonedElement.style.minHeight = 'auto';
     clonedElement.style.margin = '0';
-    clonedElement.style.padding = '20mm'; // Standard document padding
+    clonedElement.style.padding = '20mm';
     clonedElement.style.boxSizing = 'border-box';
     clonedElement.style.boxShadow = 'none';
     clonedElement.style.border = 'none';
@@ -38,7 +38,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     clonedElement.style.lineHeight = '1.4';
     clonedElement.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     clonedElement.style.color = '#333333';
-    clonedElement.style.transform = 'none'; // Remove any scaling
+    clonedElement.style.transform = 'none';
 
     // Fix any layout issues in the clone
     const allElements = clonedElement.querySelectorAll('*');
@@ -49,9 +49,12 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
         el.style.transform = '';
       }
       // Ensure proper text rendering with proper TypeScript handling
-      const style = el.style as any;
-      style.webkitFontSmoothing = 'antialiased';
-      style.mozOsxFontSmoothing = 'grayscale';
+      try {
+        (el.style as any).webkitFontSmoothing = 'antialiased';
+        (el.style as any).mozOsxFontSmoothing = 'grayscale';
+      } catch (e) {
+        // Ignore if browser doesn't support these properties
+      }
     });
 
     // Append to body for rendering
@@ -63,7 +66,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     console.log('Capturing content with html2canvas...');
 
     const canvas = await html2canvas(clonedElement, {
-      scale: 2, // High quality capture
+      scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
@@ -85,7 +88,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       throw new Error('Canvas capture failed - no content rendered');
     }
 
-    // Create PDF with proper dimensions
+    // Create PDF with proper A4 proportions
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
@@ -96,35 +99,42 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     // A4 dimensions in mm
     const pdfWidth = 210;
     const pdfHeight = 297;
+    const marginTop = 10;
+    const marginBottom = 10;
+    const contentHeight = pdfHeight - marginTop - marginBottom;
     
-    // Calculate how much content fits on each page
+    // Calculate proper scaling
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
     
-    // Calculate the scaling factor to fit content width to PDF width
-    const scale = pdfWidth / (canvasWidth / 2); // Divide by 2 because we used scale: 2 in html2canvas
-    const scaledCanvasHeight = (canvasHeight / 2) * scale; // Actual height in mm
+    // Scale to fit A4 width with proper margins
+    const scaleX = (pdfWidth - 20) / (canvasWidth / 2); // 10mm margins on each side
+    const scaledContentHeight = (canvasHeight / 2) * scaleX;
     
     console.log(`Canvas: ${canvasWidth}x${canvasHeight}px`);
-    console.log(`Scaled height: ${scaledCanvasHeight}mm`);
+    console.log(`Scaled content height: ${scaledContentHeight}mm`);
     
-    // Calculate number of pages needed
-    const totalPages = Math.ceil(scaledCanvasHeight / pdfHeight);
+    // Calculate pages needed
+    const totalPages = Math.ceil(scaledContentHeight / contentHeight);
     console.log(`Total pages needed: ${totalPages}`);
 
-    // Generate pages
+    // Generate each page
     for (let pageNum = 0; pageNum < totalPages; pageNum++) {
       if (pageNum > 0) {
         pdf.addPage();
       }
 
-      // Calculate what portion of the canvas to use for this page
-      const yStart = (pageNum * pdfHeight) / scale * 2; // Convert back to canvas pixels
-      const yEnd = Math.min(((pageNum + 1) * pdfHeight) / scale * 2, canvasHeight);
-      const sliceHeight = yEnd - yStart;
+      // Calculate the portion of canvas for this page
+      const yStartMM = pageNum * contentHeight;
+      const yEndMM = Math.min((pageNum + 1) * contentHeight, scaledContentHeight);
+      
+      // Convert back to canvas pixels
+      const yStartPx = (yStartMM / scaleX) * 2;
+      const yEndPx = Math.min((yEndMM / scaleX) * 2, canvasHeight);
+      const sliceHeight = yEndPx - yStartPx;
 
       if (sliceHeight > 0) {
-        // Create a canvas for this page slice
+        // Create canvas slice for this page
         const pageCanvas = document.createElement('canvas');
         const pageCtx = pageCanvas.getContext('2d');
         
@@ -136,24 +146,27 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
           pageCtx.fillStyle = '#ffffff';
           pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
           
-          // Draw the slice of the original canvas onto this page canvas
+          // Draw the slice
           pageCtx.drawImage(
             canvas,
-            0, yStart, canvasWidth, sliceHeight, // Source rectangle
-            0, 0, canvasWidth, sliceHeight       // Destination rectangle
+            0, yStartPx, canvasWidth, sliceHeight,
+            0, 0, canvasWidth, sliceHeight
           );
 
           // Convert to image and add to PDF
           const imgData = pageCanvas.toDataURL('image/jpeg', 0.95);
           
-          // Add image to PDF
+          // Calculate dimensions for PDF
+          const imgWidth = pdfWidth - 20; // 10mm margins
+          const imgHeight = (sliceHeight / 2) * scaleX;
+          
           pdf.addImage(
-            imgData, 
-            'JPEG', 
-            0, 
-            0, 
-            pdfWidth, 
-            pdfHeight,
+            imgData,
+            'JPEG',
+            10, // 10mm left margin
+            marginTop,
+            imgWidth,
+            Math.min(imgHeight, contentHeight),
             undefined,
             'FAST'
           );
@@ -178,7 +191,6 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
   } catch (error) {
     console.error('PDF generation error:', error);
     
-    // Provide specific error messages
     if (error instanceof Error) {
       if (error.message.includes('Canvas capture failed')) {
         throw new Error('Failed to capture resume content. Please try refreshing the page and trying again.');
