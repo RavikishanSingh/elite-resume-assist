@@ -9,6 +9,7 @@ import LinkedInImport from "@/components/LinkedInImport";
 import { generatePDF } from "@/utils/pdfGenerator";
 import { useAuth } from '@/components/auth/AuthProvider';
 import RealLinkedInImport from '@/components/linkedin/RealLinkedInImport';
+import TemplateShowcase from '@/components/TemplateShowcase';
 
 const Index = () => {
   const [showBuilder, setShowBuilder] = useState(false);
@@ -434,6 +435,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Template Showcase */}
+      <TemplateShowcase />
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">
