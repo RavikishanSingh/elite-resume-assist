@@ -19,11 +19,6 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
 
     console.log('Preparing resume for multi-page capture...');
 
-    // Store original styles to restore later
-    const originalStyle = resumeElement.style.cssText;
-    
-    console.log(`Original preview dimensions: ${resumeElement.offsetWidth}x${resumeElement.offsetHeight}px`);
-
     // Create a clone for PDF generation to avoid affecting the preview
     const clonedElement = resumeElement.cloneNode(true) as HTMLElement;
     clonedElement.id = 'resume-pdf-clone';
@@ -94,7 +89,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
 
     // Configure html2canvas for high-quality professional capture with better text rendering
     const canvas = await html2canvas(clonedElement, {
-      scale: 3, // Higher scale for better text quality
+      scale: 4, // Higher scale for better text quality
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
@@ -105,7 +100,6 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       windowWidth: actualWidth,
       windowHeight: actualHeight,
       logging: false,
-      letterRendering: true, // Better text rendering
       foreignObjectRendering: true, // Better rendering for complex elements
       onclone: (clonedDoc) => {
         const clonedDocElement = clonedDoc.getElementById('resume-pdf-clone');
@@ -140,10 +134,10 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       compress: true
     });
 
-    // Professional A4 dimensions in mm with proper margins
+    // Professional A4 dimensions in mm with minimal margins
     const pdfWidth = 210;
     const pdfHeight = 297;
-    const margin = 10; // Standard professional margin
+    const margin = 5; // Reduced margin to prevent content cutoff
     const effectiveWidth = pdfWidth - (margin * 2);
     const effectiveHeight = pdfHeight - (margin * 2);
     
@@ -199,7 +193,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
         // Convert to image and add to PDF with high quality
         const imgData = pageCanvas.toDataURL('image/jpeg', 0.98);
         
-        // Position on page with proper margins
+        // Position on page with minimal margins
         const xPosition = margin;
         const yPosition = margin;
         const finalHeight = Math.min(currentPageHeight, effectiveHeight);
