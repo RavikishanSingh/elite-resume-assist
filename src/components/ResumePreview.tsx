@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Download, Brain, Eye, Palette, Edit, Save, RefreshCw } from "lucide-react";
+import { Download, Brain, Eye, Palette, Edit, Save, RefreshCw, Layout } from "lucide-react";
 import ModernTemplate from "./templates/ModernTemplate";
 import ClassicTemplate from "./templates/ClassicTemplate";
 import CreativeTemplate from "./templates/CreativeTemplate";
@@ -9,6 +9,7 @@ import MinimalTemplate from "./templates/MinimalTemplate";
 import ExecutiveTemplate from "./templates/ExecutiveTemplate";
 import TechTemplate from "./templates/TechTemplate";
 import AIAnalysis from "./AIAnalysis";
+import PageLayoutView from "./layout/PageLayoutView";
 import { generatePDFFromHTML } from "../utils/htmlToPdfGenerator";
 import { useToast } from "@/hooks/use-toast";
 
@@ -27,8 +28,10 @@ const ResumePreview = ({
 }: ResumePreviewProps) => {
   const [selectedTemplate, setSelectedTemplate] = useState('modern');
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [showPageLayout, setShowPageLayout] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [sectionOrder, setSectionOrder] = useState(['summary', 'experience', 'skills', 'projects', 'education']);
   const { toast } = useToast();
 
   const handleUpdateData = (section: string, field: string, value: string, index?: number) => {
@@ -130,6 +133,10 @@ const ResumePreview = ({
     });
   };
 
+  const handleSectionReorder = (newSectionOrder: string[]) => {
+    setSectionOrder(newSectionOrder);
+  };
+
   const templates = {
     modern: {
       component: ModernTemplate,
@@ -184,6 +191,19 @@ const ResumePreview = ({
     );
   }
 
+  if (showPageLayout) {
+    return (
+      <PageLayoutView
+        data={data}
+        selectedTemplate={selectedTemplate}
+        onSectionReorder={handleSectionReorder}
+        onDownload={handleDownload}
+        onBackToPreview={() => setShowPageLayout(false)}
+        TemplateComponent={SelectedTemplate}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -196,6 +216,14 @@ const ResumePreview = ({
           >
             <Brain className="w-4 h-4" />
             <span>AI Analysis</span>
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setShowPageLayout(true)}
+            className="flex items-center space-x-2"
+          >
+            <Layout className="w-4 h-4" />
+            <span>Page Layout</span>
           </Button>
           <Button
             variant="outline"
@@ -285,6 +313,7 @@ const ResumePreview = ({
             onUpdate={handleUpdateData} 
             isEditing={isEditMode}
             isPDFMode={false}
+            sectionOrder={sectionOrder}
           />
         </div>
       </div>
@@ -295,7 +324,7 @@ const ResumePreview = ({
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <h5 className="font-medium text-green-800">Advanced HTML-to-Canvas Technology</h5>
-            <p className="text-sm text-green-700">High-resolution capture (3x scale) ensuring crisp text and perfect formatting. Automatic multi-page handling for longer resumes while maintaining professional layout standards.</p>
+            <p className="text-sm text-green-700">High-resolution capture (2x scale) ensuring crisp text and perfect formatting. Automatic multi-page handling for longer resumes while maintaining professional layout standards.</p>
           </div>
           <div className="space-y-2">
             <h5 className="font-medium text-green-800">Professional Standards</h5>
