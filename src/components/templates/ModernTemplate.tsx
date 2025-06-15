@@ -21,12 +21,21 @@ const ModernTemplate = ({
 }: ModernTemplateProps) => {
   const { personalInfo, experience, education, skills, projects } = data;
 
-  // Render sections based on order
+  // Render sections based on order with strict page break controls
   const renderSection = (sectionId: string) => {
     switch (sectionId) {
       case 'summary':
         return personalInfo?.summary && (
-          <section key={sectionId} className="mb-8" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+          <section 
+            key={sectionId} 
+            className="mb-8" 
+            style={{ 
+              pageBreakInside: 'avoid', 
+              breakInside: 'avoid',
+              pageBreakBefore: 'auto',
+              breakBefore: 'auto'
+            }}
+          >
             <h2 className="text-xl font-semibold text-blue-600 mb-4 flex items-center">
               <div className="w-2 h-6 bg-blue-600 mr-3"></div>
               Professional Summary
@@ -46,14 +55,40 @@ const ModernTemplate = ({
 
       case 'experience':
         return experience?.length > 0 && (
-          <section key={sectionId} className="mb-8" style={{ pageBreakAfter: 'auto' }}>
-            <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center" style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
+          <section 
+            key={sectionId} 
+            className="mb-8"
+            style={{ 
+              pageBreakBefore: 'auto',
+              breakBefore: 'auto'
+            }}
+          >
+            <h2 
+              className="text-xl font-semibold text-blue-600 mb-6 flex items-center" 
+              style={{ 
+                pageBreakAfter: 'avoid', 
+                breakAfter: 'avoid',
+                pageBreakInside: 'avoid',
+                breakInside: 'avoid'
+              }}
+            >
               <div className="w-2 h-6 bg-blue-600 mr-3"></div>
               Professional Experience
             </h2>
             <div className="space-y-6 pl-5">
               {experience.map((exp: any, index: number) => (
-                <div key={index} className="relative" style={{ pageBreakInside: 'avoid', breakInside: 'avoid', orphans: 3, widows: 3 }}>
+                <div 
+                  key={index} 
+                  className="relative" 
+                  style={{ 
+                    pageBreakInside: 'avoid', 
+                    breakInside: 'avoid', 
+                    orphans: 4, 
+                    widows: 4,
+                    pageBreakBefore: index > 0 ? 'auto' : 'avoid',
+                    breakBefore: index > 0 ? 'auto' : 'avoid'
+                  }}
+                >
                   <div className="flex justify-between items-start mb-3 flex-wrap gap-2">
                     <div className="flex-1 min-w-0">
                       <h3 className="text-lg font-semibold text-gray-900">
@@ -115,7 +150,16 @@ const ModernTemplate = ({
 
       case 'skills':
         return skills?.length > 0 && (
-          <section key={sectionId} className="mb-8" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+          <section 
+            key={sectionId} 
+            className="mb-8" 
+            style={{ 
+              pageBreakInside: 'avoid', 
+              breakInside: 'avoid',
+              pageBreakBefore: 'auto',
+              breakBefore: 'auto'
+            }}
+          >
             <h2 className="text-xl font-semibold text-blue-600 mb-4 flex items-center">
               <div className="w-2 h-6 bg-blue-600 mr-3"></div>
               Core Competencies
@@ -147,14 +191,39 @@ const ModernTemplate = ({
 
       case 'projects':
         return projects?.length > 0 && (
-          <section key={sectionId} className="mb-8">
-            <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center" style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
+          <section 
+            key={sectionId} 
+            className="mb-8"
+            style={{ 
+              pageBreakBefore: 'auto',
+              breakBefore: 'auto'
+            }}
+          >
+            <h2 
+              className="text-xl font-semibold text-blue-600 mb-6 flex items-center" 
+              style={{ 
+                pageBreakAfter: 'avoid', 
+                breakAfter: 'avoid',
+                pageBreakInside: 'avoid',
+                breakInside: 'avoid'
+              }}
+            >
               <div className="w-2 h-6 bg-blue-600 mr-3"></div>
               Key Projects
             </h2>
             <div className="space-y-6 pl-5">
               {projects.map((project: any, index: number) => (
-                <div key={index} style={{ pageBreakInside: 'avoid', breakInside: 'avoid', orphans: 2, widows: 2 }}>
+                <div 
+                  key={index} 
+                  style={{ 
+                    pageBreakInside: 'avoid', 
+                    breakInside: 'avoid', 
+                    orphans: 3, 
+                    widows: 3,
+                    pageBreakBefore: index > 0 ? 'auto' : 'avoid',
+                    breakBefore: index > 0 ? 'auto' : 'avoid'
+                  }}
+                >
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
                     <EditableText
                       value={project.name || ''}
@@ -187,14 +256,30 @@ const ModernTemplate = ({
 
       case 'education':
         return education?.length > 0 && (
-          <section key={sectionId} className="mb-6" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+          <section 
+            key={sectionId} 
+            className="mb-6" 
+            style={{ 
+              pageBreakInside: 'avoid', 
+              breakInside: 'avoid',
+              pageBreakBefore: 'auto',
+              breakBefore: 'auto'
+            }}
+          >
             <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center">
               <div className="w-2 h-6 bg-blue-600 mr-3"></div>
               Education
             </h2>
             <div className="space-y-4 pl-5">
               {education.map((edu: any, index: number) => (
-                <div key={index} className="flex justify-between items-start flex-wrap gap-2" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                <div 
+                  key={index} 
+                  className="flex justify-between items-start flex-wrap gap-2" 
+                  style={{ 
+                    pageBreakInside: 'avoid', 
+                    breakInside: 'avoid'
+                  }}
+                >
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg font-semibold text-gray-900">
                       <EditableText
@@ -250,10 +335,18 @@ const ModernTemplate = ({
         margin: '0 auto'
       }}
     >
-      {/* Professional Header with Compact Design */}
-      <header className="pb-6 mb-8" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6 tracking-tight">
+      {/* Compact Professional Header */}
+      <header 
+        className="pb-6 mb-6" 
+        style={{ 
+          pageBreakInside: 'avoid', 
+          breakInside: 'avoid',
+          pageBreakAfter: 'avoid',
+          breakAfter: 'avoid'
+        }}
+      >
+        <div className="text-center mb-4">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">
             <EditableText
               value={personalInfo?.fullName || ''}
               onSave={(value) => onUpdate?.('personalInfo', 'fullName', value)}
@@ -264,7 +357,7 @@ const ModernTemplate = ({
           </h1>
           
           {/* Primary Contact Information - Compact Layout */}
-          <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-600 mb-4 max-w-4xl mx-auto">
+          <div className="flex flex-wrap justify-center items-center gap-4 text-sm text-gray-600 mb-3 max-w-4xl mx-auto">
             {personalInfo?.email && (
               <div className="flex items-center space-x-2 min-w-0 flex-shrink-0">
                 <Mail className="w-4 h-4 text-blue-600 flex-shrink-0" />
@@ -307,48 +400,42 @@ const ModernTemplate = ({
                 </span>
               </div>
             )}
+            {personalInfo?.linkedIn && (
+              <div className="flex items-center space-x-2 min-w-0 flex-shrink-0">
+                <Linkedin className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                <span className="truncate max-w-xs">
+                  <EditableText
+                    value={personalInfo.linkedIn}
+                    onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
+                    isEditing={isEditing}
+                    className="inline-block"
+                    placeholder="linkedin.com/in/username"
+                  />
+                </span>
+              </div>
+            )}
+            {personalInfo?.portfolio && (
+              <div className="flex items-center space-x-2 min-w-0 flex-shrink-0">
+                <Globe className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                <span className="truncate max-w-xs">
+                  <EditableText
+                    value={personalInfo.portfolio}
+                    onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
+                    isEditing={isEditing}
+                    className="inline-block"
+                    placeholder="portfolio.com"
+                  />
+                </span>
+              </div>
+            )}
           </div>
-          
-          {/* Secondary Contact Information - Compact Layout */}
-          {(personalInfo?.linkedIn || personalInfo?.portfolio) && (
-            <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-600 mb-6 max-w-4xl mx-auto">
-              {personalInfo?.linkedIn && (
-                <div className="flex items-center space-x-2 min-w-0 flex-shrink-0">
-                  <Linkedin className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                  <span className="truncate max-w-xs">
-                    <EditableText
-                      value={personalInfo.linkedIn}
-                      onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
-                      isEditing={isEditing}
-                      className="inline-block"
-                      placeholder="linkedin.com/in/username"
-                    />
-                  </span>
-                </div>
-              )}
-              {personalInfo?.portfolio && (
-                <div className="flex items-center space-x-2 min-w-0 flex-shrink-0">
-                  <Globe className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                  <span className="truncate max-w-xs">
-                    <EditableText
-                      value={personalInfo.portfolio}
-                      onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}
-                      isEditing={isEditing}
-                      className="inline-block"
-                      placeholder="portfolio.com"
-                    />
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
         </div>
         
         {/* Header End Line Separator - Compact */}
         <div className="w-full h-1 bg-gradient-to-r from-blue-600 to-purple-600 mx-auto"></div>
       </header>
 
-      {/* Render sections in the specified order */}
+      {/* Render sections in the specified order with strict page break control */}
       {sectionOrder.map(sectionId => renderSection(sectionId))}
     </div>
   );
