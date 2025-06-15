@@ -1,8 +1,9 @@
+
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
 export const generatePDFFromHTML = async (data: any, templateName: string = 'modern') => {
-  console.log('=== Intelligent Section Page Break PDF Generation Started ===');
+  console.log('=== Smart Section Page Break PDF Generation Started ===');
   console.log('Template:', templateName);
 
   try {
@@ -15,19 +16,20 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       throw new Error('Resume preview not found');
     }
 
-    console.log('Preparing resume with intelligent section page breaks...');
+    console.log('Preparing resume with smart section page breaks...');
 
     const clonedElement = resumeElement.cloneNode(true) as HTMLElement;
     clonedElement.id = 'resume-pdf-clone';
     
-    // Apply PDF-specific styles to ensure proper page breaks for ALL sections
+    // Apply PDF-specific styles with proper margins
     clonedElement.style.position = 'absolute';
     clonedElement.style.top = '-9999px';
     clonedElement.style.left = '-9999px';
     clonedElement.style.width = '210mm';
     clonedElement.style.minHeight = '297mm';
     clonedElement.style.margin = '0';
-    clonedElement.style.padding = '0';
+    clonedElement.style.padding = '20mm'; // Balanced padding
+    clonedElement.style.boxSizing = 'border-box';
     clonedElement.style.boxShadow = 'none';
     clonedElement.style.border = 'none';
     clonedElement.style.background = '#ffffff';
@@ -35,38 +37,26 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     clonedElement.style.lineHeight = '1.4';
     clonedElement.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
-    // Apply intelligent page breaks to ALL sections to prevent content splitting
+    // Apply smart page breaks to sections
     const allSections = clonedElement.querySelectorAll('section');
     allSections.forEach((section, index) => {
       const element = section as HTMLElement;
       
-      // Ensure no section gets cut in half
+      // Ensure sections don't get cut in half
       element.style.pageBreakInside = 'avoid';
       element.style.breakInside = 'avoid';
-      element.style.pageBreakAfter = 'avoid';
-      element.style.breakAfter = 'avoid';
-      element.style.orphans = '4';
-      element.style.widows = '4';
+      element.style.marginBottom = '20px';
       
-      // Apply smart page breaks based on section position
-      if (index === 0) {
-        // First section (usually summary) stays with header
-        element.style.pageBreakBefore = 'avoid';
-        element.style.breakBefore = 'avoid';
-      } else if (index === 1) {
-        // Second section can break if needed but prefer to stay
+      // Smart page break logic
+      if (index >= 2) { // From third section onwards, start on new page if needed
         element.style.pageBreakBefore = 'auto';
         element.style.breakBefore = 'auto';
-      } else {
-        // Later sections should start fresh pages if they would be cut
-        element.style.pageBreakBefore = 'always';
-        element.style.breakBefore = 'always';
       }
       
-      console.log(`Applied intelligent page breaks to section ${index + 1}`);
+      console.log(`Applied smart page breaks to section ${index + 1}`);
     });
 
-    // Enhanced header handling - never break header
+    // Enhanced header handling
     const headers = clonedElement.querySelectorAll('h1, h2, h3, h4, header');
     headers.forEach(header => {
       const element = header as HTMLElement;
@@ -74,27 +64,12 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       element.style.breakAfter = 'avoid';
       element.style.pageBreakInside = 'avoid';
       element.style.breakInside = 'avoid';
-      
-      // Headers should keep their content together
-      const nextSibling = element.nextElementSibling;
-      if (nextSibling) {
-        (nextSibling as HTMLElement).style.pageBreakBefore = 'avoid';
-        (nextSibling as HTMLElement).style.breakBefore = 'avoid';
-      }
-    });
-
-    // Ensure experience and project items stay together
-    const experienceItems = clonedElement.querySelectorAll('[style*="pageBreakInside: avoid"]');
-    experienceItems.forEach(item => {
-      const element = item as HTMLElement;
-      element.style.pageBreakInside = 'avoid';
-      element.style.breakInside = 'avoid';
     });
 
     document.body.appendChild(clonedElement);
     await new Promise(resolve => setTimeout(resolve, 1500));
 
-    console.log('Capturing resume with intelligent section page breaks...');
+    console.log('Capturing resume with smart section page breaks...');
 
     const actualWidth = clonedElement.offsetWidth;
     const actualHeight = clonedElement.scrollHeight;
@@ -102,7 +77,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     console.log(`PDF capture dimensions: ${actualWidth}x${actualHeight}px`);
 
     const canvas = await html2canvas(clonedElement, {
-      scale: 2.5, // Higher scale for better quality
+      scale: 2.0, // Balanced scale for quality and performance
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
@@ -113,29 +88,12 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       windowWidth: actualWidth,
       windowHeight: actualHeight,
       logging: false,
-      removeContainer: false,
-      onclone: (clonedDoc) => {
-        const clonedDocElement = clonedDoc.getElementById('resume-pdf-clone');
-        if (clonedDocElement) {
-          // Re-apply intelligent section breaks in cloned document
-          const sectionsInClone = clonedDocElement.querySelectorAll('section');
-          sectionsInClone.forEach((section, index) => {
-            const element = section as HTMLElement;
-            element.style.pageBreakInside = 'avoid';
-            element.style.breakInside = 'avoid';
-            
-            if (index > 1) {
-              element.style.pageBreakBefore = 'always';
-              element.style.breakBefore = 'always';
-            }
-          });
-        }
-      }
+      removeContainer: false
     });
 
     document.body.removeChild(clonedElement);
 
-    console.log('Canvas captured, generating PDF with intelligent section breaks...');
+    console.log('Canvas captured, generating PDF with proper margins...');
 
     if (!canvas || canvas.width === 0 || canvas.height === 0) {
       throw new Error('Canvas capture failed - no content rendered');
@@ -148,10 +106,10 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       compress: true
     });
 
-    // A4 dimensions optimized for intelligent section breaks
+    // A4 dimensions with balanced margins
     const pdfWidth = 210;
     const pdfHeight = 297;
-    const margin = 15; // Balanced margin for better content flow
+    const margin = 10; // Reduced margin for better balance
     const effectiveWidth = pdfWidth - (margin * 2);
     const effectiveHeight = pdfHeight - (margin * 2);
     
@@ -162,12 +120,12 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     console.log(`Canvas dimensions: ${canvas.width}x${canvas.height}`);
     console.log(`PDF scaled dimensions: ${scaledWidth}x${scaledHeight}mm`);
 
-    // Calculate pages with intelligent section break consideration
+    // Calculate pages with smart section break consideration
     const totalPages = Math.ceil(scaledHeight / effectiveHeight);
     
-    console.log(`Total pages with intelligent section breaks: ${totalPages}`);
+    console.log(`Total pages with smart section breaks: ${totalPages}`);
 
-    // Generate pages with proper intelligent section placement
+    // Generate pages with proper content positioning
     for (let page = 0; page < totalPages; page++) {
       if (page > 0) {
         pdf.addPage();
@@ -198,28 +156,29 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
           0, 0, canvas.width, sourceHeight
         );
 
-        const imgData = pageCanvas.toDataURL('image/jpeg', 0.98);
+        const imgData = pageCanvas.toDataURL('image/jpeg', 0.95);
         const finalHeight = Math.min(currentPageHeight, effectiveHeight);
 
+        // Center the content properly with balanced margins
         pdf.addImage(imgData, 'JPEG', margin, margin, scaledWidth, finalHeight, undefined, 'FAST');
 
-        console.log(`Page ${page + 1}/${totalPages} - Height: ${finalHeight}mm (Intelligent Section Breaks)`);
+        console.log(`Page ${page + 1}/${totalPages} - Height: ${finalHeight}mm (Balanced Layout)`);
       }
     }
 
     pdf.setProperties({
       title: `${data.personalInfo?.fullName || 'Resume'} - Professional Resume`,
-      subject: 'Professional Resume with Intelligent Section Page Breaks',
+      subject: 'Professional Resume with Smart Section Page Breaks',
       author: data.personalInfo?.fullName || 'Resume Builder',
-      creator: 'Professional Resume Builder - Intelligent Section Breaks',
-      keywords: 'resume, professional, career, intelligent page breaks, sections'
+      creator: 'Professional Resume Builder - Smart Section Breaks',
+      keywords: 'resume, professional, career, smart page breaks, sections'
     });
 
-    console.log('Intelligent Section Page Break PDF generation completed successfully');
+    console.log('Smart Section Page Break PDF generation completed successfully');
     return pdf;
 
   } catch (error) {
-    console.error('Intelligent Section Page Break PDF generation error:', error);
-    throw new Error('Failed to generate PDF with intelligent section breaks: ' + (error as Error).message);
+    console.error('Smart Section Page Break PDF generation error:', error);
+    throw new Error('Failed to generate PDF with smart section breaks: ' + (error as Error).message);
   }
 };
