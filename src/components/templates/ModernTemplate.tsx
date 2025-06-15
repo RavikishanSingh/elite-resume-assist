@@ -1,4 +1,3 @@
-
 import { Mail, Phone, MapPin, Globe, Linkedin } from "lucide-react";
 import EditableText from "../EditableText";
 
@@ -21,7 +20,7 @@ const ModernTemplate = ({
 }: ModernTemplateProps) => {
   const { personalInfo, experience, education, skills, projects } = data;
 
-  // Render sections based on order with strict page break controls
+  // Render sections based on order with specific page break controls
   const renderSection = (sectionId: string) => {
     switch (sectionId) {
       case 'summary':
@@ -32,8 +31,8 @@ const ModernTemplate = ({
             style={{ 
               pageBreakInside: 'avoid', 
               breakInside: 'avoid',
-              pageBreakBefore: 'auto',
-              breakBefore: 'auto'
+              pageBreakAfter: 'avoid',
+              breakAfter: 'avoid'
             }}
           >
             <h2 className="text-xl font-semibold text-blue-600 mb-4 flex items-center">
@@ -59,8 +58,10 @@ const ModernTemplate = ({
             key={sectionId} 
             className="mb-8"
             style={{ 
-              pageBreakBefore: 'auto',
-              breakBefore: 'auto'
+              pageBreakInside: 'avoid',
+              breakInside: 'avoid',
+              pageBreakAfter: 'avoid',
+              breakAfter: 'avoid'
             }}
           >
             <h2 
@@ -84,9 +85,7 @@ const ModernTemplate = ({
                     pageBreakInside: 'avoid', 
                     breakInside: 'avoid', 
                     orphans: 4, 
-                    widows: 4,
-                    pageBreakBefore: index > 0 ? 'auto' : 'avoid',
-                    breakBefore: index > 0 ? 'auto' : 'avoid'
+                    widows: 4
                   }}
                 >
                   <div className="flex justify-between items-start mb-3 flex-wrap gap-2">
@@ -156,8 +155,8 @@ const ModernTemplate = ({
             style={{ 
               pageBreakInside: 'avoid', 
               breakInside: 'avoid',
-              pageBreakBefore: 'auto',
-              breakBefore: 'auto'
+              pageBreakAfter: 'avoid',
+              breakAfter: 'avoid'
             }}
           >
             <h2 className="text-xl font-semibold text-blue-600 mb-4 flex items-center">
@@ -195,8 +194,10 @@ const ModernTemplate = ({
             key={sectionId} 
             className="mb-8"
             style={{ 
-              pageBreakBefore: 'auto',
-              breakBefore: 'auto'
+              pageBreakBefore: 'always', // Force Key Projects to start on new page
+              breakBefore: 'always',
+              pageBreakInside: 'avoid',
+              breakInside: 'avoid'
             }}
           >
             <h2 
@@ -219,9 +220,7 @@ const ModernTemplate = ({
                     pageBreakInside: 'avoid', 
                     breakInside: 'avoid', 
                     orphans: 3, 
-                    widows: 3,
-                    pageBreakBefore: index > 0 ? 'auto' : 'avoid',
-                    breakBefore: index > 0 ? 'auto' : 'avoid'
+                    widows: 3
                   }}
                 >
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -261,9 +260,7 @@ const ModernTemplate = ({
             className="mb-6" 
             style={{ 
               pageBreakInside: 'avoid', 
-              breakInside: 'avoid',
-              pageBreakBefore: 'auto',
-              breakBefore: 'auto'
+              breakInside: 'avoid'
             }}
           >
             <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center">
@@ -435,7 +432,7 @@ const ModernTemplate = ({
         <div className="w-full h-1 bg-gradient-to-r from-blue-600 to-purple-600 mx-auto"></div>
       </header>
 
-      {/* Render sections in the specified order with strict page break control */}
+      {/* Render sections in the specified order with forced page break for projects */}
       {sectionOrder.map(sectionId => renderSection(sectionId))}
     </div>
   );
