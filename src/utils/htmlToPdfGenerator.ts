@@ -1,9 +1,23 @@
-
 import jsPDF from 'jspdf';
 import { generateDirectPDF } from './directPdfGenerator';
 
+// Helper function to wait for all images within an element to load.
+const waitForImages = (element: HTMLElement): Promise<void[]> => {
+  const images = Array.from(element.getElementsByTagName('img'));
+  const promises = images.map(img => {
+    if (img.complete && img.naturalHeight !== 0) {
+      return Promise.resolve();
+    }
+    return new Promise<void>(resolve => {
+      img.onload = () => resolve();
+      img.onerror = () => resolve(); // Resolve on error too, to not block forever
+    });
+  });
+  return Promise.all(promises);
+};
+
 export const generatePDFFromHTML = async (data: any, templateName: string = 'modern') => {
-  console.log('=== Professional PDF Generation Started ===');
+  console.log('=== Professional PDF Generation Started (v2 - Enhanced) ===');
   console.log('Template:', templateName);
 
   try {
@@ -23,7 +37,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       throw new Error('Resume preview not found');
     }
 
-    console.log('Preparing resume for PDF generation via pdf.html() with smart auto-paging...');
+    console.log('Preparing resume for PDF generation via pdf.html() with smart auto-paging and robust asset loading...');
 
     const pdf = new jsPDF({
       orientation: 'portrait',
@@ -48,14 +62,19 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     clonedElement.style.border = 'none';
     clonedElement.style.transform = 'none';
 
-    // Wait for fonts and images to load before capturing
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Wait for fonts and images to load before capturing for a more reliable render.
+    console.log('Waiting for fonts and images to fully load...');
+    await document.fonts.ready;
+    await waitForImages(clonedElement);
+    // A small final delay for any rendering adjustments after assets are loaded.
+    await new Promise(resolve => setTimeout(resolve, 200));
+    console.log('Assets loaded, proceeding with PDF capture.');
 
     await pdf.html(clonedElement, {
       margin: 0,
       autoPaging: 'text', // Key for smart page breaks. It respects `page-break-inside: avoid`.
       html2canvas: {
-        scale: 2, // High resolution for crisp text and images
+        scale: 2.5, // Increased scale for even crisper text and images
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
@@ -84,7 +103,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       keywords: 'resume, professional, career',
     });
 
-    console.log('=== PDF generation completed successfully ===');
+    console.log('=== PDF generation completed successfully (v2) ===');
     return pdf;
 
   } catch (error) {
