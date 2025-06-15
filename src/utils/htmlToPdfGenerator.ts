@@ -26,18 +26,19 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     clonedElement.style.position = 'absolute';
     clonedElement.style.top = '-9999px';
     clonedElement.style.left = '0';
-    clonedElement.style.width = '794px'; // A4 width in pixels at 96dpi
-    clonedElement.style.minHeight = '1123px'; // A4 height in pixels at 96dpi
+    clonedElement.style.width = '210mm'; // A4 width
+    clonedElement.style.minHeight = 'auto'; // Let content determine height
     clonedElement.style.margin = '0';
-    clonedElement.style.padding = '40px'; // Balanced padding
+    clonedElement.style.padding = '20mm'; // Standard document padding
     clonedElement.style.boxSizing = 'border-box';
     clonedElement.style.boxShadow = 'none';
     clonedElement.style.border = 'none';
     clonedElement.style.background = '#ffffff';
-    clonedElement.style.fontSize = '14px';
-    clonedElement.style.lineHeight = '1.5';
+    clonedElement.style.fontSize = '12px';
+    clonedElement.style.lineHeight = '1.4';
     clonedElement.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     clonedElement.style.color = '#333333';
+    clonedElement.style.transform = 'none'; // Remove any scaling
 
     // Fix any layout issues in the clone
     const allElements = clonedElement.querySelectorAll('*');
@@ -47,9 +48,10 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       if (el.style.transform && el.style.transform.includes('scale')) {
         el.style.transform = '';
       }
-      // Ensure proper text rendering
-      el.style.webkitFontSmoothing = 'antialiased';
-      el.style.mozOsxFontSmoothing = 'grayscale';
+      // Ensure proper text rendering with proper TypeScript handling
+      const style = el.style as any;
+      style.webkitFontSmoothing = 'antialiased';
+      style.mozOsxFontSmoothing = 'grayscale';
     });
 
     // Append to body for rendering
@@ -65,21 +67,13 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
-      width: 794,
-      height: clonedElement.scrollHeight,
       scrollX: 0,
       scrollY: 0,
-      windowWidth: 794,
-      windowHeight: clonedElement.scrollHeight,
       logging: false,
       removeContainer: false,
       imageTimeout: 15000,
-      onclone: (clonedDoc) => {
-        // Ensure the cloned document has proper styling
-        const clonedBody = clonedDoc.body;
-        clonedBody.style.margin = '0';
-        clonedBody.style.padding = '0';
-      }
+      height: clonedElement.scrollHeight,
+      width: clonedElement.scrollWidth
     });
 
     // Clean up
@@ -102,75 +96,70 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     // A4 dimensions in mm
     const pdfWidth = 210;
     const pdfHeight = 297;
-    const margin = 15; // Reasonable margin
-    const contentWidth = pdfWidth - (margin * 2);
-    const contentHeight = pdfHeight - (margin * 2);
     
-    // Calculate scaling to fit content properly
-    const canvasAspectRatio = canvas.height / canvas.width;
-    const scaledHeight = contentWidth * canvasAspectRatio;
-
-    console.log(`Canvas: ${canvas.width}x${canvas.height}px`);
-    console.log(`PDF content area: ${contentWidth}x${contentHeight}mm`);
-    console.log(`Scaled height: ${scaledHeight}mm`);
-
+    // Calculate how much content fits on each page
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+    
+    // Calculate the scaling factor to fit content width to PDF width
+    const scale = pdfWidth / (canvasWidth / 2); // Divide by 2 because we used scale: 2 in html2canvas
+    const scaledCanvasHeight = (canvasHeight / 2) * scale; // Actual height in mm
+    
+    console.log(`Canvas: ${canvasWidth}x${canvasHeight}px`);
+    console.log(`Scaled height: ${scaledCanvasHeight}mm`);
+    
     // Calculate number of pages needed
-    const totalPages = Math.ceil(scaledHeight / contentHeight);
+    const totalPages = Math.ceil(scaledCanvasHeight / pdfHeight);
     console.log(`Total pages needed: ${totalPages}`);
 
     // Generate pages
-    for (let page = 0; page < totalPages; page++) {
-      if (page > 0) {
+    for (let pageNum = 0; pageNum < totalPages; pageNum++) {
+      if (pageNum > 0) {
         pdf.addPage();
       }
 
-      const startY = page * contentHeight;
-      const endY = Math.min(startY + contentHeight, scaledHeight);
-      const currentPageHeight = endY - startY;
+      // Calculate what portion of the canvas to use for this page
+      const yStart = (pageNum * pdfHeight) / scale * 2; // Convert back to canvas pixels
+      const yEnd = Math.min(((pageNum + 1) * pdfHeight) / scale * 2, canvasHeight);
+      const sliceHeight = yEnd - yStart;
 
-      // Create a canvas for this page
-      const pageCanvas = document.createElement('canvas');
-      const pageCtx = pageCanvas.getContext('2d');
-      
-      if (pageCtx) {
-        // Calculate source dimensions from original canvas
-        const sourceHeight = (currentPageHeight / scaledHeight) * canvas.height;
-        const sourceY = (startY / scaledHeight) * canvas.height;
-
-        pageCanvas.width = canvas.width;
-        pageCanvas.height = sourceHeight;
-
-        // Fill with white background
-        pageCtx.fillStyle = '#ffffff';
-        pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+      if (sliceHeight > 0) {
+        // Create a canvas for this page slice
+        const pageCanvas = document.createElement('canvas');
+        const pageCtx = pageCanvas.getContext('2d');
         
-        // Enable high-quality rendering
-        pageCtx.imageSmoothingEnabled = true;
-        pageCtx.imageSmoothingQuality = 'high';
+        if (pageCtx) {
+          pageCanvas.width = canvasWidth;
+          pageCanvas.height = sliceHeight;
 
-        // Draw the portion of the canvas for this page
-        pageCtx.drawImage(
-          canvas,
-          0, sourceY, canvas.width, sourceHeight,
-          0, 0, canvas.width, sourceHeight
-        );
+          // Fill with white background
+          pageCtx.fillStyle = '#ffffff';
+          pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+          
+          // Draw the slice of the original canvas onto this page canvas
+          pageCtx.drawImage(
+            canvas,
+            0, yStart, canvasWidth, sliceHeight, // Source rectangle
+            0, 0, canvasWidth, sliceHeight       // Destination rectangle
+          );
 
-        // Convert to image and add to PDF
-        const imgData = pageCanvas.toDataURL('image/jpeg', 0.95);
-        
-        // Add image to PDF with proper positioning
-        pdf.addImage(
-          imgData, 
-          'JPEG', 
-          margin, 
-          margin, 
-          contentWidth, 
-          currentPageHeight,
-          undefined,
-          'FAST'
-        );
+          // Convert to image and add to PDF
+          const imgData = pageCanvas.toDataURL('image/jpeg', 0.95);
+          
+          // Add image to PDF
+          pdf.addImage(
+            imgData, 
+            'JPEG', 
+            0, 
+            0, 
+            pdfWidth, 
+            pdfHeight,
+            undefined,
+            'FAST'
+          );
 
-        console.log(`Page ${page + 1}/${totalPages} added - Height: ${currentPageHeight.toFixed(2)}mm`);
+          console.log(`Page ${pageNum + 1}/${totalPages} added`);
+        }
       }
     }
 
