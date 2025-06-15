@@ -20,20 +20,28 @@ const ModernTemplate = ({
 }: ModernTemplateProps) => {
   const { personalInfo, experience, education, skills, projects } = data;
 
-  // Render sections based on order with specific page break controls
-  const renderSection = (sectionId: string) => {
+  // Render sections based on order with intelligent page break controls for ALL sections
+  const renderSection = (sectionId: string, index: number) => {
+    // Apply smart page breaks - first section after header stays, others break intelligently
+    const sectionStyle = {
+      pageBreakInside: 'avoid' as const,
+      breakInside: 'avoid' as const,
+      pageBreakAfter: 'avoid' as const,
+      breakAfter: 'avoid' as const,
+      // For sections that might be long, allow page breaks before them if needed
+      ...(index > 1 && {
+        pageBreakBefore: 'auto' as const,
+        breakBefore: 'auto' as const
+      })
+    };
+
     switch (sectionId) {
       case 'summary':
         return personalInfo?.summary && (
           <section 
             key={sectionId} 
             className="mb-8" 
-            style={{ 
-              pageBreakInside: 'avoid', 
-              breakInside: 'avoid',
-              pageBreakAfter: 'avoid',
-              breakAfter: 'avoid'
-            }}
+            style={sectionStyle}
           >
             <h2 className="text-xl font-semibold text-blue-600 mb-4 flex items-center">
               <div className="w-2 h-6 bg-blue-600 mr-3"></div>
@@ -57,11 +65,11 @@ const ModernTemplate = ({
           <section 
             key={sectionId} 
             className="mb-8"
-            style={{ 
-              pageBreakInside: 'avoid',
-              breakInside: 'avoid',
-              pageBreakAfter: 'avoid',
-              breakAfter: 'avoid'
+            style={{
+              ...sectionStyle,
+              // Experience section can be long, so allow smart page breaks
+              pageBreakBefore: index > 0 ? 'auto' : 'avoid',
+              breakBefore: index > 0 ? 'auto' : 'avoid'
             }}
           >
             <h2 
@@ -77,9 +85,9 @@ const ModernTemplate = ({
               Professional Experience
             </h2>
             <div className="space-y-6 pl-5">
-              {experience.map((exp: any, index: number) => (
+              {experience.map((exp: any, expIndex: number) => (
                 <div 
-                  key={index} 
+                  key={expIndex} 
                   className="relative" 
                   style={{ 
                     pageBreakInside: 'avoid', 
@@ -93,7 +101,7 @@ const ModernTemplate = ({
                       <h3 className="text-lg font-semibold text-gray-900">
                         <EditableText
                           value={exp.jobTitle || ''}
-                          onSave={(value) => onUpdate?.('experience', 'jobTitle', value, index)}
+                          onSave={(value) => onUpdate?.('experience', 'jobTitle', value, expIndex)}
                           isEditing={isEditing}
                           className="inline-block"
                           placeholder="Job Title"
@@ -102,7 +110,7 @@ const ModernTemplate = ({
                       <p className="text-blue-600 font-medium">
                         <EditableText
                           value={exp.company || ''}
-                          onSave={(value) => onUpdate?.('experience', 'company', value, index)}
+                          onSave={(value) => onUpdate?.('experience', 'company', value, expIndex)}
                           isEditing={isEditing}
                           className="inline-block"
                           placeholder="Company Name"
@@ -113,7 +121,7 @@ const ModernTemplate = ({
                       <p className="font-medium">
                         <EditableText
                           value={exp.startDate || ''}
-                          onSave={(value) => onUpdate?.('experience', 'startDate', value, index)}
+                          onSave={(value) => onUpdate?.('experience', 'startDate', value, expIndex)}
                           isEditing={isEditing}
                           className="inline-block"
                           placeholder="Start Date"
@@ -122,7 +130,7 @@ const ModernTemplate = ({
                         {exp.current ? 'Present' : (
                           <EditableText
                             value={exp.endDate || ''}
-                            onSave={(value) => onUpdate?.('experience', 'endDate', value, index)}
+                            onSave={(value) => onUpdate?.('experience', 'endDate', value, expIndex)}
                             isEditing={isEditing}
                             className="inline-block"
                             placeholder="End Date"
@@ -134,7 +142,7 @@ const ModernTemplate = ({
                   <div className="text-gray-700 leading-relaxed whitespace-pre-line text-sm">
                     <EditableText
                       value={exp.description || ''}
-                      onSave={(value) => onUpdate?.('experience', 'description', value, index)}
+                      onSave={(value) => onUpdate?.('experience', 'description', value, expIndex)}
                       multiline
                       isEditing={isEditing}
                       className="inline-block w-full"
@@ -152,11 +160,11 @@ const ModernTemplate = ({
           <section 
             key={sectionId} 
             className="mb-8" 
-            style={{ 
-              pageBreakInside: 'avoid', 
-              breakInside: 'avoid',
-              pageBreakAfter: 'avoid',
-              breakAfter: 'avoid'
+            style={{
+              ...sectionStyle,
+              // Skills section should start fresh if it would be cut
+              pageBreakBefore: index > 1 ? 'auto' : 'avoid',
+              breakBefore: index > 1 ? 'auto' : 'avoid'
             }}
           >
             <h2 className="text-xl font-semibold text-blue-600 mb-4 flex items-center">
@@ -165,16 +173,16 @@ const ModernTemplate = ({
             </h2>
             <div className="pl-5">
               <div className="flex flex-wrap gap-3">
-                {skills.map((skill: string, index: number) => (
+                {skills.map((skill: string, skillIndex: number) => (
                   <span
-                    key={index}
+                    key={skillIndex}
                     className="px-3 py-2 bg-blue-50 text-blue-800 rounded-lg text-sm font-medium border border-blue-200"
                   >
                     <EditableText
                       value={skill || ''}
                       onSave={(value) => {
                         const updatedSkills = [...skills];
-                        updatedSkills[index] = value;
+                        updatedSkills[skillIndex] = value;
                         onUpdate?.('skills', '', updatedSkills.join(','));
                       }}
                       isEditing={isEditing}
@@ -193,11 +201,11 @@ const ModernTemplate = ({
           <section 
             key={sectionId} 
             className="mb-8"
-            style={{ 
-              pageBreakBefore: 'always', // Force Key Projects to start on new page
-              breakBefore: 'always',
-              pageBreakInside: 'avoid',
-              breakInside: 'avoid'
+            style={{
+              ...sectionStyle,
+              // Projects section should definitely start on new page if it would be cut
+              pageBreakBefore: index > 1 ? 'always' : 'auto',
+              breakBefore: index > 1 ? 'always' : 'auto'
             }}
           >
             <h2 
@@ -213,9 +221,9 @@ const ModernTemplate = ({
               Key Projects
             </h2>
             <div className="space-y-6 pl-5">
-              {projects.map((project: any, index: number) => (
+              {projects.map((project: any, projIndex: number) => (
                 <div 
-                  key={index} 
+                  key={projIndex} 
                   style={{ 
                     pageBreakInside: 'avoid', 
                     breakInside: 'avoid', 
@@ -226,7 +234,7 @@ const ModernTemplate = ({
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
                     <EditableText
                       value={project.name || ''}
-                      onSave={(value) => onUpdate?.('projects', 'name', value, index)}
+                      onSave={(value) => onUpdate?.('projects', 'name', value, projIndex)}
                       isEditing={isEditing}
                       className="inline-block"
                       placeholder="Project Name"
@@ -235,7 +243,7 @@ const ModernTemplate = ({
                   <div className="text-gray-700 leading-relaxed whitespace-pre-line text-sm mb-2">
                     <EditableText
                       value={project.description || ''}
-                      onSave={(value) => onUpdate?.('projects', 'description', value, index)}
+                      onSave={(value) => onUpdate?.('projects', 'description', value, projIndex)}
                       multiline
                       isEditing={isEditing}
                       className="inline-block w-full"
@@ -258,9 +266,11 @@ const ModernTemplate = ({
           <section 
             key={sectionId} 
             className="mb-6" 
-            style={{ 
-              pageBreakInside: 'avoid', 
-              breakInside: 'avoid'
+            style={{
+              ...sectionStyle,
+              // Education can start on new page if needed
+              pageBreakBefore: index > 2 ? 'auto' : 'avoid',
+              breakBefore: index > 2 ? 'auto' : 'avoid'
             }}
           >
             <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center">
@@ -268,9 +278,9 @@ const ModernTemplate = ({
               Education
             </h2>
             <div className="space-y-4 pl-5">
-              {education.map((edu: any, index: number) => (
+              {education.map((edu: any, eduIndex: number) => (
                 <div 
-                  key={index} 
+                  key={eduIndex} 
                   className="flex justify-between items-start flex-wrap gap-2" 
                   style={{ 
                     pageBreakInside: 'avoid', 
@@ -281,7 +291,7 @@ const ModernTemplate = ({
                     <h3 className="text-lg font-semibold text-gray-900">
                       <EditableText
                         value={edu.degree || ''}
-                        onSave={(value) => onUpdate?.('education', 'degree', value, index)}
+                        onSave={(value) => onUpdate?.('education', 'degree', value, eduIndex)}
                         isEditing={isEditing}
                         className="inline-block"
                         placeholder="Degree"
@@ -290,7 +300,7 @@ const ModernTemplate = ({
                     <p className="text-blue-600 font-medium">
                       <EditableText
                         value={edu.school || ''}
-                        onSave={(value) => onUpdate?.('education', 'school', value, index)}
+                        onSave={(value) => onUpdate?.('education', 'school', value, eduIndex)}
                         isEditing={isEditing}
                         className="inline-block"
                         placeholder="Institution Name"
@@ -304,7 +314,7 @@ const ModernTemplate = ({
                     <p className="font-medium">
                       <EditableText
                         value={edu.graduationDate || ''}
-                        onSave={(value) => onUpdate?.('education', 'graduationDate', value, index)}
+                        onSave={(value) => onUpdate?.('education', 'graduationDate', value, eduIndex)}
                         isEditing={isEditing}
                         className="inline-block"
                         placeholder="Graduation Date"
@@ -432,8 +442,8 @@ const ModernTemplate = ({
         <div className="w-full h-1 bg-gradient-to-r from-blue-600 to-purple-600 mx-auto"></div>
       </header>
 
-      {/* Render sections in the specified order with forced page break for projects */}
-      {sectionOrder.map(sectionId => renderSection(sectionId))}
+      {/* Render sections in the specified order with intelligent page breaks for ALL sections */}
+      {sectionOrder.map((sectionId, index) => renderSection(sectionId, index))}
     </div>
   );
 };
