@@ -77,7 +77,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     document.body.appendChild(clonedElement);
 
     // Wait for layout to settle and fonts to load
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     console.log('Capturing resume with enhanced text rendering...');
 
@@ -87,9 +87,9 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     
     console.log(`PDF capture dimensions: ${actualWidth}x${actualHeight}px`);
 
-    // Configure html2canvas for high-quality professional capture with better text rendering
+    // Configure html2canvas for high-quality professional capture
     const canvas = await html2canvas(clonedElement, {
-      scale: 4, // Higher scale for better text quality
+      scale: 2, // Balanced scale for quality and performance
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
@@ -100,7 +100,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       windowWidth: actualWidth,
       windowHeight: actualHeight,
       logging: false,
-      foreignObjectRendering: true, // Better rendering for complex elements
+      removeContainer: false,
       onclone: (clonedDoc) => {
         const clonedDocElement = clonedDoc.getElementById('resume-pdf-clone');
         if (clonedDocElement) {
@@ -108,15 +108,12 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
           clonedDocElement.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
           clonedDocElement.style.fontSize = '12px';
           clonedDocElement.style.lineHeight = '1.5';
+          clonedDocElement.style.color = '#000000';
           
-          // Fix any text rendering issues in the clone
-          const textElements = clonedDocElement.querySelectorAll('*');
-          textElements.forEach(el => {
-            const element = el as HTMLElement;
-            element.style.overflow = 'visible';
-            element.style.textOverflow = 'clip';
-            element.style.whiteSpace = 'normal';
-          });
+          // Ensure visibility
+          clonedDocElement.style.visibility = 'visible';
+          clonedDocElement.style.opacity = '1';
+          clonedDocElement.style.display = 'block';
         }
       }
     });
@@ -125,6 +122,11 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     document.body.removeChild(clonedElement);
 
     console.log('Canvas captured, generating professional multi-page PDF...');
+
+    // Verify canvas has content
+    if (!canvas || canvas.width === 0 || canvas.height === 0) {
+      throw new Error('Canvas capture failed - no content rendered');
+    }
 
     // Create PDF with professional A4 dimensions
     const pdf = new jsPDF({
@@ -137,11 +139,11 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     // Professional A4 dimensions in mm with minimal margins
     const pdfWidth = 210;
     const pdfHeight = 297;
-    const margin = 5; // Reduced margin to prevent content cutoff
+    const margin = 8; // Reasonable margin
     const effectiveWidth = pdfWidth - (margin * 2);
     const effectiveHeight = pdfHeight - (margin * 2);
     
-    // Calculate scaling to fit A4 while maintaining aspect ratio and preventing text cutoff
+    // Calculate scaling to fit A4 while maintaining aspect ratio
     const canvasAspectRatio = canvas.height / canvas.width;
     const scaledWidth = effectiveWidth;
     const scaledHeight = scaledWidth * canvasAspectRatio;
@@ -191,9 +193,9 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
         );
 
         // Convert to image and add to PDF with high quality
-        const imgData = pageCanvas.toDataURL('image/jpeg', 0.98);
+        const imgData = pageCanvas.toDataURL('image/jpeg', 0.95);
         
-        // Position on page with minimal margins
+        // Position on page with margins
         const xPosition = margin;
         const yPosition = margin;
         const finalHeight = Math.min(currentPageHeight, effectiveHeight);
