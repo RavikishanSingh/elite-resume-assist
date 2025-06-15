@@ -6,6 +6,7 @@ import { ArrowUp, ArrowDown, Eye, Download, Grip } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import SectionReorder from './SectionReorder';
 import PageBreakIndicator from './PageBreakIndicator';
+import { generatePDFFromHTML } from '../../utils/htmlToPdfGenerator';
 
 interface PageLayoutViewProps {
   data: any;
@@ -25,6 +26,7 @@ const PageLayoutView = ({
   TemplateComponent 
 }: PageLayoutViewProps) => {
   const { toast } = useToast();
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   
   // Default section order
   const defaultSections = [
@@ -56,6 +58,57 @@ const PageLayoutView = ({
     onSectionReorder(updatedSections.filter(s => s.enabled).map(s => s.id));
   };
 
+  const handleDirectDownload = async () => {
+    if (isGeneratingPDF) return;
+    setIsGeneratingPDF(true);
+    
+    try {
+      if (!data || !data.personalInfo?.fullName) {
+        throw new Error('Please fill in at least your name before downloading');
+      }
+
+      toast({
+        title: "Generating PDF...",
+        description: "Creating your professional resume with the current layout",
+        duration: 2000
+      });
+
+      // Wait for UI to settle
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Generate PDF using the layout preview
+      const pdf = await generatePDFFromHTML(data, selectedTemplate);
+      if (!pdf) {
+        throw new Error('PDF generation returned null');
+      }
+
+      // Generate filename
+      const name = data.personalInfo?.fullName || 'Resume';
+      const sanitizedName = name.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+      const templateSuffix = selectedTemplate.charAt(0).toUpperCase() + selectedTemplate.slice(1);
+      const date = new Date().toISOString().split('T')[0];
+      const filename = `${sanitizedName}_Resume_${templateSuffix}_${date}.pdf`;
+
+      pdf.save(filename);
+      
+      toast({
+        title: "Success! 🎉",
+        description: `Resume downloaded as ${filename}`,
+        duration: 4000
+      });
+    } catch (error) {
+      console.error('PDF download error:', error);
+      toast({
+        title: "Download Failed",
+        description: error instanceof Error ? error.message : 'Failed to generate PDF',
+        variant: "destructive",
+        duration: 5000
+      });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -70,11 +123,12 @@ const PageLayoutView = ({
             <span>Back to Preview</span>
           </Button>
           <Button
-            onClick={onDownload}
-            className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            onClick={handleDirectDownload}
+            disabled={isGeneratingPDF}
+            className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50"
           >
             <Download className="w-4 h-4" />
-            <span>Download PDF</span>
+            <span>{isGeneratingPDF ? 'Creating PDF...' : 'Download PDF'}</span>
           </Button>
         </div>
       </div>
@@ -119,9 +173,13 @@ const PageLayoutView = ({
                   style={{
                     width: '210mm',
                     minHeight: '297mm',
-                    transform: 'scale(0.6)',
+                    transform: 'scale(0.7)',
                     transformOrigin: 'top left',
-                    marginBottom: '-40%'
+                    marginBottom: '-30%',
+                    fontFamily: 'Inter, Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+                    fontSize: '11pt',
+                    lineHeight: '1.4',
+                    color: '#2d3748'
                   }}
                 >
                   <TemplateComponent 
@@ -129,6 +187,8 @@ const PageLayoutView = ({
                     sectionOrder={sections.filter(s => s.enabled).map(s => s.id)}
                     isPDFMode={true}
                     showPageBreaks={true}
+                    onUpdate={() => {}} // No editing in layout view
+                    isEditing={false}
                   />
                 </div>
               </div>

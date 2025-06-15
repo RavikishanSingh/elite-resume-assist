@@ -11,8 +11,8 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       throw new Error('Please fill in at least your name before downloading');
     }
 
-    // Get the resume preview element
-    const resumeElement = document.getElementById('resume-preview');
+    // Get the resume preview element - check both IDs
+    const resumeElement = document.getElementById('resume-preview') || document.getElementById('layout-preview');
     if (!resumeElement) {
       throw new Error('Resume preview not found');
     }
@@ -37,6 +37,8 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     clonedElement.style.fontSize = '11pt';
     clonedElement.style.lineHeight = '1.4';
     clonedElement.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    clonedElement.style.transform = 'none'; // Remove any scaling for PDF
+    clonedElement.style.transformOrigin = 'unset';
     
     // Ensure all text is visible and not cut off
     clonedElement.style.overflow = 'visible';
@@ -77,7 +79,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     document.body.appendChild(clonedElement);
 
     // Wait for layout to settle and fonts to load
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 800));
 
     console.log('Capturing resume with enhanced text rendering...');
 
@@ -139,7 +141,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     // Professional A4 dimensions in mm with balanced margins
     const pdfWidth = 210;
     const pdfHeight = 297;
-    const margin = 15; // Better margin for readability
+    const margin = 12; // Optimized margin for better content flow
     const effectiveWidth = pdfWidth - (margin * 2);
     const effectiveHeight = pdfHeight - (margin * 2);
     
@@ -152,7 +154,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     console.log(`PDF dimensions: ${scaledWidth}x${scaledHeight}mm`);
 
     // Smart page break calculation based on content density
-    const pageBreakThreshold = 240; // More conservative page height for better breaks
+    const pageBreakThreshold = effectiveHeight; // Use full effective height per page
     const totalPages = Math.ceil(scaledHeight / pageBreakThreshold);
     console.log(`Total pages needed: ${totalPages}`);
 
