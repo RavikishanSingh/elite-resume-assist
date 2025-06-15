@@ -31,6 +31,7 @@ const ResumePreview = ({
   const [showPageLayout, setShowPageLayout] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [pdfGenerationMethod, setPdfGenerationMethod] = useState<'direct' | 'html'>('direct');
   const [sectionOrder, setSectionOrder] = useState(['summary', 'experience', 'skills', 'projects', 'education']);
   const { toast } = useToast();
 
@@ -64,27 +65,29 @@ const ResumePreview = ({
   const handleDownload = async () => {
     if (isGeneratingPDF) return;
     setIsGeneratingPDF(true);
-    console.log('=== Starting Professional Multi-Page PDF Download ===');
+    console.log('=== Starting Professional PDF Download ===');
     console.log('Selected template:', selectedTemplate);
+    console.log('Generation method:', pdfGenerationMethod);
     
     try {
       // Validate data
       if (!data || !data.personalInfo?.fullName) {
         throw new Error('Please fill in at least your name before downloading');
       }
-      console.log('Generating professional multi-page PDF...');
 
       // Show progress to user
       toast({
         title: "Preparing PDF...",
-        description: "Optimizing layout for professional multi-page output",
+        description: pdfGenerationMethod === 'direct' 
+          ? "Using direct PDF generation for perfect formatting" 
+          : "Converting HTML template to PDF",
         duration: 2000
       });
 
-      // Wait for UI to settle and ensure proper rendering
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Wait for UI to settle
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Use the enhanced HTML-to-PDF generator
+      // Generate PDF using selected method
       const pdf = await generatePDFFromHTML(data, selectedTemplate);
       if (!pdf) {
         throw new Error('PDF generation returned null');
@@ -94,15 +97,16 @@ const ResumePreview = ({
       const name = data.personalInfo?.fullName || 'Resume';
       const sanitizedName = name.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
       const templateSuffix = selectedTemplate.charAt(0).toUpperCase() + selectedTemplate.slice(1);
+      const methodSuffix = pdfGenerationMethod === 'direct' ? 'Direct' : 'HTML';
       const date = new Date().toISOString().split('T')[0];
-      const filename = `${sanitizedName}_Professional_Resume_${templateSuffix}_${date}.pdf`;
+      const filename = `${sanitizedName}_Resume_${templateSuffix}_${methodSuffix}_${date}.pdf`;
 
       // Download the PDF
       pdf.save(filename);
       console.log(`Professional PDF saved as: ${filename}`);
       toast({
         title: "Success! 🎉",
-        description: `Professional multi-page resume downloaded as ${filename}`,
+        description: `Professional resume downloaded as ${filename}`,
         duration: 4000
       });
     } catch (error) {
@@ -265,6 +269,40 @@ const ResumePreview = ({
         </div>
       )}
 
+      {/* PDF Generation Method Selection */}
+      <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4">
+        <h4 className="font-medium text-purple-900 mb-3">🔧 PDF Generation Options</h4>
+        <div className="grid md:grid-cols-2 gap-4 mb-4">
+          <button
+            onClick={() => setPdfGenerationMethod('direct')}
+            className={`p-4 rounded-lg border-2 text-left transition-all ${
+              pdfGenerationMethod === 'direct' 
+                ? 'border-purple-600 bg-purple-100' 
+                : 'border-gray-200 hover:border-purple-300 bg-white'
+            }`}
+          >
+            <h5 className="font-semibold text-purple-900 mb-2">✨ Direct PDF Generation (Recommended)</h5>
+            <p className="text-sm text-purple-700">
+              Perfect formatting, no layout issues, searchable text, proper page breaks, consistent margins.
+              Best for Modern template.
+            </p>
+          </button>
+          <button
+            onClick={() => setPdfGenerationMethod('html')}
+            className={`p-4 rounded-lg border-2 text-left transition-all ${
+              pdfGenerationMethod === 'html' 
+                ? 'border-purple-600 bg-purple-100' 
+                : 'border-gray-200 hover:border-purple-300 bg-white'
+            }`}
+          >
+            <h5 className="font-semibold text-purple-900 mb-2">🎨 HTML-to-PDF Generation</h5>
+            <p className="text-sm text-purple-700">
+              Preserves complex styling and visual effects. Better for Creative, Classic, and other visual templates.
+            </p>
+          </button>
+        </div>
+      </div>
+
       {/* Template Selection */}
       <div className="bg-white p-6 rounded-lg border-2 border-gray-200">
         <div className="flex items-center space-x-2 mb-4">
@@ -278,9 +316,15 @@ const ResumePreview = ({
               key={key}
               onClick={() => {
                 setSelectedTemplate(key);
+                // Auto-select best PDF method for template
+                if (key === 'modern') {
+                  setPdfGenerationMethod('direct');
+                } else {
+                  setPdfGenerationMethod('html');
+                }
                 toast({
                   title: "Template Changed",
-                  description: `Switched to ${template.name} template - PDF will capture this design perfectly`
+                  description: `Switched to ${template.name} template with optimized PDF generation`
                 });
               }}
               className={`p-4 rounded-lg border-2 text-left transition-all ${
@@ -291,6 +335,9 @@ const ResumePreview = ({
             >
               <h5 className="font-semibold text-gray-900 mb-1">{template.name}</h5>
               <p className="text-sm text-gray-600">{template.description}</p>
+              {key === 'modern' && (
+                <p className="text-xs text-purple-600 mt-1">⭐ Optimized for Direct PDF</p>
+              )}
             </button>
           ))}
         </div>
@@ -320,29 +367,35 @@ const ResumePreview = ({
 
       {/* Enhanced Features */}
       <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
-        <h4 className="font-medium text-green-900 mb-3">🎯 Professional Multi-Page PDF Generation</h4>
+        <h4 className="font-medium text-green-900 mb-3">🎯 Advanced PDF Generation Technology</h4>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <h5 className="font-medium text-green-800">Advanced HTML-to-Canvas Technology</h5>
-            <p className="text-sm text-green-700">High-resolution capture (2x scale) ensuring crisp text and perfect formatting. Automatic multi-page handling for longer resumes while maintaining professional layout standards.</p>
+            <h5 className="font-medium text-green-800">Direct PDF Rendering</h5>
+            <p className="text-sm text-green-700">
+              Native PDF text rendering with perfect formatting, searchable content, and intelligent page breaks. 
+              No image conversion means crisp text at any zoom level.
+            </p>
           </div>
           <div className="space-y-2">
-            <h5 className="font-medium text-green-800">Professional Standards</h5>
-            <p className="text-sm text-green-700">A4 format (210×297mm) with optimal margins, professional typography (Inter font family), and proper page breaks for hiring manager readability.</p>
+            <h5 className="font-medium text-green-800">HTML-to-PDF Hybrid</h5>
+            <p className="text-sm text-green-700">
+              Enhanced html2canvas approach with improved scaling, margin control, and smart content splitting 
+              for complex visual templates.
+            </p>
           </div>
         </div>
       </div>
 
       {/* Professional Tips */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="font-medium text-blue-900 mb-2">📋 Professional Resume Excellence</h4>
+        <h4 className="font-medium text-blue-900 mb-2">📋 PDF Generation Best Practices</h4>
         <ul className="text-sm text-blue-800 space-y-1">
-          <li>• Keep content concise and impactful with quantified achievements</li>
-          <li>• Use professional language and industry-relevant keywords</li>
-          <li>• Maintain consistent formatting and proper spacing throughout</li>
-          <li>• Ensure contact information is current and professional</li>
-          <li>• Multi-page resumes are acceptable for experienced professionals</li>
-          <li>• Always save and send as PDF to preserve formatting</li>
+          <li>• <strong>Direct PDF:</strong> Perfect for text-heavy resumes, guaranteed professional formatting</li>
+          <li>• <strong>HTML-to-PDF:</strong> Best for visually complex templates with custom styling</li>
+          <li>• Modern template works exceptionally well with Direct PDF generation</li>
+          <li>• All PDFs are A4 format with proper margins for printing</li>
+          <li>• Text remains searchable and selectable in Direct PDF mode</li>
+          <li>• Multi-page resumes automatically flow content intelligently</li>
         </ul>
       </div>
     </div>
