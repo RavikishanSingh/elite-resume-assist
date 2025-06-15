@@ -10,6 +10,7 @@ import { generatePDF } from "@/utils/pdfGenerator";
 import { useAuth } from '@/components/auth/AuthProvider';
 import RealLinkedInImport from '@/components/linkedin/RealLinkedInImport';
 import TemplateShowcase from '@/components/TemplateShowcase';
+import LinkedInCallbackHandler from '@/components/linkedin/LinkedInCallbackHandler';
 
 const Index = () => {
   const [showBuilder, setShowBuilder] = useState(false);
@@ -20,7 +21,8 @@ const Index = () => {
   const [userName, setUserName] = useState('');
   const [showResumes, setShowResumes] = useState(false);
   const [importedData, setImportedData] = useState<any>(null);
-  const { user, signOut, loading } = useAuth();
+  const { user, signOut, loading, session } = useAuth();
+  const [isImportingLinkedIn, setIsImportingLinkedIn] = useState(false);
 
   const handleSignIn = (email: string, password: string) => {
     // Simple mock authentication
@@ -90,6 +92,18 @@ const Index = () => {
     );
   }
 
+  if (isImportingLinkedIn) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Importing your LinkedIn profile...</p>
+          <p className="text-sm text-gray-500 mt-2">Please wait, this may take a moment.</p>
+        </div>
+      </div>
+    );
+  }
+
   if (showBuilder) {
     return <ResumeBuilder 
       onBack={() => {
@@ -139,6 +153,17 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <LinkedInCallbackHandler
+        onImportStart={() => setIsImportingLinkedIn(true)}
+        onImportSuccess={(data) => {
+          setIsImportingLinkedIn(false);
+          handleRealLinkedInImport(data);
+        }}
+        onImportError={() => {
+          setIsImportingLinkedIn(false);
+          setShowRealLinkedInImport(false);
+        }}
+      />
       {/* Header */}
       <header className="relative">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5"></div>

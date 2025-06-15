@@ -1,10 +1,10 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ExternalLink, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from '@/components/auth/AuthProvider';
 
 interface RealLinkedInImportProps {
   onImportSuccess: (data: any) => void;
@@ -15,42 +15,17 @@ const RealLinkedInImport = ({ onImportSuccess, onClose }: RealLinkedInImportProp
   const [isImporting, setIsImporting] = useState(false);
   const [accessToken, setAccessToken] = useState('');
   const { toast } = useToast();
+  const { signInWithLinkedIn } = useAuth();
 
   const handleLinkedInOAuth = async () => {
     setIsImporting(true);
-    
-    try {
-      // For real LinkedIn integration, this would redirect to LinkedIn OAuth
-      // For now, we'll simulate the process
-      const clientId = 'YOUR_LINKEDIN_CLIENT_ID'; // This should be configured in Supabase secrets
-      const redirectUri = encodeURIComponent(`${window.location.origin}/linkedin-callback`);
-      const scope = encodeURIComponent('r_liteprofile r_emailaddress r_fullprofile');
-      
-      const linkedInAuthUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&state=${Math.random().toString(36)}`;
-      
-      // Open LinkedIn auth in a popup
-      const popup = window.open(
-        linkedInAuthUrl,
-        'linkedin-auth',
-        'width=600,height=600,scrollbars=yes,resizable=yes'
-      );
+    sessionStorage.setItem('linkedin_import_pending', 'true');
+    const { error } = await signInWithLinkedIn();
 
-      // Listen for the popup to close (simplified for demo)
-      const checkClosed = setInterval(() => {
-        if (popup?.closed) {
-          clearInterval(checkClosed);
-          setIsImporting(false);
-          toast({
-            title: "Authentication Required",
-            description: "Please complete LinkedIn authentication to import your profile.",
-            variant: "default"
-          });
-        }
-      }, 1000);
-
-    } catch (error) {
-      console.error('LinkedIn OAuth error:', error);
+    if (error) {
       setIsImporting(false);
+      sessionStorage.removeItem('linkedin_import_pending');
+      console.error('LinkedIn OAuth error:', error);
       toast({
         title: "Authentication Failed",
         description: "Failed to authenticate with LinkedIn. Please try again.",
