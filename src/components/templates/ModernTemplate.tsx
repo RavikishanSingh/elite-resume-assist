@@ -26,12 +26,12 @@ const ModernTemplate = ({
     switch (sectionId) {
       case 'summary':
         return personalInfo?.summary && (
-          <section key={sectionId} className={`mb-10 ${isPDFMode ? 'px-4' : 'px-4'}`} style={{ pageBreakInside: 'avoid' }}>
+          <section key={sectionId} className="mb-8" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
             <h2 className="text-xl font-semibold text-blue-600 mb-4 flex items-center">
               <div className="w-2 h-6 bg-blue-600 mr-3"></div>
               Professional Summary
             </h2>
-            <div className={`text-gray-700 leading-relaxed pl-5 ${isPDFMode ? 'pr-4' : 'pr-4'}`}>
+            <div className="text-gray-700 leading-relaxed pl-5">
               <EditableText
                 value={personalInfo.summary}
                 onSave={(value) => onUpdate?.('personalInfo', 'summary', value)}
@@ -46,14 +46,14 @@ const ModernTemplate = ({
 
       case 'experience':
         return experience?.length > 0 && (
-          <section key={sectionId} className={`mb-10 ${isPDFMode ? 'px-4' : 'px-4'}`}>
-            <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center" style={{ pageBreakAfter: 'avoid' }}>
+          <section key={sectionId} className="mb-8" style={{ pageBreakAfter: 'auto' }}>
+            <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center" style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
               <div className="w-2 h-6 bg-blue-600 mr-3"></div>
               Professional Experience
             </h2>
-            <div className={`space-y-8 pl-5 ${isPDFMode ? 'pr-4' : 'pr-4'}`}>
+            <div className="space-y-6 pl-5">
               {experience.map((exp: any, index: number) => (
-                <div key={index} className="relative" style={{ pageBreakInside: 'avoid', orphans: 3, widows: 3 }}>
+                <div key={index} className="relative" style={{ pageBreakInside: 'avoid', breakInside: 'avoid', orphans: 3, widows: 3 }}>
                   <div className="flex justify-between items-start mb-3 flex-wrap gap-2">
                     <div className="flex-1 min-w-0">
                       <h3 className="text-lg font-semibold text-gray-900">
@@ -97,7 +97,7 @@ const ModernTemplate = ({
                       </p>
                     </div>
                   </div>
-                  <div className={`text-gray-700 leading-relaxed whitespace-pre-line text-sm ${isPDFMode ? 'pr-4' : 'pr-4'}`}>
+                  <div className="text-gray-700 leading-relaxed whitespace-pre-line text-sm">
                     <EditableText
                       value={exp.description || ''}
                       onSave={(value) => onUpdate?.('experience', 'description', value, index)}
@@ -115,12 +115,12 @@ const ModernTemplate = ({
 
       case 'skills':
         return skills?.length > 0 && (
-          <section key={sectionId} className={`mb-10 ${isPDFMode ? 'px-4' : 'px-4'}`} style={{ pageBreakInside: 'avoid' }}>
+          <section key={sectionId} className="mb-8" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
             <h2 className="text-xl font-semibold text-blue-600 mb-4 flex items-center">
               <div className="w-2 h-6 bg-blue-600 mr-3"></div>
               Core Competencies
             </h2>
-            <div className={`pl-5 ${isPDFMode ? 'pr-4' : 'pr-4'}`}>
+            <div className="pl-5">
               <div className="flex flex-wrap gap-3">
                 {skills.map((skill: string, index: number) => (
                   <span
@@ -147,14 +147,14 @@ const ModernTemplate = ({
 
       case 'projects':
         return projects?.length > 0 && (
-          <section key={sectionId} className={`mb-10 ${isPDFMode ? 'px-4' : 'px-4'}`}>
-            <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center" style={{ pageBreakAfter: 'avoid' }}>
+          <section key={sectionId} className="mb-8">
+            <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center" style={{ pageBreakAfter: 'avoid', breakAfter: 'avoid' }}>
               <div className="w-2 h-6 bg-blue-600 mr-3"></div>
               Key Projects
             </h2>
-            <div className={`space-y-6 pl-5 ${isPDFMode ? 'pr-4' : 'pr-4'}`}>
+            <div className="space-y-6 pl-5">
               {projects.map((project: any, index: number) => (
-                <div key={index} style={{ pageBreakInside: 'avoid', orphans: 2, widows: 2 }}>
+                <div key={index} style={{ pageBreakInside: 'avoid', breakInside: 'avoid', orphans: 2, widows: 2 }}>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
                     <EditableText
                       value={project.name || ''}
@@ -164,7 +164,7 @@ const ModernTemplate = ({
                       placeholder="Project Name"
                     />
                   </h3>
-                  <div className={`text-gray-700 leading-relaxed whitespace-pre-line text-sm mb-2 ${isPDFMode ? 'pr-4' : 'pr-4'}`}>
+                  <div className="text-gray-700 leading-relaxed whitespace-pre-line text-sm mb-2">
                     <EditableText
                       value={project.description || ''}
                       onSave={(value) => onUpdate?.('projects', 'description', value, index)}
@@ -187,14 +187,14 @@ const ModernTemplate = ({
 
       case 'education':
         return education?.length > 0 && (
-          <section key={sectionId} className={`mb-6 ${isPDFMode ? 'px-4' : 'px-4'}`} style={{ pageBreakInside: 'avoid' }}>
+          <section key={sectionId} className="mb-6" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
             <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center">
               <div className="w-2 h-6 bg-blue-600 mr-3"></div>
               Education
             </h2>
-            <div className={`space-y-4 pl-5 ${isPDFMode ? 'pr-4' : 'pr-4'}`}>
+            <div className="space-y-4 pl-5">
               {education.map((edu: any, index: number) => (
-                <div key={index} className="flex justify-between items-start flex-wrap gap-2" style={{ pageBreakInside: 'avoid' }}>
+                <div key={index} className="flex justify-between items-start flex-wrap gap-2" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg font-semibold text-gray-900">
                       <EditableText
@@ -242,7 +242,7 @@ const ModernTemplate = ({
 
   return (
     <div 
-      className={`w-full bg-white text-gray-800 ${isPDFMode ? 'px-8 py-8' : 'px-12 py-12'}`} 
+      className="w-full bg-white text-gray-800 px-6 py-6" 
       style={{ 
         fontFamily: 'Inter, Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
         maxWidth: '210mm',
@@ -250,10 +250,10 @@ const ModernTemplate = ({
         margin: '0 auto'
       }}
     >
-      {/* Professional Header with Fixed Padding */}
-      <header className="pb-8 mb-10" style={{ pageBreakInside: 'avoid' }}>
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-8 tracking-tight">
+      {/* Professional Header with Compact Design */}
+      <header className="pb-6 mb-8" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-6 tracking-tight">
             <EditableText
               value={personalInfo?.fullName || ''}
               onSave={(value) => onUpdate?.('personalInfo', 'fullName', value)}
@@ -263,11 +263,11 @@ const ModernTemplate = ({
             />
           </h1>
           
-          {/* Primary Contact Information - Fixed Padding */}
-          <div className={`flex flex-wrap justify-center items-center gap-8 text-base text-gray-600 mb-6 max-w-4xl mx-auto px-8`}>
+          {/* Primary Contact Information - Compact Layout */}
+          <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-600 mb-4 max-w-4xl mx-auto">
             {personalInfo?.email && (
-              <div className="flex items-center space-x-3 min-w-0 flex-shrink-0">
-                <Mail className="w-5 h-5 text-blue-600 flex-shrink-0" />
+              <div className="flex items-center space-x-2 min-w-0 flex-shrink-0">
+                <Mail className="w-4 h-4 text-blue-600 flex-shrink-0" />
                 <span className="truncate max-w-xs">
                   <EditableText
                     value={personalInfo.email}
@@ -280,8 +280,8 @@ const ModernTemplate = ({
               </div>
             )}
             {personalInfo?.phone && (
-              <div className="flex items-center space-x-3 min-w-0 flex-shrink-0">
-                <Phone className="w-5 h-5 text-blue-600 flex-shrink-0" />
+              <div className="flex items-center space-x-2 min-w-0 flex-shrink-0">
+                <Phone className="w-4 h-4 text-blue-600 flex-shrink-0" />
                 <span className="truncate max-w-xs">
                   <EditableText
                     value={personalInfo.phone}
@@ -294,8 +294,8 @@ const ModernTemplate = ({
               </div>
             )}
             {personalInfo?.location && (
-              <div className="flex items-center space-x-3 min-w-0 flex-shrink-0">
-                <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0" />
+              <div className="flex items-center space-x-2 min-w-0 flex-shrink-0">
+                <MapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
                 <span className="truncate max-w-xs">
                   <EditableText
                     value={personalInfo.location}
@@ -309,12 +309,12 @@ const ModernTemplate = ({
             )}
           </div>
           
-          {/* Secondary Contact Information - Fixed Padding */}
+          {/* Secondary Contact Information - Compact Layout */}
           {(personalInfo?.linkedIn || personalInfo?.portfolio) && (
-            <div className={`flex flex-wrap justify-center items-center gap-8 text-base text-gray-600 mb-8 max-w-4xl mx-auto px-8`}>
+            <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-600 mb-6 max-w-4xl mx-auto">
               {personalInfo?.linkedIn && (
-                <div className="flex items-center space-x-3 min-w-0 flex-shrink-0">
-                  <Linkedin className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                <div className="flex items-center space-x-2 min-w-0 flex-shrink-0">
+                  <Linkedin className="w-4 h-4 text-blue-600 flex-shrink-0" />
                   <span className="truncate max-w-xs">
                     <EditableText
                       value={personalInfo.linkedIn}
@@ -327,8 +327,8 @@ const ModernTemplate = ({
                 </div>
               )}
               {personalInfo?.portfolio && (
-                <div className="flex items-center space-x-3 min-w-0 flex-shrink-0">
-                  <Globe className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                <div className="flex items-center space-x-2 min-w-0 flex-shrink-0">
+                  <Globe className="w-4 h-4 text-blue-600 flex-shrink-0" />
                   <span className="truncate max-w-xs">
                     <EditableText
                       value={personalInfo.portfolio}
@@ -344,8 +344,8 @@ const ModernTemplate = ({
           )}
         </div>
         
-        {/* Header End Line Separator with Fixed Width */}
-        <div className="w-full h-1 bg-gradient-to-r from-blue-600 to-purple-600 mx-auto max-w-[calc(100%-2rem)]"></div>
+        {/* Header End Line Separator - Compact */}
+        <div className="w-full h-1 bg-gradient-to-r from-blue-600 to-purple-600 mx-auto"></div>
       </header>
 
       {/* Render sections in the specified order */}

@@ -34,8 +34,8 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     clonedElement.style.boxShadow = 'none';
     clonedElement.style.border = 'none';
     clonedElement.style.background = '#ffffff';
-    clonedElement.style.fontSize = '12px';
-    clonedElement.style.lineHeight = '1.5';
+    clonedElement.style.fontSize = '11pt';
+    clonedElement.style.lineHeight = '1.4';
     clonedElement.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     
     // Ensure all text is visible and not cut off
@@ -77,7 +77,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     document.body.appendChild(clonedElement);
 
     // Wait for layout to settle and fonts to load
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     console.log('Capturing resume with enhanced text rendering...');
 
@@ -89,7 +89,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
 
     // Configure html2canvas for high-quality professional capture
     const canvas = await html2canvas(clonedElement, {
-      scale: 2, // Balanced scale for quality and performance
+      scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
@@ -106,8 +106,8 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
         if (clonedDocElement) {
           // Ensure proper font loading in the cloned document
           clonedDocElement.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-          clonedDocElement.style.fontSize = '12px';
-          clonedDocElement.style.lineHeight = '1.5';
+          clonedDocElement.style.fontSize = '11pt';
+          clonedDocElement.style.lineHeight = '1.4';
           clonedDocElement.style.color = '#000000';
           
           // Ensure visibility
@@ -136,10 +136,10 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       compress: true
     });
 
-    // Professional A4 dimensions in mm with minimal margins
+    // Professional A4 dimensions in mm with balanced margins
     const pdfWidth = 210;
     const pdfHeight = 297;
-    const margin = 8; // Reasonable margin
+    const margin = 15; // Better margin for readability
     const effectiveWidth = pdfWidth - (margin * 2);
     const effectiveHeight = pdfHeight - (margin * 2);
     
@@ -151,19 +151,20 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
     console.log(`Canvas dimensions: ${canvas.width}x${canvas.height}`);
     console.log(`PDF dimensions: ${scaledWidth}x${scaledHeight}mm`);
 
-    // Calculate number of pages needed
-    const totalPages = Math.ceil(scaledHeight / effectiveHeight);
+    // Smart page break calculation based on content density
+    const pageBreakThreshold = 240; // More conservative page height for better breaks
+    const totalPages = Math.ceil(scaledHeight / pageBreakThreshold);
     console.log(`Total pages needed: ${totalPages}`);
 
-    // Add pages to PDF with proper content distribution
+    // Add pages to PDF with intelligent content distribution
     for (let page = 0; page < totalPages; page++) {
       if (page > 0) {
         pdf.addPage();
       }
 
       // Calculate the portion of canvas to include in this page
-      const startY = page * effectiveHeight;
-      const endY = Math.min((page + 1) * effectiveHeight, scaledHeight);
+      const startY = page * pageBreakThreshold;
+      const endY = Math.min((page + 1) * pageBreakThreshold, scaledHeight);
       const currentPageHeight = endY - startY;
 
       // Create a canvas for this page
@@ -195,10 +196,10 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
         // Convert to image and add to PDF with high quality
         const imgData = pageCanvas.toDataURL('image/jpeg', 0.95);
         
-        // Position on page with margins
+        // Position on page with balanced margins
         const xPosition = margin;
         const yPosition = margin;
-        const finalHeight = Math.min(currentPageHeight, effectiveHeight);
+        const finalHeight = Math.min(currentPageHeight, pageBreakThreshold);
 
         pdf.addImage(imgData, 'JPEG', xPosition, yPosition, scaledWidth, finalHeight, undefined, 'FAST');
 
