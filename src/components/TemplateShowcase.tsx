@@ -2,113 +2,77 @@
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { LayoutTemplate } from "lucide-react";
 
+import { sampleResumeData } from "@/data/sample-resume";
+import ModernTemplate from "@/components/templates/ModernTemplate";
+import ClassicTemplate from "@/components/templates/ClassicTemplate";
+import CreativeTemplate from "@/components/templates/CreativeTemplate";
+import MinimalTemplate from "@/components/templates/MinimalTemplate";
+import ExecutiveTemplate from "@/components/templates/ExecutiveTemplate";
+import TechTemplate from "@/components/templates/TechTemplate";
+
+const TemplatePreview = ({ children }: { children: React.ReactNode }) => (
+  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+    <div className="transform scale-[0.24] origin-center">
+      <div className="w-[816px] h-[1056px] bg-white shadow-md">
+        {children}
+      </div>
+    </div>
+  </div>
+);
+
 const templates = [
   {
     name: 'Modern',
     description: 'Clean and professional.',
     preview: (
-      <div className="w-full h-full bg-white p-2 space-y-2">
-        <div className="h-6 bg-slate-200 rounded-sm w-3/4"></div>
-        <div className="h-3 bg-slate-100 rounded-sm w-full"></div>
-        <div className="h-3 bg-slate-100 rounded-sm w-full"></div>
-        <div className="h-3 bg-slate-100 rounded-sm w-2/3"></div>
-        <div className="flex space-x-2 pt-2">
-          <div className="w-1/3 space-y-2">
-            <div className="h-4 bg-slate-200 rounded-sm"></div>
-            <div className="h-2 bg-slate-100 rounded-sm"></div>
-            <div className="h-2 bg-slate-100 rounded-sm"></div>
-            <div className="h-2 bg-slate-100 rounded-sm"></div>
-          </div>
-          <div className="w-2/3 space-y-2">
-            <div className="h-4 bg-slate-200 rounded-sm"></div>
-            <div className="h-2 bg-slate-100 rounded-sm"></div>
-            <div className="h-2 bg-slate-100 rounded-sm"></div>
-            <div className="h-2 bg-slate-100 rounded-sm"></div>
-            <div className="h-2 bg-slate-100 rounded-sm"></div>
-          </div>
-        </div>
-      </div>
+      <TemplatePreview>
+        <ModernTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
     ),
   },
   {
     name: 'Classic',
     description: 'A timeless, traditional format.',
     preview: (
-        <div className="w-full h-full bg-white p-2 space-y-2 border-t-4 border-slate-700">
-            <div className="text-center space-y-1">
-                <div className="h-5 bg-slate-300 rounded-sm w-1/2 mx-auto"></div>
-                <div className="h-2 bg-slate-200 rounded-sm w-3/4 mx-auto"></div>
-            </div>
-            <div className="h-0.5 bg-slate-300 w-full"></div>
-            <div className="h-3 bg-slate-200 rounded-sm w-1/4"></div>
-            <div className="h-2 bg-slate-100 rounded-sm"></div>
-            <div className="h-2 bg-slate-100 rounded-sm"></div>
-            <div className="h-3 bg-slate-200 rounded-sm w-1/4 mt-2"></div>
-            <div className="h-2 bg-slate-100 rounded-sm"></div>
-            <div className="h-2 bg-slate-100 rounded-sm"></div>
-        </div>
+      <TemplatePreview>
+        <ClassicTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
     ),
   },
   {
     name: 'Creative',
     description: 'For roles where personality shines.',
     preview: (
-        <div className="w-full h-full bg-white flex">
-            <div className="w-1/3 bg-purple-100 p-2 space-y-2">
-                <div className="h-10 w-10 bg-purple-300 rounded-full mx-auto"></div>
-                <div className="h-3 bg-purple-200 rounded-sm w-full"></div>
-                <div className="h-2 bg-purple-200 rounded-sm w-2/3"></div>
-            </div>
-            <div className="w-2/3 p-2 space-y-2">
-                <div className="h-5 bg-slate-200 rounded-sm w-3/4"></div>
-                <div className="h-3 bg-slate-100 rounded-sm w-full"></div>
-            </div>
-        </div>
+      <TemplatePreview>
+        <CreativeTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
     ),
   },
   {
     name: 'Minimal',
     description: 'Simple, clean, and elegant.',
     preview: (
-        <div className="w-full h-full bg-white p-3 space-y-3">
-            <div className="h-4 bg-slate-300 rounded-sm w-1/2"></div>
-            <div className="h-2 bg-slate-100 rounded-sm w-1/3"></div>
-            <div className="h-3 bg-slate-200 rounded-sm w-1/4 mt-4"></div>
-            <div className="h-2 bg-slate-100 rounded-sm w-full"></div>
-            <div className="h-3 bg-slate-200 rounded-sm w-1/4 mt-4"></div>
-            <div className="h-2 bg-slate-100 rounded-sm w-full"></div>
-        </div>
+      <TemplatePreview>
+        <MinimalTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
     ),
   },
   {
     name: 'Executive',
     description: 'Confident and leadership-focused.',
     preview: (
-        <div className="w-full h-full bg-white p-2 space-y-2">
-            <div className="h-8 bg-slate-700 w-full p-2">
-                <div className="h-4 bg-white rounded-sm w-1/2"></div>
-            </div>
-            <div className="h-3 bg-slate-200 rounded-sm w-1/4"></div>
-            <div className="h-2 bg-slate-100 rounded-sm"></div>
-        </div>
+      <TemplatePreview>
+        <ExecutiveTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
     ),
   },
   {
     name: 'Tech',
     description: 'Perfect for developers and engineers.',
     preview: (
-        <div className="w-full h-full bg-white flex">
-            <div className="w-1/3 bg-gray-800 p-2 space-y-2">
-                <div className="h-4 bg-gray-600 rounded-sm w-full"></div>
-                <div className="h-2 bg-gray-700 rounded-sm w-2/3"></div>
-                <div className="h-2 bg-gray-700 rounded-sm w-full mt-4"></div>
-                <div className="h-2 bg-gray-700 rounded-sm w-full"></div>
-            </div>
-            <div className="w-2/3 p-2 space-y-2">
-                <div className="h-5 bg-slate-200 rounded-sm w-3/4"></div>
-                <div className="h-3 bg-slate-100 rounded-sm w-full"></div>
-            </div>
-        </div>
+      <TemplatePreview>
+        <TechTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
     ),
   },
 ];
@@ -134,7 +98,7 @@ const TemplateShowcase = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {templates.map((template) => (
             <Card key={template.name} className="overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 group transform hover:-translate-y-2">
-              <div className="h-64 bg-gray-100 border-b border-gray-200">
+              <div className="h-64 bg-gray-200 border-b border-gray-300 overflow-hidden relative">
                 {template.preview}
               </div>
               <CardContent className="p-6 text-center">
