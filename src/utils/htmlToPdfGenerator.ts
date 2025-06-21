@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { generateDirectPDF } from './directPdfGenerator';
 
 // Helper function to wait for all images within an element to load.
@@ -17,7 +18,7 @@ const waitForImages = (element: HTMLElement): Promise<void[]> => {
 };
 
 export const generatePDFFromHTML = async (data: any, templateName: string = 'modern') => {
-  console.log('=== Professional PDF Generation Started (v2 - Enhanced) ===');
+  console.log('=== Professional PDF Generation Started (v3 - Fixed) ===');
   console.log('Template:', templateName);
 
   try {
@@ -25,20 +26,39 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       throw new Error('Please fill in at least your name before downloading');
     }
 
-    // For better results, try direct PDF generation first for compatible templates
+    // For modern template, use direct PDF generation for best results
     if (templateName === 'modern') {
       console.log('Using direct PDF generation for modern template...');
       return generateDirectPDF(data);
     }
 
-    // Fallback to the improved html2canvas-based method for other templates
+    // For other templates, use html2canvas approach
     const resumeElement = document.getElementById('resume-preview') || document.getElementById('layout-preview');
     if (!resumeElement) {
       throw new Error('Resume preview not found');
     }
 
-    console.log('Preparing resume for PDF generation via pdf.html() with smart auto-paging and robust asset loading...');
+    console.log('Using html2canvas approach for template:', templateName);
 
+    // Wait for fonts and images to load
+    await document.fonts.ready;
+    await waitForImages(resumeElement);
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Create high-quality canvas
+    const canvas = await html2canvas(resumeElement, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      width: resumeElement.scrollWidth,
+      height: resumeElement.scrollHeight,
+      windowWidth: 1200,
+      windowHeight: resumeElement.scrollHeight,
+    });
+
+    // Create PDF
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
@@ -46,53 +66,59 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       compress: true,
     });
 
-    // We operate on a clone to avoid affecting the live view and to apply print-friendly styles.
-    const clonedElement = resumeElement.cloneNode(true) as HTMLElement;
-    document.body.appendChild(clonedElement);
-
-    // Ensure clone has explicit dimensions for rendering.
-    clonedElement.style.width = '210mm';
-    clonedElement.style.height = 'auto'; // Let height be determined by content
-    clonedElement.style.position = 'absolute';
-    clonedElement.style.top = '-9999px';
-    clonedElement.style.left = '0';
-    clonedElement.style.margin = '0';
-    clonedElement.style.padding = '0'; // Padding is inside the template component
-    clonedElement.style.boxShadow = 'none';
-    clonedElement.style.border = 'none';
-    clonedElement.style.transform = 'none';
-
-    // Wait for fonts and images to load before capturing for a more reliable render.
-    console.log('Waiting for fonts and images to fully load...');
-    await document.fonts.ready;
-    await waitForImages(clonedElement);
-    // A small final delay for any rendering adjustments after assets are loaded.
-    await new Promise(resolve => setTimeout(resolve, 200));
-    console.log('Assets loaded, proceeding with PDF capture.');
-
-    await pdf.html(clonedElement, {
-      margin: 0,
-      autoPaging: 'text', // Key for smart page breaks. It respects `page-break-inside: avoid`.
-      html2canvas: {
-        scale: 2.5, // Increased scale for even crisper text and images
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        // Ensure it renders the full content, not just the visible part
-        windowWidth: clonedElement.scrollWidth,
-        windowHeight: clonedElement.scrollHeight,
-      },
-      width: 210, // A4 width in mm
-      windowWidth: 800, // A reasonable CSS pixel width for rendering (A4 at 96dpi is ~794px)
-    });
-
-    // Clean up the cloned element from the DOM
-    if (document.body.contains(clonedElement)) {
-      document.body.removeChild(clonedElement);
-    }
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
     
-    // The pdf object is mutated by pdf.html() and is now complete.
+    // Calculate dimensions to fit A4
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+    const ratio = Math.min(pageWidth / (canvasWidth * 0.264583), pageHeight / (canvasHeight * 0.264583));
+    
+    const imgWidth = canvasWidth * 0.264583 * ratio;
+    const imgHeight = canvasHeight * 0.264583 * ratio;
+    
+    // Center the image on the page
+    const x = (pageWidth - imgWidth) / 2;
+    const y = 0;
+
+    // Convert canvas to image and add to PDF
+    const imgData = canvas.toDataURL('image/png', 1.0);
+    
+    // Handle multi-page content
+    let remainingHeight = imgHeight;
+    let currentY = y;
+    let pageCount = 0;
+
+    while (remainingHeight > 0) {
+      if (pageCount > 0) {
+        pdf.addPage();
+      }
+
+      const currentPageHeight = Math.min(remainingHeight, pageHeight);
+      const sourceY = pageCount * pageHeight / ratio / 0.264583;
+      const sourceHeight = currentPageHeight / ratio / 0.264583;
+
+      // Create a temporary canvas for this page
+      const pageCanvas = document.createElement('canvas');
+      const pageCtx = pageCanvas.getContext('2d');
+      pageCanvas.width = canvasWidth;
+      pageCanvas.height = sourceHeight;
+
+      if (pageCtx) {
+        pageCtx.drawImage(canvas, 0, sourceY, canvasWidth, sourceHeight, 0, 0, canvasWidth, sourceHeight);
+        const pageImgData = pageCanvas.toDataURL('image/png', 1.0);
+        pdf.addImage(pageImgData, 'PNG', x, 0, imgWidth, currentPageHeight);
+      }
+
+      remainingHeight -= currentPageHeight;
+      pageCount++;
+
+      // Safety check to prevent infinite loop
+      if (pageCount > 10) {
+        console.warn('PDF generation stopped at 10 pages to prevent infinite loop');
+        break;
+      }
+    }
 
     // Set PDF metadata
     pdf.setProperties({
@@ -103,7 +129,7 @@ export const generatePDFFromHTML = async (data: any, templateName: string = 'mod
       keywords: 'resume, professional, career',
     });
 
-    console.log('=== PDF generation completed successfully (v2) ===');
+    console.log('=== PDF generation completed successfully (v3) ===');
     return pdf;
 
   } catch (error) {

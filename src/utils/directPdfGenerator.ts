@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 
 interface ResumeData {
@@ -31,11 +30,6 @@ interface ResumeData {
     description: string;
     technologies?: string;
   }>;
-}
-
-interface PDFPosition {
-  x: number;
-  y: number;
 }
 
 export class DirectPDFGenerator {
