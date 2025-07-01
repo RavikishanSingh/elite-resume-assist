@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -84,7 +83,7 @@ const ResumePreview = ({
       // Wait for UI to settle
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Generate PDF using direct method
+      // Generate PDF using direct method only
       const pdf = generateDirectPDF(data, sectionOrder);
       if (!pdf) {
         throw new Error('PDF generation failed');
@@ -93,9 +92,8 @@ const ResumePreview = ({
       // Generate professional filename
       const name = data.personalInfo?.fullName || 'Resume';
       const sanitizedName = name.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
-      const templateSuffix = selectedTemplate.charAt(0).toUpperCase() + selectedTemplate.slice(1);
       const date = new Date().toISOString().split('T')[0];
-      const filename = `${sanitizedName}_Resume_${templateSuffix}_${date}.pdf`;
+      const filename = `${sanitizedName}_Professional_Resume_${date}.pdf`;
 
       // Download the PDF
       pdf.save(filename);
@@ -119,7 +117,6 @@ const ResumePreview = ({
       });
     } finally {
       setIsGeneratingPDF(false);
-      console.log('=== Professional PDF Download Complete ===');
     }
   };
 
@@ -306,7 +303,7 @@ const ResumePreview = ({
               <div className="mt-8 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
                 <h5 className="font-medium text-green-900 mb-2">✨ Perfect PDF Generation</h5>
                 <p className="text-sm text-green-700">
-                  Direct PDF rendering with perfect formatting, searchable text, proper page breaks, and consistent margins.
+                  Direct PDF rendering ensures your resume looks exactly the same as the preview with perfect formatting and proper page breaks.
                 </p>
               </div>
             </div>
@@ -315,29 +312,33 @@ const ResumePreview = ({
           {/* Main Content - Resume Preview */}
           <div className="lg:col-span-3">
             <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-              {/* Resume Preview Container */}
-              <div 
-                id="resume-preview" 
-                className="w-full bg-white mx-auto overflow-hidden"
-                style={{
-                  width: '210mm',
-                  minHeight: '297mm',
-                  fontFamily: 'Inter, Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
-                  fontSize: '11pt',
-                  lineHeight: '1.4',
-                  color: '#2d3748',
-                  transform: 'scale(0.8)',
-                  transformOrigin: 'top left',
-                  margin: '0 auto'
-                }}
-              >
-                <SelectedTemplate 
-                  data={data} 
-                  onUpdate={handleUpdateData} 
-                  isEditing={isEditMode}
-                  isPDFMode={false}
-                  sectionOrder={sectionOrder}
-                />
+              {/* Page Format Container - Matches A4 dimensions */}
+              <div className="flex justify-center bg-gray-100 p-8">
+                <div 
+                  id="resume-preview" 
+                  className="bg-white shadow-xl border border-gray-300 mx-auto overflow-hidden"
+                  style={{
+                    width: '210mm',
+                    minHeight: '297mm',
+                    padding: '20mm',
+                    paddingBottom: '25mm', // Extra bottom margin
+                    fontFamily: 'Inter, Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+                    fontSize: '11pt',
+                    lineHeight: '1.4',
+                    color: '#2d3748',
+                    transform: 'scale(0.75)',
+                    transformOrigin: 'top center',
+                    marginBottom: '-25%'
+                  }}
+                >
+                  <SelectedTemplate 
+                    data={data} 
+                    onUpdate={handleUpdateData} 
+                    isEditing={isEditMode}
+                    isPDFMode={true}
+                    sectionOrder={sectionOrder}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -345,24 +346,24 @@ const ResumePreview = ({
 
         {/* Professional Tips */}
         <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h4 className="font-medium text-blue-900 mb-3">📋 Professional PDF Generation</h4>
+          <h4 className="font-medium text-blue-900 mb-3">📋 Perfect PDF Generation</h4>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h5 className="font-medium text-blue-800 mb-2">✨ Advanced Features</h5>
+              <h5 className="font-medium text-blue-800 mb-2">✨ What You See Is What You Get</h5>
               <ul className="text-sm text-blue-700 space-y-1">
-                <li>• Perfect formatting with consistent margins</li>
-                <li>• Searchable and selectable text</li>
-                <li>• Professional A4 format for printing</li>
-                <li>• Intelligent page breaks</li>
+                <li>• Preview matches PDF exactly</li>
+                <li>• Proper A4 page format with margins</li>
+                <li>• No content cutting between pages</li>
+                <li>• Consistent formatting throughout</li>
               </ul>
             </div>
             <div>
-              <h5 className="font-medium text-blue-800 mb-2">🎯 Best Practices</h5>
+              <h5 className="font-medium text-blue-800 mb-2">🎯 Professional Quality</h5>
               <ul className="text-sm text-blue-700 space-y-1">
-                <li>• All templates optimized for PDF generation</li>
-                <li>• Multi-page resumes handled automatically</li>
-                <li>• Consistent typography and spacing</li>
-                <li>• Professional appearance guaranteed</li>
+                <li>• Searchable and selectable text</li>
+                <li>• Perfect for printing and digital sharing</li>
+                <li>• Industry-standard formatting</li>
+                <li>• All templates optimized for PDF</li>
               </ul>
             </div>
           </div>
