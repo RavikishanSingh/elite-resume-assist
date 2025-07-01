@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,7 +11,7 @@ import ExecutiveTemplate from "./templates/ExecutiveTemplate";
 import TechTemplate from "./templates/TechTemplate";
 import AIAnalysis from "./AIAnalysis";
 import PageLayoutView from "./layout/PageLayoutView";
-import { generatePDFFromHTML } from "../utils/htmlToPdfGenerator";
+import { generateDirectPDF } from "../utils/directPdfGenerator";
 import { useToast } from "@/hooks/use-toast";
 
 interface ResumePreviewProps {
@@ -31,7 +32,6 @@ const ResumePreview = ({
   const [showPageLayout, setShowPageLayout] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [pdfGenerationMethod, setPdfGenerationMethod] = useState<'direct' | 'html'>('direct');
   const [sectionOrder, setSectionOrder] = useState(['summary', 'experience', 'skills', 'projects', 'education']);
   const { toast } = useToast();
 
@@ -67,7 +67,6 @@ const ResumePreview = ({
     setIsGeneratingPDF(true);
     console.log('=== Starting Professional PDF Download ===');
     console.log('Selected template:', selectedTemplate);
-    console.log('Generation method:', pdfGenerationMethod);
     
     try {
       // Validate data
@@ -77,29 +76,26 @@ const ResumePreview = ({
 
       // Show progress to user
       toast({
-        title: "Preparing PDF...",
-        description: pdfGenerationMethod === 'direct' 
-          ? "Using direct PDF generation for perfect formatting" 
-          : "Converting HTML template to PDF",
+        title: "Generating PDF...",
+        description: "Creating your professional resume with perfect formatting",
         duration: 2000
       });
 
       // Wait for UI to settle
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Generate PDF using selected method
-      const pdf = await generatePDFFromHTML(data, selectedTemplate);
+      // Generate PDF using direct method
+      const pdf = generateDirectPDF(data, sectionOrder);
       if (!pdf) {
-        throw new Error('PDF generation returned null');
+        throw new Error('PDF generation failed');
       }
 
       // Generate professional filename
       const name = data.personalInfo?.fullName || 'Resume';
       const sanitizedName = name.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
       const templateSuffix = selectedTemplate.charAt(0).toUpperCase() + selectedTemplate.slice(1);
-      const methodSuffix = pdfGenerationMethod === 'direct' ? 'Direct' : 'HTML';
       const date = new Date().toISOString().split('T')[0];
-      const filename = `${sanitizedName}_Resume_${templateSuffix}_${methodSuffix}_${date}.pdf`;
+      const filename = `${sanitizedName}_Resume_${templateSuffix}_${date}.pdf`;
 
       // Download the PDF
       pdf.save(filename);
@@ -209,194 +205,168 @@ const ResumePreview = ({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-2xl font-bold text-gray-900">Professional Resume Preview</h3>
-        <div className="flex space-x-3">
-          <Button
-            variant="outline"
-            onClick={() => setShowAnalysis(true)}
-            className="flex items-center space-x-2"
-          >
-            <Brain className="w-4 h-4" />
-            <span>AI Analysis</span>
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setShowPageLayout(true)}
-            className="flex items-center space-x-2"
-          >
-            <Layout className="w-4 h-4" />
-            <span>Page Layout</span>
-          </Button>
-          <Button
-            variant="outline"
-            onClick={handleRefreshPreview}
-            className="flex items-center space-x-2"
-          >
-            <RefreshCw className="w-4 h-4" />
-            <span>Refresh</span>
-          </Button>
-          <Button
-            variant={isEditMode ? "default" : "outline"}
-            onClick={() => {
-              setIsEditMode(!isEditMode);
-              console.log('Edit mode toggled:', !isEditMode);
-            }}
-            className="flex items-center space-x-2"
-          >
-            {isEditMode ? <Save className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
-            <span>{isEditMode ? 'Save & Exit' : 'Edit Resume'}</span>
-          </Button>
-          <Button
-            onClick={handleDownload}
-            disabled={isGeneratingPDF}
-            className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50"
-          >
-            <Download className="w-4 h-4" />
-            <span>{isGeneratingPDF ? 'Creating Professional PDF...' : 'Download Professional PDF'}</span>
-          </Button>
-        </div>
-      </div>
-
-      {isEditMode && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="font-medium text-blue-900 mb-2">✏️ Edit Mode Active</h4>
-          <p className="text-sm text-blue-800">
-            Click on any text in the resume to edit it. Press Enter to save, or Escape to cancel. 
-            For multi-line text, use Ctrl+Enter to save.
-          </p>
-        </div>
-      )}
-
-      {/* PDF Generation Method Selection */}
-      <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4">
-        <h4 className="font-medium text-purple-900 mb-3">🔧 PDF Generation Options</h4>
-        <div className="grid md:grid-cols-2 gap-4 mb-4">
-          <button
-            onClick={() => setPdfGenerationMethod('direct')}
-            className={`p-4 rounded-lg border-2 text-left transition-all ${
-              pdfGenerationMethod === 'direct' 
-                ? 'border-purple-600 bg-purple-100' 
-                : 'border-gray-200 hover:border-purple-300 bg-white'
-            }`}
-          >
-            <h5 className="font-semibold text-purple-900 mb-2">✨ Direct PDF Generation (Recommended)</h5>
-            <p className="text-sm text-purple-700">
-              Perfect formatting, no layout issues, searchable text, proper page breaks, consistent margins.
-              Best for Modern template.
-            </p>
-          </button>
-          <button
-            onClick={() => setPdfGenerationMethod('html')}
-            className={`p-4 rounded-lg border-2 text-left transition-all ${
-              pdfGenerationMethod === 'html' 
-                ? 'border-purple-600 bg-purple-100' 
-                : 'border-gray-200 hover:border-purple-300 bg-white'
-            }`}
-          >
-            <h5 className="font-semibold text-purple-900 mb-2">🎨 HTML-to-PDF Generation</h5>
-            <p className="text-sm text-purple-700">
-              Preserves complex styling and visual effects. Better for Creative, Classic, and other visual templates.
-            </p>
-          </button>
-        </div>
-      </div>
-
-      {/* Template Selection */}
-      <div className="bg-white p-6 rounded-lg border-2 border-gray-200">
-        <div className="flex items-center space-x-2 mb-4">
-          <Palette className="w-5 h-5 text-purple-600" />
-          <h4 className="text-lg font-semibold text-gray-900">Choose Your Professional Template</h4>
-        </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-          {Object.entries(templates).map(([key, template]) => (
-            <button
-              key={key}
-              onClick={() => {
-                setSelectedTemplate(key);
-                // Auto-select best PDF method for template
-                if (key === 'modern') {
-                  setPdfGenerationMethod('direct');
-                } else {
-                  setPdfGenerationMethod('html');
-                }
-                toast({
-                  title: "Template Changed",
-                  description: `Switched to ${template.name} template with optimized PDF generation`
-                });
-              }}
-              className={`p-4 rounded-lg border-2 text-left transition-all ${
-                selectedTemplate === key 
-                  ? 'border-purple-600 bg-purple-50' 
-                  : 'border-gray-200 hover:border-purple-300'
-              }`}
-            >
-              <h5 className="font-semibold text-gray-900 mb-1">{template.name}</h5>
-              <p className="text-sm text-gray-600">{template.description}</p>
-              {key === 'modern' && (
-                <p className="text-xs text-purple-600 mt-1">⭐ Optimized for Direct PDF</p>
-              )}
-            </button>
-          ))}
-        </div>
-
-        {/* Direct Resume Display with Preview Margins */}
-        <div 
-          id="resume-preview" 
-          className="w-full bg-white shadow-lg border border-gray-200 mx-auto"
-          style={{
-            width: '210mm',
-            minHeight: '297mm',
-            fontFamily: 'Inter, Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
-            fontSize: '11pt',
-            lineHeight: '1.4',
-            color: '#2d3748'
-          }}
-        >
-          <SelectedTemplate 
-            data={data} 
-            onUpdate={handleUpdateData} 
-            isEditing={isEditMode}
-            isPDFMode={false}
-            sectionOrder={sectionOrder}
-          />
-        </div>
-      </div>
-
-      {/* Enhanced Features */}
-      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
-        <h4 className="font-medium text-green-900 mb-3">🎯 Advanced PDF Generation Technology</h4>
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <h5 className="font-medium text-green-800">Direct PDF Rendering</h5>
-            <p className="text-sm text-green-700">
-              Native PDF text rendering with perfect formatting, searchable content, and intelligent page breaks. 
-              No image conversion means crisp text at any zoom level.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <h5 className="font-medium text-green-800">HTML-to-PDF Hybrid</h5>
-            <p className="text-sm text-green-700">
-              Enhanced html2canvas approach with improved scaling, margin control, and smart content splitting 
-              for complex visual templates.
-            </p>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <h3 className="text-3xl font-bold text-gray-900">Professional Resume Preview</h3>
+            <div className="flex flex-wrap gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowAnalysis(true)}
+                className="flex items-center space-x-2"
+              >
+                <Brain className="w-4 h-4" />
+                <span>AI Analysis</span>
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowPageLayout(true)}
+                className="flex items-center space-x-2"
+              >
+                <Layout className="w-4 h-4" />
+                <span>Page Layout</span>
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleRefreshPreview}
+                className="flex items-center space-x-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Refresh</span>
+              </Button>
+              <Button
+                variant={isEditMode ? "default" : "outline"}
+                onClick={() => {
+                  setIsEditMode(!isEditMode);
+                  console.log('Edit mode toggled:', !isEditMode);
+                }}
+                className="flex items-center space-x-2"
+              >
+                {isEditMode ? <Save className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
+                <span>{isEditMode ? 'Save & Exit' : 'Edit Resume'}</span>
+              </Button>
+              <Button
+                onClick={handleDownload}
+                disabled={isGeneratingPDF}
+                className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50"
+              >
+                <Download className="w-4 h-4" />
+                <span>{isGeneratingPDF ? 'Generating PDF...' : 'Download PDF'}</span>
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Professional Tips */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="font-medium text-blue-900 mb-2">📋 PDF Generation Best Practices</h4>
-        <ul className="text-sm text-blue-800 space-y-1">
-          <li>• <strong>Direct PDF:</strong> Perfect for text-heavy resumes, guaranteed professional formatting</li>
-          <li>• <strong>HTML-to-PDF:</strong> Best for visually complex templates with custom styling</li>
-          <li>• Modern template works exceptionally well with Direct PDF generation</li>
-          <li>• All PDFs are A4 format with proper margins for printing</li>
-          <li>• Text remains searchable and selectable in Direct PDF mode</li>
-          <li>• Multi-page resumes automatically flow content intelligently</li>
-        </ul>
+        {/* Edit Mode Notice */}
+        {isEditMode && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <h4 className="font-medium text-blue-900 mb-2">✏️ Edit Mode Active</h4>
+            <p className="text-sm text-blue-800">
+              Click on any text in the resume to edit it. Press Enter to save, or Escape to cancel. 
+              For multi-line text, use Ctrl+Enter to save.
+            </p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Left Sidebar - Template Selection */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-8">
+              <div className="flex items-center space-x-2 mb-6">
+                <Palette className="w-5 h-5 text-purple-600" />
+                <h4 className="text-lg font-semibold text-gray-900">Templates</h4>
+              </div>
+              
+              <div className="space-y-3">
+                {Object.entries(templates).map(([key, template]) => (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      setSelectedTemplate(key);
+                      toast({
+                        title: "Template Changed",
+                        description: `Switched to ${template.name} template`
+                      });
+                    }}
+                    className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
+                      selectedTemplate === key 
+                        ? 'border-purple-600 bg-purple-50' 
+                        : 'border-gray-200 hover:border-purple-300'
+                    }`}
+                  >
+                    <h5 className="font-semibold text-gray-900 mb-1">{template.name}</h5>
+                    <p className="text-sm text-gray-600">{template.description}</p>
+                  </button>
+                ))}
+              </div>
+
+              {/* PDF Generation Info */}
+              <div className="mt-8 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+                <h5 className="font-medium text-green-900 mb-2">✨ Perfect PDF Generation</h5>
+                <p className="text-sm text-green-700">
+                  Direct PDF rendering with perfect formatting, searchable text, proper page breaks, and consistent margins.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Content - Resume Preview */}
+          <div className="lg:col-span-3">
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              {/* Resume Preview Container */}
+              <div 
+                id="resume-preview" 
+                className="w-full bg-white mx-auto overflow-hidden"
+                style={{
+                  width: '210mm',
+                  minHeight: '297mm',
+                  fontFamily: 'Inter, Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+                  fontSize: '11pt',
+                  lineHeight: '1.4',
+                  color: '#2d3748',
+                  transform: 'scale(0.8)',
+                  transformOrigin: 'top left',
+                  margin: '0 auto'
+                }}
+              >
+                <SelectedTemplate 
+                  data={data} 
+                  onUpdate={handleUpdateData} 
+                  isEditing={isEditMode}
+                  isPDFMode={false}
+                  sectionOrder={sectionOrder}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Professional Tips */}
+        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <h4 className="font-medium text-blue-900 mb-3">📋 Professional PDF Generation</h4>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h5 className="font-medium text-blue-800 mb-2">✨ Advanced Features</h5>
+              <ul className="text-sm text-blue-700 space-y-1">
+                <li>• Perfect formatting with consistent margins</li>
+                <li>• Searchable and selectable text</li>
+                <li>• Professional A4 format for printing</li>
+                <li>• Intelligent page breaks</li>
+              </ul>
+            </div>
+            <div>
+              <h5 className="font-medium text-blue-800 mb-2">🎯 Best Practices</h5>
+              <ul className="text-sm text-blue-700 space-y-1">
+                <li>• All templates optimized for PDF generation</li>
+                <li>• Multi-page resumes handled automatically</li>
+                <li>• Consistent typography and spacing</li>
+                <li>• Professional appearance guaranteed</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

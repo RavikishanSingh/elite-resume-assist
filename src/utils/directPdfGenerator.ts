@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 
 interface ResumeData {
@@ -39,6 +40,7 @@ export class DirectPDFGenerator {
   private margin: number = 20;
   private lineHeight: number = 6;
   private sectionSpacing: number = 12;
+  private pageWidth: number = 210; // A4 width in mm
 
   constructor() {
     this.pdf = new jsPDF({
@@ -63,11 +65,21 @@ export class DirectPDFGenerator {
     fontStyle?: 'normal' | 'bold';
     maxWidth?: number;
     align?: 'left' | 'center' | 'right';
+    color?: string;
   } = {}): number {
-    const { fontSize = 10, fontStyle = 'normal', maxWidth = 170, align = 'left' } = options;
+    const { fontSize = 10, fontStyle = 'normal', maxWidth = 170, align = 'left', color = '#2d3748' } = options;
     
     this.pdf.setFontSize(fontSize);
     this.pdf.setFont('helvetica', fontStyle);
+    
+    // Set text color
+    if (color) {
+      const hex = color.replace('#', '');
+      const r = parseInt(hex.substr(0, 2), 16);
+      const g = parseInt(hex.substr(2, 2), 16);
+      const b = parseInt(hex.substr(4, 2), 16);
+      this.pdf.setTextColor(r, g, b);
+    }
     
     if (text.length === 0) return y;
     
@@ -83,7 +95,7 @@ export class DirectPDFGenerator {
       const lineY = actualY + (index * fontSize * 0.35);
       
       if (align === 'center') {
-        this.pdf.text(line, this.pdf.internal.pageSize.getWidth() / 2, lineY, { align: 'center' });
+        this.pdf.text(line, this.pageWidth / 2, lineY, { align: 'center' });
       } else if (align === 'right') {
         this.pdf.text(line, x + maxWidth, lineY, { align: 'right' });
       } else {
@@ -94,19 +106,25 @@ export class DirectPDFGenerator {
     return actualY + textHeight;
   }
 
-  private addSection(title: string): void {
+  private addSection(title: string, color: string = '#2563eb'): void {
     this.checkPageBreak(15);
     
     // Add some space before section
     this.currentY += this.sectionSpacing;
     
-    // Section header with blue accent
-    this.pdf.setFillColor(37, 99, 235); // Blue color
+    // Section header with colored accent
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    this.pdf.setFillColor(r, g, b);
     this.pdf.rect(this.margin, this.currentY - 2, 3, 8, 'F');
     
     this.currentY = this.addText(title, this.margin + 8, this.currentY + 4, {
       fontSize: 14,
-      fontStyle: 'bold'
+      fontStyle: 'bold',
+      color: color
     });
     
     this.currentY += 8;
@@ -118,7 +136,8 @@ export class DirectPDFGenerator {
       fontSize: 24,
       fontStyle: 'bold',
       align: 'center',
-      maxWidth: 170
+      maxWidth: 170,
+      color: '#1f2937'
     });
     
     this.currentY += 8;
@@ -135,14 +154,15 @@ export class DirectPDFGenerator {
       this.currentY = this.addText(contactInfo.join(' • '), 0, this.currentY, {
         fontSize: 10,
         align: 'center',
-        maxWidth: 170
+        maxWidth: 170,
+        color: '#6b7280'
       });
     }
     
     // Add line under header
     this.currentY += 5;
     this.pdf.setDrawColor(200, 200, 200);
-    this.pdf.line(this.margin, this.currentY, 190, this.currentY);
+    this.pdf.line(this.margin, this.currentY, this.pageWidth - this.margin, this.currentY);
     this.currentY += 5;
   }
 
@@ -152,7 +172,8 @@ export class DirectPDFGenerator {
     this.addSection('Professional Summary');
     this.currentY = this.addText(data.personalInfo.summary, this.margin + 5, this.currentY, {
       fontSize: 10,
-      maxWidth: 165
+      maxWidth: 165,
+      color: '#374151'
     });
   }
 
@@ -168,7 +189,8 @@ export class DirectPDFGenerator {
       this.currentY = this.addText(exp.jobTitle, this.margin + 5, this.currentY, {
         fontSize: 12,
         fontStyle: 'bold',
-        maxWidth: 120
+        maxWidth: 120,
+        color: '#1f2937'
       });
       
       // Date range (right aligned)
@@ -176,12 +198,14 @@ export class DirectPDFGenerator {
       this.addText(dateRange, 0, this.currentY - 4, {
         fontSize: 10,
         align: 'right',
-        maxWidth: 165
+        maxWidth: 165,
+        color: '#6b7280'
       });
       
       this.currentY = this.addText(exp.company, this.margin + 5, this.currentY + 2, {
         fontSize: 11,
-        maxWidth: 165
+        maxWidth: 165,
+        color: '#2563eb'
       });
       
       this.currentY += 3;
@@ -190,7 +214,8 @@ export class DirectPDFGenerator {
       if (exp.description) {
         this.currentY = this.addText(exp.description, this.margin + 5, this.currentY, {
           fontSize: 10,
-          maxWidth: 165
+          maxWidth: 165,
+          color: '#374151'
         });
       }
       
@@ -208,7 +233,8 @@ export class DirectPDFGenerator {
     const skillsText = data.skills.join(' • ');
     this.currentY = this.addText(skillsText, this.margin + 5, this.currentY, {
       fontSize: 10,
-      maxWidth: 165
+      maxWidth: 165,
+      color: '#374151'
     });
   }
 
@@ -224,7 +250,8 @@ export class DirectPDFGenerator {
       this.currentY = this.addText(project.name, this.margin + 5, this.currentY, {
         fontSize: 12,
         fontStyle: 'bold',
-        maxWidth: 165
+        maxWidth: 165,
+        color: '#1f2937'
       });
       
       this.currentY += 2;
@@ -233,7 +260,8 @@ export class DirectPDFGenerator {
       if (project.description) {
         this.currentY = this.addText(project.description, this.margin + 5, this.currentY, {
           fontSize: 10,
-          maxWidth: 165
+          maxWidth: 165,
+          color: '#374151'
         });
       }
       
@@ -242,7 +270,8 @@ export class DirectPDFGenerator {
         this.currentY += 2;
         this.currentY = this.addText(`Technologies: ${project.technologies}`, this.margin + 5, this.currentY, {
           fontSize: 9,
-          maxWidth: 165
+          maxWidth: 165,
+          color: '#6b7280'
         });
       }
       
@@ -264,20 +293,23 @@ export class DirectPDFGenerator {
       this.currentY = this.addText(edu.degree, this.margin + 5, this.currentY, {
         fontSize: 12,
         fontStyle: 'bold',
-        maxWidth: 120
+        maxWidth: 120,
+        color: '#1f2937'
       });
       
       // Graduation date (right aligned)
       this.addText(edu.graduationDate, 0, this.currentY - 4, {
         fontSize: 10,
         align: 'right',
-        maxWidth: 165
+        maxWidth: 165,
+        color: '#6b7280'
       });
       
       // School
       this.currentY = this.addText(edu.school, this.margin + 5, this.currentY + 2, {
         fontSize: 11,
-        maxWidth: 165
+        maxWidth: 165,
+        color: '#2563eb'
       });
       
       // GPA if available
@@ -285,7 +317,8 @@ export class DirectPDFGenerator {
         this.currentY += 2;
         this.currentY = this.addText(`GPA: ${edu.gpa}`, this.margin + 5, this.currentY, {
           fontSize: 10,
-          maxWidth: 165
+          maxWidth: 165,
+          color: '#6b7280'
         });
       }
       
@@ -296,7 +329,7 @@ export class DirectPDFGenerator {
   }
 
   public generatePDF(data: ResumeData, sectionOrder: string[] = ['summary', 'experience', 'skills', 'projects', 'education']): jsPDF {
-    console.log('=== Starting Direct PDF Generation ===');
+    console.log('=== Starting Enhanced Direct PDF Generation ===');
     
     // Render header
     this.renderHeader(data);
@@ -327,10 +360,11 @@ export class DirectPDFGenerator {
       title: `${data.personalInfo.fullName} - Professional Resume`,
       subject: 'Professional Resume',
       author: data.personalInfo.fullName,
-      creator: 'Professional Resume Builder'
+      creator: 'Elite Resume Builder',
+      keywords: 'resume, professional, career'
     });
     
-    console.log('=== Direct PDF Generation Complete ===');
+    console.log('=== Enhanced Direct PDF Generation Complete ===');
     return this.pdf;
   }
 }
