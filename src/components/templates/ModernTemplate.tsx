@@ -32,7 +32,7 @@ const ModernTemplate = ({
     switch (sectionId) {
       case 'summary':
         return personalInfo?.summary && (
-          <section key={sectionId} style={sectionStyle}>
+          <section key={sectionId} style={sectionStyle} className="no-break">
             <h2 className="text-xl font-semibold text-blue-600 mb-4 flex items-center">
               <div className="w-2 h-6 bg-blue-600 mr-3"></div>
               Professional Summary
@@ -52,14 +52,14 @@ const ModernTemplate = ({
 
       case 'experience':
         return experience?.length > 0 && (
-          <section key={sectionId} style={sectionStyle}>
+          <section key={sectionId} style={sectionStyle} className="no-break">
             <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center">
               <div className="w-2 h-6 bg-blue-600 mr-3"></div>
               Professional Experience
             </h2>
             <div className="space-y-6 pl-5">
               {experience.map((exp: any, expIndex: number) => (
-                <div key={expIndex} className="relative" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                <div key={expIndex} className="relative experience-item no-break" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                   <div className="flex justify-between items-start mb-3 flex-wrap gap-2">
                     <div className="flex-1 min-w-0">
                       <h3 className="text-lg font-semibold text-gray-900">
@@ -121,7 +121,7 @@ const ModernTemplate = ({
 
       case 'skills':
         return skills?.length > 0 && (
-          <section key={sectionId} style={sectionStyle}>
+          <section key={sectionId} style={sectionStyle} className="no-break">
             <h2 className="text-xl font-semibold text-blue-600 mb-4 flex items-center">
               <div className="w-2 h-6 bg-blue-600 mr-3"></div>
               Core Competencies
@@ -153,14 +153,14 @@ const ModernTemplate = ({
 
       case 'projects':
         return projects?.length > 0 && (
-          <section key={sectionId} style={sectionStyle}>
+          <section key={sectionId} style={sectionStyle} className="no-break">
             <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center">
               <div className="w-2 h-6 bg-blue-600 mr-3"></div>
               Key Projects
             </h2>
             <div className="space-y-6 pl-5">
               {projects.map((project: any, projIndex: number) => (
-                <div key={projIndex} style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                <div key={projIndex} className="project-item no-break" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
                     <EditableText
                       value={project.name || ''}
@@ -193,14 +193,14 @@ const ModernTemplate = ({
 
       case 'education':
         return education?.length > 0 && (
-          <section key={sectionId} style={sectionStyle}>
+          <section key={sectionId} style={sectionStyle} className="no-break">
             <h2 className="text-xl font-semibold text-blue-600 mb-6 flex items-center">
               <div className="w-2 h-6 bg-blue-600 mr-3"></div>
               Education
             </h2>
             <div className="space-y-4 pl-5">
               {education.map((edu: any, eduIndex: number) => (
-                <div key={eduIndex} className="flex justify-between items-start flex-wrap gap-2" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                <div key={eduIndex} className="flex justify-between items-start flex-wrap gap-2 education-item no-break" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg font-semibold text-gray-900">
                       <EditableText

@@ -10,7 +10,7 @@ import ExecutiveTemplate from "./templates/ExecutiveTemplate";
 import TechTemplate from "./templates/TechTemplate";
 import AIAnalysis from "./AIAnalysis";
 import PageLayoutView from "./layout/PageLayoutView";
-import { generateDirectPDF } from "../utils/directPdfGenerator";
+import { generatePixelPerfectPDF, addPrintStyles } from "../utils/html2pdfGenerator";
 import { useToast } from "@/hooks/use-toast";
 
 interface ResumePreviewProps {
@@ -64,8 +64,6 @@ const ResumePreview = ({
   const handleDownload = async () => {
     if (isGeneratingPDF) return;
     setIsGeneratingPDF(true);
-    console.log('=== Starting Professional PDF Download ===');
-    console.log('Selected template:', selectedTemplate);
     
     try {
       // Validate data
@@ -73,42 +71,30 @@ const ResumePreview = ({
         throw new Error('Please fill in at least your name before downloading');
       }
 
+      // Add print styles for better PDF generation
+      addPrintStyles();
+
       // Show progress to user
       toast({
-        title: "Generating PDF...",
-        description: "Creating your professional resume with perfect formatting",
-        duration: 2000
+        title: "Generating Pixel-Perfect PDF...",
+        description: "Creating your resume with exact visual fidelity",
+        duration: 3000
       });
 
-      // Wait for UI to settle
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for UI to settle and styles to apply
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Generate PDF using direct method only
-      const pdf = generateDirectPDF(data, sectionOrder);
-      if (!pdf) {
-        throw new Error('PDF generation failed');
-      }
-
-      // Generate professional filename
-      const name = data.personalInfo?.fullName || 'Resume';
-      const sanitizedName = name.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
-      const date = new Date().toISOString().split('T')[0];
-      const filename = `${sanitizedName}_Professional_Resume_${date}.pdf`;
-
-      // Download the PDF
-      pdf.save(filename);
-      console.log(`Professional PDF saved as: ${filename}`);
+      // Generate PDF using html2pdf for pixel-perfect results
+      await generatePixelPerfectPDF(data);
+      
       toast({
         title: "Success! 🎉",
-        description: `Professional resume downloaded as ${filename}`,
+        description: "Pixel-perfect resume PDF downloaded successfully",
         duration: 4000
       });
     } catch (error) {
       console.error('PDF download error:', error);
-      let errorMessage = 'Failed to generate professional PDF. Please try again.';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate PDF. Please try again.';
       toast({
         title: "Download Failed",
         description: errorMessage,
@@ -301,9 +287,9 @@ const ResumePreview = ({
 
               {/* PDF Generation Info */}
               <div className="mt-8 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
-                <h5 className="font-medium text-green-900 mb-2">✨ Perfect PDF Generation</h5>
+                <h5 className="font-medium text-green-900 mb-2">✨ Pixel-Perfect PDF</h5>
                 <p className="text-sm text-green-700">
-                  Direct PDF rendering ensures your resume looks exactly the same as the preview with perfect formatting and proper page breaks.
+                  Advanced HTML-to-PDF rendering with intelligent page breaks ensures your resume matches the preview exactly with no content cutting.
                 </p>
               </div>
             </div>
@@ -331,13 +317,15 @@ const ResumePreview = ({
                     marginBottom: '-25%'
                   }}
                 >
-                  <SelectedTemplate 
-                    data={data} 
-                    onUpdate={handleUpdateData} 
-                    isEditing={isEditMode}
-                    isPDFMode={true}
-                    sectionOrder={sectionOrder}
-                  />
+                  <div className="no-break">
+                    <SelectedTemplate 
+                      data={data} 
+                      onUpdate={handleUpdateData} 
+                      isEditing={isEditMode}
+                      isPDFMode={true}
+                      sectionOrder={sectionOrder}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -346,24 +334,24 @@ const ResumePreview = ({
 
         {/* Professional Tips */}
         <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h4 className="font-medium text-blue-900 mb-3">📋 Perfect PDF Generation</h4>
+          <h4 className="font-medium text-blue-900 mb-3">📋 Pixel-Perfect PDF Generation</h4>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h5 className="font-medium text-blue-800 mb-2">✨ What You See Is What You Get</h5>
+              <h5 className="font-medium text-blue-800 mb-2">✨ Advanced HTML-to-PDF Rendering</h5>
               <ul className="text-sm text-blue-700 space-y-1">
-                <li>• Preview matches PDF exactly</li>
-                <li>• Proper A4 page format with margins</li>
-                <li>• No content cutting between pages</li>
-                <li>• Consistent formatting throughout</li>
+                <li>• Exact visual match with preview</li>
+                <li>• Intelligent page break prevention</li>
+                <li>• No section splitting between pages</li>
+                <li>• Perfect color and font reproduction</li>
               </ul>
             </div>
             <div>
               <h5 className="font-medium text-blue-800 mb-2">🎯 Professional Quality</h5>
               <ul className="text-sm text-blue-700 space-y-1">
-                <li>• Searchable and selectable text</li>
-                <li>• Perfect for printing and digital sharing</li>
-                <li>• Industry-standard formatting</li>
-                <li>• All templates optimized for PDF</li>
+                <li>• High-resolution 2x scaling</li>
+                <li>• Proper A4 margins (20mm/15mm)</li>
+                <li>• Background graphics preserved</li>
+                <li>• Print-ready professional output</li>
               </ul>
             </div>
           </div>
