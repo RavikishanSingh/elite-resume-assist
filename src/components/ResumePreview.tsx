@@ -236,7 +236,7 @@ const ResumePreview = ({
                 className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50"
               >
                 <Download className="w-4 h-4" />
-                <span>{isGeneratingPDF ? 'Generating PDF...' : 'Download PDF'}</span>
+                <span>{isGeneratingPDF ? 'Generating Pixel-Perfect PDF...' : 'Download Pixel-Perfect PDF'}</span>
               </Button>
             </div>
           </div>
@@ -298,7 +298,7 @@ const ResumePreview = ({
           {/* Main Content - Resume Preview */}
           <div className="lg:col-span-3">
             <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-              {/* Page Format Container - Matches A4 dimensions */}
+              {/* Page Format Container - Matches A4 dimensions exactly */}
               <div className="flex justify-center bg-gray-100 p-8">
                 <div 
                   id="resume-preview" 
@@ -307,14 +307,17 @@ const ResumePreview = ({
                     width: '210mm',
                     minHeight: '297mm',
                     padding: '20mm',
-                    paddingBottom: '25mm', // Extra bottom margin
-                    fontFamily: 'Inter, Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+                    paddingBottom: '25mm',
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
                     fontSize: '11pt',
                     lineHeight: '1.4',
                     color: '#2d3748',
                     transform: 'scale(0.75)',
                     transformOrigin: 'top center',
-                    marginBottom: '-25%'
+                    marginBottom: '-25%',
+                    WebkitPrintColorAdjust: 'exact',
+                    printColorAdjust: 'exact',
+                    colorAdjust: 'exact'
                   }}
                 >
                   <div className="no-break">

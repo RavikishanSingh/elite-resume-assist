@@ -1,13 +1,22 @@
 
 import EditableText from "../EditableText";
+import NoBreakSection from "../shared/NoBreakSection";
 
 interface MinimalTemplateProps {
   data: any;
   onUpdate?: (section: string, field: string, value: string, index?: number) => void;
   isEditing?: boolean;
+  isPDFMode?: boolean;
+  sectionOrder?: string[];
 }
 
-const MinimalTemplate = ({ data, onUpdate, isEditing = false }: MinimalTemplateProps) => {
+const MinimalTemplate = ({ 
+  data, 
+  onUpdate, 
+  isEditing = false, 
+  isPDFMode = false,
+  sectionOrder = ['summary', 'experience', 'skills', 'projects', 'education']
+}: MinimalTemplateProps) => {
   const { personalInfo, experience, education, skills, projects } = data;
 
   return (

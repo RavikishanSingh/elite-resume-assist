@@ -1,14 +1,23 @@
 
 import { Mail, Phone, MapPin, Globe, Linkedin } from "lucide-react";
 import EditableText from "../EditableText";
+import NoBreakSection from "../shared/NoBreakSection";
 
 interface CreativeTemplateProps {
   data: any;
   onUpdate?: (section: string, field: string, value: string, index?: number) => void;
   isEditing?: boolean;
+  isPDFMode?: boolean;
+  sectionOrder?: string[];
 }
 
-const CreativeTemplate = ({ data, onUpdate, isEditing = false }: CreativeTemplateProps) => {
+const CreativeTemplate = ({ 
+  data, 
+  onUpdate, 
+  isEditing = false, 
+  isPDFMode = false,
+  sectionOrder = ['summary', 'experience', 'skills', 'projects', 'education']
+}: CreativeTemplateProps) => {
   const { personalInfo, experience, education, skills, projects } = data;
 
   return (
