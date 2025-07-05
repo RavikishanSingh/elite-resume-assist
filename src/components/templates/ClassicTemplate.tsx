@@ -1,7 +1,7 @@
 
 import { Mail, Phone, MapPin, Globe, Linkedin } from "lucide-react";
 import EditableText from "../EditableText";
-import NoBreakSection from "../shared/NoBreakSection";
+
 
 interface ClassicTemplateProps {
   data: any;
@@ -23,7 +23,7 @@ const ClassicTemplate = ({
   return (
     <div className="max-w-4xl mx-auto bg-white p-8 shadow-lg min-h-[297mm]">
       {/* Header with Improved Spacing */}
-      <NoBreakSection>
+      <div className="no-break">
         <header className="text-center border-b-2 border-gray-300 pb-8 mb-10">
         <h1 className="text-4xl font-bold text-gray-900 mb-6">
           <EditableText
@@ -103,11 +103,11 @@ const ClassicTemplate = ({
           </div>
         )}
       </header>
-      </NoBreakSection>
+      </div>
 
       {/* Summary */}
       {personalInfo?.summary && (
-        <NoBreakSection>
+        <div className="no-break">
           <section className="mb-10">
             <h2 className="text-xl font-bold text-gray-900 mb-4 uppercase tracking-wide border-b border-gray-300 pb-2">
               Professional Summary
@@ -123,19 +123,19 @@ const ClassicTemplate = ({
               />
             </div>
           </section>
-        </NoBreakSection>
+        </div>
       )}
 
       {/* Experience */}
       {experience?.length > 0 && (
-        <NoBreakSection>
+        <div className="no-break">
           <section className="mb-10">
             <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide border-b border-gray-300 pb-2">
               Professional Experience
             </h2>
             <div className="space-y-8">
               {experience.map((exp: any, index: number) => (
-                <NoBreakSection key={index} className="experience-item">
+                <div key={index} className="experience-item no-break">
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <h3 className="text-lg font-bold text-gray-900">
@@ -189,16 +189,16 @@ const ClassicTemplate = ({
                       placeholder="Job description"
                     />
                   </div>
-                </NoBreakSection>
+                </div>
               ))}
             </div>
           </section>
-        </NoBreakSection>
+        </div>
       )}
 
       {/* Skills */}
       {skills?.length > 0 && (
-        <NoBreakSection>
+        <div className="no-break">
           <section className="mb-8">
             <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide border-b border-gray-300 pb-2">
               Skills
@@ -224,19 +224,19 @@ const ClassicTemplate = ({
               ))}
             </div>
           </section>
-        </NoBreakSection>
+        </div>
       )}
 
       {/* Projects */}
       {projects?.length > 0 && (
-        <NoBreakSection>
+        <div className="no-break">
           <section className="mb-10">
             <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide border-b border-gray-300 pb-2">
               Projects
             </h2>
             <div className="space-y-6">
               {projects.map((project: any, index: number) => (
-                <NoBreakSection key={index} className="project-item">
+                <div key={index} className="project-item no-break">
                   <h3 className="text-lg font-bold text-gray-900">
                     <EditableText
                       value={project.name || ''}
@@ -261,23 +261,23 @@ const ClassicTemplate = ({
                       Technologies: {project.technologies}
                     </p>
                   )}
-                </NoBreakSection>
+                </div>
               ))}
             </div>
           </section>
-        </NoBreakSection>
+        </div>
       )}
 
       {/* Education */}
       {education?.length > 0 && (
-        <NoBreakSection>
+        <div className="no-break">
           <section className="mb-10">
             <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide border-b border-gray-300 pb-2">
               Education
             </h2>
             <div className="space-y-4">
               {education.map((edu: any, index: number) => (
-                <NoBreakSection key={index} className="education-item">
+                <div key={index} className="education-item no-break">
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="text-lg font-bold text-gray-900">
@@ -311,11 +311,11 @@ const ClassicTemplate = ({
                       </p>
                     </div>
                   </div>
-                </NoBreakSection>
+                </div>
               ))}
             </div>
           </section>
-        </NoBreakSection>
+        </div>
       )}
     </div>
   );

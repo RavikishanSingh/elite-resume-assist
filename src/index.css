@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+@media print {
+  html, body {
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .no-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .page-break {
+    page-break-before: always;
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

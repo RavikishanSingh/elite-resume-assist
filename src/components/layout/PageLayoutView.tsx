@@ -6,7 +6,7 @@ import { ArrowUp, ArrowDown, Eye, Download, Grip } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import SectionReorder from './SectionReorder';
 import PageBreakIndicator from './PageBreakIndicator';
-import { generatePDFFromHTML } from '../../utils/htmlToPdfGenerator';
+import { generatePDF } from '../../utils/html2pdfGenerator';
 
 interface PageLayoutViewProps {
   data: any;
@@ -76,24 +76,12 @@ const PageLayoutView = ({
       // Wait for UI to settle
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Generate PDF using the layout preview
-      const pdf = await generatePDFFromHTML(data, selectedTemplate);
-      if (!pdf) {
-        throw new Error('PDF generation returned null');
-      }
-
-      // Generate filename
-      const name = data.personalInfo?.fullName || 'Resume';
-      const sanitizedName = name.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
-      const templateSuffix = selectedTemplate.charAt(0).toUpperCase() + selectedTemplate.slice(1);
-      const date = new Date().toISOString().split('T')[0];
-      const filename = `${sanitizedName}_Resume_${templateSuffix}_${date}.pdf`;
-
-      pdf.save(filename);
+      // Generate PDF using the new html2pdf generator
+      await generatePDF();
       
       toast({
         title: "Success! 🎉",
-        description: `Resume downloaded as ${filename}`,
+        description: "Resume downloaded successfully",
         duration: 4000
       });
     } catch (error) {

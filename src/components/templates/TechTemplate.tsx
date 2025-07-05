@@ -1,7 +1,7 @@
 
 import { Mail, Phone, MapPin, Globe, Linkedin, Github } from "lucide-react";
 import EditableText from "../EditableText";
-import NoBreakSection from "../shared/NoBreakSection";
+
 
 interface TechTemplateProps {
   data: any;

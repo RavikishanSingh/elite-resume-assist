@@ -1,6 +1,6 @@
 
 import EditableText from "../EditableText";
-import NoBreakSection from "../shared/NoBreakSection";
+
 
 interface MinimalTemplateProps {
   data: any;
