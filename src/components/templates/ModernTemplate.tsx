@@ -17,6 +17,15 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false, isPDFMode = false }
     return value && value.toString().trim() !== '';
   };
 
+  // Debug logging for PDF generation
+  console.log('ModernTemplate rendering with data:', {
+    personalInfo: personalInfo ? Object.keys(personalInfo) : 'none',
+    experienceCount: experience?.length || 0,
+    educationCount: education?.length || 0,
+    skillsCount: skills?.length || 0,
+    projectsCount: projects?.length || 0
+  });
+
   return (
     <div className={`resume-wrapper ${isPDFMode ? 'pdf-mode' : ''}`}>
       {/* Header Section */}
