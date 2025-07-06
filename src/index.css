@@ -2,22 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Resume Print Styles */
 @media print {
   html, body {
-    margin: 0;
-    padding: 0;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
   }
 
   .no-break {
-    page-break-inside: avoid;
-    break-inside: avoid;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    orphans: 3 !important;
+    widows: 3 !important;
   }
 
   .page-break {
-    page-break-before: always;
+    page-break-before: always !important;
   }
+
+  .page-break-after {
+    page-break-after: always !important;
+  }
+
+  /* Ensure proper spacing and typography */
+  h1, h2, h3, h4, h5, h6 {
+    break-after: avoid !important;
+    break-inside: avoid !important;
+    orphans: 3 !important;
+    widows: 3 !important;
+  }
+
+  p, li {
+    orphans: 2 !important;
+    widows: 2 !important;
+  }
+
+  /* Fix colors for PDF */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+}
+
+/* Resume-specific styles */
+.resume-wrapper {
+  background: white;
+  color: black;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  max-width: 210mm;
+  min-height: 297mm;
+}
+
+/* PDF-specific adjustments */
+@page {
+  size: A4;
+  margin: 0.5in;
 }
 
 @layer base {
