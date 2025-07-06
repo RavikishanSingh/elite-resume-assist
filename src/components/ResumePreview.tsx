@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Download, Eye } from 'lucide-react';
+import { Download, Eye, FileText } from 'lucide-react';
 import { generatePDF } from '../utils/html2pdfGenerator';
 import { sampleResumeData } from '../data/sample-resume';
 
@@ -24,12 +24,28 @@ const templates = [
   { id: 'executive', name: 'Executive', component: ExecutiveTemplate, description: 'Premium executive format' },
 ];
 
-const ResumePreview = () => {
+interface ResumePreviewProps {
+  data?: any;
+  onUpdate?: (section: string, data: any) => void;
+  onNext?: () => void;
+  onPrevious?: () => void;
+  isLastStep?: boolean;
+  isFirstStep?: boolean;
+}
+
+const ResumePreview = ({ data, onUpdate, onNext, onPrevious, isLastStep, isFirstStep }: ResumePreviewProps) => {
   const [selectedTemplate, setSelectedTemplate] = useState('modern');
   const [isPreviewMode, setIsPreviewMode] = useState(true);
 
-  const handleDownloadPDF = () => {
-    generatePDF();
+  // Use provided data or fallback to sample data
+  const resumeData = data || sampleResumeData;
+
+  const handleDownloadPDF = async () => {
+    try {
+      await generatePDF();
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+    }
   };
 
   const getCurrentTemplate = () => {
@@ -39,8 +55,9 @@ const ResumePreview = () => {
     const TemplateComponent = template.component;
     return (
       <TemplateComponent 
-        data={sampleResumeData}
+        data={resumeData}
         isPDFMode={true}
+        isEditing={false}
       />
     );
   };
@@ -84,12 +101,28 @@ const ResumePreview = () => {
         </div>
       </div>
 
+      {/* Data Status Alert */}
+      {!data && (
+        <div className="container mx-auto px-4 py-2">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-blue-600" />
+                <p className="text-sm text-blue-800">
+                  <strong>Preview Mode:</strong> This is showing sample data. Complete the previous steps to see your actual information here.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Resume Preview Area */}
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-center">
           <Card className="w-full max-w-4xl shadow-2xl">
             <CardContent className="p-0">
-              <div className="bg-white min-h-[297mm]" id="resume-content">
+              <div className="bg-white min-h-[297mm] print:shadow-none" id="resume-content">
                 {getCurrentTemplate()}
               </div>
             </CardContent>
@@ -123,6 +156,33 @@ const ResumePreview = () => {
           ))}
         </div>
       </div>
+
+      {/* Navigation for builder context */}
+      {(onNext || onPrevious) && (
+        <div className="container mx-auto px-4 py-6">
+          <div className="max-w-4xl mx-auto flex justify-between">
+            {onPrevious && (
+              <Button variant="outline" onClick={onPrevious}>
+                ← Back to Skills
+              </Button>
+            )}
+            <div className="flex gap-4">
+              <Button 
+                onClick={handleDownloadPDF}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download PDF
+              </Button>
+              {onNext && !isLastStep && (
+                <Button onClick={onNext}>
+                  Next Step →
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
