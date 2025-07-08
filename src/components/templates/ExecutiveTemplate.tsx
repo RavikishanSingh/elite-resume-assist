@@ -223,10 +223,10 @@ const ExecutiveTemplate = ({
   return (
     <div className={`max-w-4xl mx-auto bg-white ${isPDFMode ? 'p-6' : 'p-8'} shadow-lg min-h-[297mm]`}>
       {/* Header with Fixed Layout */}
-      <header className="border-b-4 border-gray-800 pb-8 mb-10" style={{ pageBreakInside: 'avoid' }}>
-        <div className="flex justify-between items-start">
-          <div className="flex-1 min-w-0 pr-6">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+      <header className="border-b-4 border-gray-800 pb-6 mb-8 no-break">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4 break-words">
               <EditableText
                 value={personalInfo?.fullName || ''}
                 onSave={(value) => onUpdate?.('personalInfo', 'fullName', value)}
@@ -235,21 +235,21 @@ const ExecutiveTemplate = ({
                 className="inline-block"
               />
             </h1>
-            <div className="space-y-3 text-gray-600">
+            <div className="space-y-2 text-gray-600">
               {personalInfo?.email && (
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2">
                   <Mail className="w-4 h-4 flex-shrink-0" />
                   <EditableText
                     value={personalInfo.email}
                     onSave={(value) => onUpdate?.('personalInfo', 'email', value)}
                     isEditing={isEditing}
-                    className="inline-block truncate"
+                    className="inline-block break-all"
                     placeholder="email@example.com"
                   />
                 </div>
               )}
               {personalInfo?.phone && (
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2">
                   <Phone className="w-4 h-4 flex-shrink-0" />
                   <EditableText
                     value={personalInfo.phone}
@@ -262,10 +262,10 @@ const ExecutiveTemplate = ({
               )}
             </div>
           </div>
-          <div className="text-right text-gray-600 space-y-3 flex-shrink-0">
+          <div className="lg:text-right text-gray-600 space-y-2 flex-shrink-0 lg:pl-6">
             {personalInfo?.location && (
-              <div className="flex items-center space-x-3 justify-end">
-                <span className="text-right truncate max-w-[200px]">
+              <div className="flex items-center space-x-2 lg:justify-end">
+                <span className="break-words">
                   <EditableText
                     value={personalInfo.location}
                     onSave={(value) => onUpdate?.('personalInfo', 'location', value)}
@@ -278,8 +278,8 @@ const ExecutiveTemplate = ({
               </div>
             )}
             {personalInfo?.linkedIn && (
-              <div className="flex items-center space-x-3 justify-end">
-                <span className="text-right truncate max-w-[200px]">
+              <div className="flex items-center space-x-2 lg:justify-end">
+                <span className="break-words">
                   <EditableText
                     value={personalInfo.linkedIn}
                     onSave={(value) => onUpdate?.('personalInfo', 'linkedIn', value)}
@@ -292,8 +292,8 @@ const ExecutiveTemplate = ({
               </div>
             )}
             {personalInfo?.portfolio && (
-              <div className="flex items-center space-x-3 justify-end">
-                <span className="text-right truncate max-w-[200px]">
+              <div className="flex items-center space-x-2 lg:justify-end">
+                <span className="break-words">
                   <EditableText
                     value={personalInfo.portfolio}
                     onSave={(value) => onUpdate?.('personalInfo', 'portfolio', value)}

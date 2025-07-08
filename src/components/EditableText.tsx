@@ -96,7 +96,7 @@ const EditableText = ({
       onClick={() => setIsActiveEdit(true)}
       title="Click to edit"
     >
-      <span className="break-words select-none">
+      <span className="break-words">
         {value || (
           <span className="text-gray-400 italic">{placeholder}</span>
         )}

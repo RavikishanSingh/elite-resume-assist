@@ -21,6 +21,21 @@
     widows: 3 !important;
   }
 
+  .allow-break {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+    orphans: 2 !important;
+    widows: 2 !important;
+  }
+
+  /* Better section breaks */
+  .section-break {
+    page-break-before: auto !important;
+    page-break-after: avoid !important;
+    break-before: auto !important;
+    break-after: avoid !important;
+  }
+
   .page-break {
     page-break-before: always !important;
   }

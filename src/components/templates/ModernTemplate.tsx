@@ -57,11 +57,11 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false, isPDFMode = false }
 
       {/* Summary */}
       {hasData(personalInfo?.summary) && (
-        <section className="no-break mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4 border-b-2 border-blue-500 pb-2">
+        <section className="section-break mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4 border-b-2 border-blue-500 pb-2 no-break">
             Professional Summary
           </h2>
-          <p className="text-gray-700 leading-relaxed">
+          <p className="text-gray-700 leading-relaxed allow-break">
             {personalInfo.summary}
           </p>
         </section>
@@ -69,7 +69,7 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false, isPDFMode = false }
 
       {/* Experience */}
       {hasData(experience) && (
-        <section className="no-break mb-8">
+        <section className="section-break mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-blue-500 pb-2">
             Professional Experience
           </h2>
