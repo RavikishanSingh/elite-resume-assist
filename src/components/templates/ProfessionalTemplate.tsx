@@ -28,9 +28,11 @@ const ProfessionalTemplate = ({ data, onUpdate, isEditing = false, isPDFMode = f
             <h1 className="text-xl font-bold text-center mb-2">
               {personalInfo?.fullName || 'Your Name'}
             </h1>
-            <p className="text-slate-300 text-center text-sm">
-              {personalInfo?.jobTitle || 'Professional Title'}
-            </p>
+            {personalInfo?.jobTitle && (
+              <p className="text-slate-300 text-center text-sm font-medium">
+                {personalInfo.jobTitle}
+              </p>
+            )}
           </div>
 
           {/* Contact */}

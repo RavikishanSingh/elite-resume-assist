@@ -224,9 +224,9 @@ const ExecutiveTemplate = ({
     <div className={`max-w-4xl mx-auto bg-white ${isPDFMode ? 'p-6' : 'p-8'} shadow-lg min-h-[297mm]`}>
       {/* Header with Fixed Layout */}
       <header className="border-b-4 border-gray-800 pb-6 mb-8 no-break">
-        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
-          <div className="flex-1 min-w-0">
-            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4 break-words">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 w-full">
+          <div className="flex-1 min-w-0 max-w-full">
+            <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 mb-4 break-words leading-tight">
               <EditableText
                 value={personalInfo?.fullName || ''}
                 onSave={(value) => onUpdate?.('personalInfo', 'fullName', value)}
@@ -235,6 +235,17 @@ const ExecutiveTemplate = ({
                 className="inline-block"
               />
             </h1>
+            {personalInfo?.jobTitle && (
+              <p className="text-lg lg:text-xl text-gray-700 mb-4 font-medium">
+                <EditableText
+                  value={personalInfo.jobTitle}
+                  onSave={(value) => onUpdate?.('personalInfo', 'jobTitle', value)}
+                  isEditing={isEditing}
+                  className="inline-block"
+                  placeholder="Professional Title"
+                />
+              </p>
+            )}
             <div className="space-y-2 text-gray-600">
               {personalInfo?.email && (
                 <div className="flex items-center space-x-2">
@@ -262,7 +273,7 @@ const ExecutiveTemplate = ({
               )}
             </div>
           </div>
-          <div className="lg:text-right text-gray-600 space-y-2 flex-shrink-0 lg:pl-6">
+          <div className="lg:text-right text-gray-600 space-y-2 flex-shrink-0 lg:pl-4 max-w-full lg:max-w-xs">
             {personalInfo?.location && (
               <div className="flex items-center space-x-2 lg:justify-end">
                 <span className="break-words">

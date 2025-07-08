@@ -22,8 +22,8 @@ const MinimalTemplate = ({
   return (
     <div className="max-w-4xl mx-auto bg-white p-8 shadow-lg min-h-[297mm] font-light">
       {/* Header with Better Spacing */}
-      <header className="text-center mb-10" style={{ pageBreakInside: 'avoid' }}>
-        <h1 className="text-5xl font-thin text-gray-900 mb-6 tracking-wide">
+      <header className="text-center mb-6" style={{ pageBreakInside: 'avoid' }}>
+        <h1 className="text-4xl font-thin text-gray-900 mb-4 tracking-wide">
           <EditableText
             value={personalInfo?.fullName || ''}
             onSave={(value) => onUpdate?.('personalInfo', 'fullName', value)}
@@ -100,7 +100,7 @@ const MinimalTemplate = ({
 
       {/* Summary */}
       {personalInfo?.summary && (
-        <section className="mb-10" style={{ pageBreakInside: 'avoid' }}>
+        <section className="mb-6" style={{ pageBreakInside: 'avoid' }}>
           <div className="text-gray-700 leading-relaxed text-center italic">
             <EditableText
               value={personalInfo.summary}
@@ -116,11 +116,11 @@ const MinimalTemplate = ({
 
       {/* Experience */}
       {experience?.length > 0 && (
-        <section className="mb-10">
-          <h2 className="text-2xl font-thin text-gray-900 mb-8 text-center" style={{ pageBreakAfter: 'avoid' }}>
+        <section className="mb-6">
+          <h2 className="text-2xl font-thin text-gray-900 mb-6 text-center" style={{ pageBreakAfter: 'avoid' }}>
             EXPERIENCE
           </h2>
-          <div className="space-y-10">
+          <div className="space-y-6">
             {experience.map((exp: any, index: number) => (
               <div key={index} className="text-center" style={{ pageBreakInside: 'avoid', orphans: 3, widows: 3 }}>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -178,11 +178,11 @@ const MinimalTemplate = ({
 
       {/* Projects */}
       {projects?.length > 0 && (
-        <section className="mb-10">
-          <h2 className="text-2xl font-thin text-gray-900 mb-8 text-center" style={{ pageBreakAfter: 'avoid' }}>
+        <section className="mb-6">
+          <h2 className="text-2xl font-thin text-gray-900 mb-6 text-center" style={{ pageBreakAfter: 'avoid' }}>
             PROJECTS
           </h2>
-          <div className="space-y-8">
+          <div className="space-y-6">
             {projects.map((project: any, index: number) => (
               <div key={index} className="text-center" style={{ pageBreakInside: 'avoid', orphans: 2, widows: 2 }}>
                 <h3 className="text-lg font-medium text-gray-900">
@@ -216,10 +216,10 @@ const MinimalTemplate = ({
       )}
 
       {/* Skills & Education */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {skills?.length > 0 && (
           <section style={{ pageBreakInside: 'avoid' }}>
-            <h2 className="text-2xl font-thin text-gray-900 mb-8 text-center">
+            <h2 className="text-2xl font-thin text-gray-900 mb-6 text-center">
               SKILLS
             </h2>
             <div className="text-center">
@@ -247,7 +247,7 @@ const MinimalTemplate = ({
 
         {education?.length > 0 && (
           <section style={{ pageBreakInside: 'avoid' }}>
-            <h2 className="text-2xl font-thin text-gray-900 mb-8 text-center">
+            <h2 className="text-2xl font-thin text-gray-900 mb-6 text-center">
               EDUCATION
             </h2>
             <div className="space-y-4 text-center">

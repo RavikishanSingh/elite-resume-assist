@@ -33,9 +33,11 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false, isPDFMode = false }
         <h1 className="text-4xl font-bold mb-2">
           {hasData(personalInfo?.fullName) ? personalInfo.fullName : 'Your Name'}
         </h1>
-        <p className="text-xl mb-4 opacity-90">
-          {hasData(personalInfo?.jobTitle) ? personalInfo.jobTitle : 'Professional Title'}
-        </p>
+        {hasData(personalInfo?.jobTitle) && (
+          <p className="text-xl mb-4 opacity-90 font-medium">
+            {personalInfo.jobTitle}
+          </p>
+        )}
         <div className="flex flex-wrap justify-center gap-4 text-sm">
           {hasData(personalInfo?.email) && (
             <span>📧 {personalInfo.email}</span>
@@ -101,7 +103,7 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false, isPDFMode = false }
       )}
 
       {/* Skills & Education Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Skills */}
         {hasData(skills) && (
           <section className="no-break">
