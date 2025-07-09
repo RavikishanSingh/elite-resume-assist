@@ -27,7 +27,7 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false, isPDFMode = false }
   });
 
   return (
-    <div className={`resume-wrapper ${isPDFMode ? 'pdf-mode' : ''}`}>
+    <div className={`resume-wrapper tight-spacing ${isPDFMode ? 'pdf-mode' : ''}`}>
       {/* Header Section */}
       <section className="no-break mb-8 text-center bg-gradient-to-r from-blue-600 to-purple-600 text-white p-8 rounded-t-lg">
         <h1 className="text-4xl font-bold mb-2">
@@ -59,7 +59,7 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false, isPDFMode = false }
 
       {/* Summary */}
       {hasData(personalInfo?.summary) && (
-        <section className="section-break mb-8">
+        <section className="section-break tight-spacing">
           <h2 className="text-2xl font-bold text-gray-800 mb-4 border-b-2 border-blue-500 pb-2 no-break">
             Professional Summary
           </h2>
@@ -71,7 +71,7 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false, isPDFMode = false }
 
       {/* Experience */}
       {hasData(experience) && (
-        <section className="section-break mb-8">
+        <section className="section-break tight-spacing">
           <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-blue-500 pb-2">
             Professional Experience
           </h2>
@@ -103,7 +103,7 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false, isPDFMode = false }
       )}
 
       {/* Skills & Education Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 tight-spacing">
         {/* Skills */}
         {hasData(skills) && (
           <section className="no-break">
@@ -152,7 +152,7 @@ const ModernTemplate = ({ data, onUpdate, isEditing = false, isPDFMode = false }
 
       {/* Projects */}
       {hasData(projects) && (
-        <section className="no-break">
+        <section className="no-break tight-spacing">
           <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-blue-500 pb-2">
             Key Projects
           </h2>

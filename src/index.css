@@ -71,9 +71,26 @@
   color: black;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.4;
   max-width: 210mm;
   min-height: 297mm;
+}
+
+/* Better spacing control for PDF */
+.tight-spacing {
+  margin-bottom: 0.75rem !important;
+}
+
+.tight-spacing h2 {
+  margin-bottom: 0.5rem !important;
+}
+
+.tight-spacing .space-y-6 > * + * {
+  margin-top: 1rem !important;
+}
+
+.tight-spacing .space-y-3 > * + * {
+  margin-top: 0.5rem !important;
 }
 
 /* PDF-specific adjustments */

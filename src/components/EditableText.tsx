@@ -93,17 +93,26 @@ const EditableText = ({
   return (
     <div 
       className={`${className} group cursor-text hover:bg-blue-50 rounded px-2 py-1 relative inline-block min-h-[2rem] border border-transparent hover:border-blue-300 transition-all duration-200 select-text`}
-      onClick={(e) => {
-        // Only start editing if user isn't selecting text
-        const selection = window.getSelection();
-        if (selection && selection.toString().length === 0) {
-          setIsActiveEdit(true);
-        }
+      onMouseDown={(e) => {
+        // Allow text selection by preventing immediate edit mode
+        e.stopPropagation();
       }}
-      onDoubleClick={() => setIsActiveEdit(true)}
+      onClick={(e) => {
+        // Delay check for selection to allow text selection to complete
+        setTimeout(() => {
+          const selection = window.getSelection();
+          if (!selection || selection.toString().length === 0) {
+            setIsActiveEdit(true);
+          }
+        }, 100);
+      }}
+      onDoubleClick={(e) => {
+        e.stopPropagation();
+        setIsActiveEdit(true);
+      }}
       title="Click to edit or double-click"
     >
-      <span className="break-words select-text">
+      <span className="break-words select-text user-select-text" style={{ userSelect: 'text' }}>
         {value || (
           <span className="text-gray-400 italic">{placeholder}</span>
         )}
