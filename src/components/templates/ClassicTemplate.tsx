@@ -21,10 +21,10 @@ const ClassicTemplate = ({
   const { personalInfo, experience, education, skills, projects } = data;
 
   return (
-    <div className="max-w-4xl mx-auto bg-white p-8 shadow-lg min-h-[297mm]">
+    <div className={`max-w-4xl mx-auto bg-white p-6 shadow-lg min-h-[297mm] resume-wrapper ${isPDFMode ? 'tight-spacing' : ''}`}>
       {/* Header with Improved Spacing */}
       <div className="no-break">
-        <header className="text-center border-b-2 border-gray-300 pb-8 mb-10">
+        <header className="text-center border-b-2 border-gray-300 pb-4 mb-6">
         <h1 className="text-4xl font-bold text-gray-900 mb-6">
           <EditableText
             value={personalInfo?.fullName || ''}
@@ -108,7 +108,7 @@ const ClassicTemplate = ({
       {/* Summary */}
       {personalInfo?.summary && (
         <div className="no-break">
-          <section className="mb-10">
+          <section className="mb-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4 uppercase tracking-wide border-b border-gray-300 pb-2">
               Professional Summary
             </h2>
@@ -128,14 +128,14 @@ const ClassicTemplate = ({
 
       {/* Experience */}
       {experience?.length > 0 && (
-        <div className="no-break">
-          <section className="mb-10">
+        <div className="section-break">
+          <section className="mb-6">
             <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide border-b border-gray-300 pb-2">
               Professional Experience
             </h2>
-            <div className="space-y-8">
+            <div className="space-y-4">
               {experience.map((exp: any, index: number) => (
-                <div key={index} className="experience-item no-break">
+                <div key={index} className="experience-item allow-break">
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <h3 className="text-lg font-bold text-gray-900">
@@ -199,7 +199,7 @@ const ClassicTemplate = ({
       {/* Skills */}
       {skills?.length > 0 && (
         <div className="no-break">
-          <section className="mb-8">
+          <section className="mb-6">
             <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide border-b border-gray-300 pb-2">
               Skills
             </h2>
@@ -229,14 +229,14 @@ const ClassicTemplate = ({
 
       {/* Projects */}
       {projects?.length > 0 && (
-        <div className="no-break">
-          <section className="mb-10">
+        <div className="section-break">
+          <section className="mb-6">
             <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide border-b border-gray-300 pb-2">
               Projects
             </h2>
-            <div className="space-y-6">
+            <div className="space-y-4">
               {projects.map((project: any, index: number) => (
-                <div key={index} className="project-item no-break">
+                <div key={index} className="project-item allow-break">
                   <h3 className="text-lg font-bold text-gray-900">
                     <EditableText
                       value={project.name || ''}
@@ -271,7 +271,7 @@ const ClassicTemplate = ({
       {/* Education */}
       {education?.length > 0 && (
         <div className="no-break">
-          <section className="mb-10">
+          <section className="mb-6">
             <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-wide border-b border-gray-300 pb-2">
               Education
             </h2>

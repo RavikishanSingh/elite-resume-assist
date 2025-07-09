@@ -20,9 +20,9 @@ const MinimalTemplate = ({
   const { personalInfo, experience, education, skills, projects } = data;
 
   return (
-    <div className="max-w-4xl mx-auto bg-white p-8 shadow-lg min-h-[297mm] font-light">
+    <div className={`max-w-4xl mx-auto bg-white p-6 shadow-lg min-h-[297mm] font-light resume-wrapper ${isPDFMode ? 'tight-spacing' : ''}`}>
       {/* Header with Better Spacing */}
-      <header className="text-center mb-6" style={{ pageBreakInside: 'avoid' }}>
+      <header className="text-center mb-4 no-break">
         <h1 className="text-4xl font-thin text-gray-900 mb-4 tracking-wide">
           <EditableText
             value={personalInfo?.fullName || ''}
@@ -100,7 +100,7 @@ const MinimalTemplate = ({
 
       {/* Summary */}
       {personalInfo?.summary && (
-        <section className="mb-6" style={{ pageBreakInside: 'avoid' }}>
+        <section className="mb-4 no-break">
           <div className="text-gray-700 leading-relaxed text-center italic">
             <EditableText
               value={personalInfo.summary}
@@ -116,13 +116,13 @@ const MinimalTemplate = ({
 
       {/* Experience */}
       {experience?.length > 0 && (
-        <section className="mb-6">
-          <h2 className="text-2xl font-thin text-gray-900 mb-6 text-center" style={{ pageBreakAfter: 'avoid' }}>
+        <section className="section-break mb-4">
+          <h2 className="text-2xl font-thin text-gray-900 mb-4 text-center no-break">
             EXPERIENCE
           </h2>
-          <div className="space-y-6">
+          <div className="space-y-4">
             {experience.map((exp: any, index: number) => (
-              <div key={index} className="text-center" style={{ pageBreakInside: 'avoid', orphans: 3, widows: 3 }}>
+              <div key={index} className="text-center allow-break">
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   <EditableText
                     value={exp.jobTitle || ''}
@@ -178,13 +178,13 @@ const MinimalTemplate = ({
 
       {/* Projects */}
       {projects?.length > 0 && (
-        <section className="mb-6">
-          <h2 className="text-2xl font-thin text-gray-900 mb-6 text-center" style={{ pageBreakAfter: 'avoid' }}>
+        <section className="section-break mb-4">
+          <h2 className="text-2xl font-thin text-gray-900 mb-4 text-center no-break">
             PROJECTS
           </h2>
-          <div className="space-y-6">
+          <div className="space-y-4">
             {projects.map((project: any, index: number) => (
-              <div key={index} className="text-center" style={{ pageBreakInside: 'avoid', orphans: 2, widows: 2 }}>
+              <div key={index} className="text-center allow-break">
                 <h3 className="text-lg font-medium text-gray-900">
                   <EditableText
                     value={project.name || ''}
@@ -216,10 +216,10 @@ const MinimalTemplate = ({
       )}
 
       {/* Skills & Education */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {skills?.length > 0 && (
-          <section style={{ pageBreakInside: 'avoid' }}>
-            <h2 className="text-2xl font-thin text-gray-900 mb-6 text-center">
+          <section className="no-break">
+            <h2 className="text-2xl font-thin text-gray-900 mb-4 text-center">
               SKILLS
             </h2>
             <div className="text-center">
@@ -246,13 +246,13 @@ const MinimalTemplate = ({
         )}
 
         {education?.length > 0 && (
-          <section style={{ pageBreakInside: 'avoid' }}>
-            <h2 className="text-2xl font-thin text-gray-900 mb-6 text-center">
+          <section className="no-break">
+            <h2 className="text-2xl font-thin text-gray-900 mb-4 text-center">
               EDUCATION
             </h2>
-            <div className="space-y-4 text-center">
+            <div className="space-y-3 text-center">
               {education.map((edu: any, index: number) => (
-                <div key={index} style={{ pageBreakInside: 'avoid' }}>
+                <div key={index} className="no-break">
                   <h3 className="font-medium text-gray-900">
                     <EditableText
                       value={edu.degree || ''}

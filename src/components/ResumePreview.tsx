@@ -118,7 +118,7 @@ const ResumePreview = ({ data, onUpdate, onNext, onPrevious, isLastStep, isFirst
       )}
 
       {/* Resume Preview Area */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6">
         <div className="flex justify-center">
           <Card className="w-full max-w-4xl shadow-2xl">
             <CardContent className="p-0">
@@ -130,30 +130,36 @@ const ResumePreview = ({ data, onUpdate, onNext, onPrevious, isLastStep, isFirst
         </div>
       </div>
 
-      {/* Template Gallery */}
-      <div className="container mx-auto px-4 py-8 border-t">
-        <h2 className="text-xl font-semibold mb-6 text-foreground">Choose Your Template</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {templates.map(template => (
-            <Card 
-              key={template.id}
-              className={`cursor-pointer transition-all hover:shadow-lg hover:scale-105 ${
-                selectedTemplate === template.id ? 'ring-2 ring-primary shadow-lg' : ''
-              }`}
-              onClick={() => setSelectedTemplate(template.id)}
-            >
-              <CardContent className="p-4">
-                <div className="w-full h-32 bg-gradient-to-br from-muted to-muted/60 rounded mb-3 flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10"></div>
-                  <span className="text-sm font-medium text-muted-foreground relative z-10">
-                    {template.name}
-                  </span>
-                </div>
-                <h3 className="font-semibold text-sm mb-1">{template.name}</h3>
-                <p className="text-xs text-muted-foreground">{template.description}</p>
-              </CardContent>
-            </Card>
-          ))}
+      {/* Template Gallery - Moved to top */}
+      <div className="container mx-auto px-4 py-6 border-b bg-card/30">
+        <h2 className="text-xl font-semibold mb-6 text-foreground text-center">Choose Your Template</h2>
+        <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-7 gap-3 max-w-6xl mx-auto">
+          {templates.map(template => {
+            const TemplateComponent = template.component;
+            return (
+              <Card 
+                key={template.id}
+                className={`cursor-pointer transition-all hover:shadow-lg hover:scale-105 ${
+                  selectedTemplate === template.id ? 'ring-2 ring-primary shadow-lg' : ''
+                }`}
+                onClick={() => setSelectedTemplate(template.id)}
+              >
+                <CardContent className="p-2">
+                  <div className="w-full h-20 bg-white rounded mb-2 overflow-hidden border relative">
+                    <div className="scale-[0.08] origin-top-left w-[1250%] h-[1250%] pointer-events-none">
+                      <TemplateComponent 
+                        data={resumeData}
+                        isPDFMode={true}
+                        isEditing={false}
+                      />
+                    </div>
+                  </div>
+                  <h3 className="font-semibold text-xs mb-1 text-center">{template.name}</h3>
+                  <p className="text-[10px] text-muted-foreground text-center leading-tight">{template.description}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
 
