@@ -3,8 +3,12 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, ArrowRight, Save } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, ArrowRight, Save, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useResumes } from "@/hooks/useResumes";
+import { calculateATSScore } from "@/utils/atsChecker";
 import PersonalInfoForm from "./forms/PersonalInfoForm";
 import ExperienceForm from "./forms/ExperienceForm";
 import EducationForm from "./forms/EducationForm";
@@ -15,11 +19,16 @@ import ResumePreview from "./ResumePreview";
 interface ResumeBuilderProps {
   onBack: () => void;
   initialData?: any;
+  template?: string;
+  resumeId?: string;
 }
 
-const ResumeBuilder = ({ onBack, initialData }: ResumeBuilderProps) => {
+const ResumeBuilder = ({ onBack, initialData, template = 'modern', resumeId }: ResumeBuilderProps) => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { saveResume, updateResume } = useResumes();
   const [currentStep, setCurrentStep] = useState(0);
+  const [currentTemplate, setCurrentTemplate] = useState(template);
   const [resumeData, setResumeData] = useState({
     personalInfo: {},
     experience: [],
@@ -28,11 +37,19 @@ const ResumeBuilder = ({ onBack, initialData }: ResumeBuilderProps) => {
     skills: [],
     summary: ''
   });
+  const [atsScore, setAtsScore] = useState(0);
+  const [showATSRestoreWarning, setShowATSRestoreWarning] = useState(false);
 
-  // Load initial data if provided (from LinkedIn import)
+  // Calculate ATS score whenever resume data changes
+  useEffect(() => {
+    const { score } = calculateATSScore(resumeData);
+    setAtsScore(score);
+  }, [resumeData]);
+
+  // Load initial data if provided (from LinkedIn import or dashboard)
   useEffect(() => {
     if (initialData) {
-      console.log('Loading LinkedIn imported data into resume builder:', initialData);
+      console.log('Loading imported data into resume builder:', initialData);
       
       setResumeData(prev => ({
         personalInfo: initialData.personalInfo || prev.personalInfo,
@@ -47,22 +64,33 @@ const ResumeBuilder = ({ onBack, initialData }: ResumeBuilderProps) => {
     }
   }, [initialData]);
 
-  // Auto-save to localStorage
+  // Auto-save to database for authenticated users, localStorage for others
   useEffect(() => {
-    const timer = setTimeout(() => {
-      localStorage.setItem('resumeBuilderData', JSON.stringify(resumeData));
-    }, 1000);
+    const timer = setTimeout(async () => {
+      if (user && resumeId) {
+        // Update existing resume
+        await updateResume(resumeId, {
+          resume_data: resumeData,
+          template_type: currentTemplate,
+          ats_score: atsScore
+        });
+      } else {
+        // Save to localStorage
+        localStorage.setItem('resumeBuilderData', JSON.stringify(resumeData));
+      }
+    }, 2000); // Save every 2 seconds after changes
 
     return () => clearTimeout(timer);
-  }, [resumeData]);
+  }, [resumeData, currentTemplate, user, resumeId, updateResume, atsScore]);
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount (only if no initial data and not authenticated)
   useEffect(() => {
     const savedData = localStorage.getItem('resumeBuilderData');
-    if (savedData && !initialData) {
+    if (savedData && !initialData && !user) {
       try {
         const parsed = JSON.parse(savedData);
         setResumeData(parsed);
+        setShowATSRestoreWarning(true);
         toast({
           title: "Previous work restored",
           description: "Your progress has been automatically restored.",
@@ -71,7 +99,7 @@ const ResumeBuilder = ({ onBack, initialData }: ResumeBuilderProps) => {
         console.error('Failed to parse saved data:', error);
       }
     }
-  }, [initialData, toast]);
+  }, [initialData, toast, user]);
 
   const steps = [
     { title: "Personal Info", component: PersonalInfoForm },
@@ -116,12 +144,41 @@ const ResumeBuilder = ({ onBack, initialData }: ResumeBuilderProps) => {
     }));
   };
 
-  const handleSaveProgress = () => {
-    localStorage.setItem('resumeBuilderData', JSON.stringify(resumeData));
-    toast({
-      title: "Progress saved!",
-      description: "Your resume data has been saved locally.",
-    });
+  const handleSaveProgress = async () => {
+    if (user) {
+      // Save to database
+      const title = (resumeData.personalInfo as any)?.fullName 
+        ? `${(resumeData.personalInfo as any).fullName}'s Resume`
+        : 'My Resume';
+      
+      if (resumeId) {
+        await updateResume(resumeId, {
+          resume_data: resumeData,
+          template_type: currentTemplate,
+          ats_score: atsScore,
+          title
+        });
+        toast({
+          title: "Resume updated!",
+          description: "Your resume has been saved to your dashboard.",
+        });
+      } else {
+        const savedResume = await saveResume(resumeData, title, currentTemplate);
+        if (savedResume) {
+          toast({
+            title: "Resume saved!",
+            description: "Your resume has been saved to your dashboard.",
+          });
+        }
+      }
+    } else {
+      // Save to localStorage
+      localStorage.setItem('resumeBuilderData', JSON.stringify(resumeData));
+      toast({
+        title: "Progress saved!",
+        description: "Your resume data has been saved locally.",
+      });
+    }
   };
 
   const CurrentStepComponent = steps[currentStep].component;
@@ -143,6 +200,21 @@ const ResumeBuilder = ({ onBack, initialData }: ResumeBuilderProps) => {
               <p className="text-sm text-gray-600">
                 Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}
               </p>
+              {/* ATS Score Display */}
+              <div className="flex items-center justify-center mt-2 space-x-4">
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="w-4 h-4 text-blue-600" />
+                  <span className="text-sm font-medium">ATS Score:</span>
+                  <Badge variant={atsScore >= 80 ? "default" : atsScore >= 60 ? "secondary" : "destructive"}>
+                    {atsScore}%
+                  </Badge>
+                </div>
+                {user && (
+                  <Badge variant="outline" className="text-xs">
+                    Auto-saving to dashboard
+                  </Badge>
+                )}
+              </div>
             </div>
             <Button variant="outline" onClick={handleSaveProgress} className="flex items-center space-x-2">
               <Save className="w-4 h-4" />
@@ -187,15 +259,20 @@ const ResumeBuilder = ({ onBack, initialData }: ResumeBuilderProps) => {
               <CardTitle className="text-3xl font-bold text-gray-900">
                 {steps[currentStep].title}
               </CardTitle>
-              {/* Enhanced tips with emojis */}
+              {/* Enhanced tips with emojis and ATS hints */}
               {currentStep === 0 && (
-                <p className="text-gray-600 mt-2">
-                  📝 Start with your basic information. This will appear at the top of your resume.
-                </p>
+                <div className="text-gray-600 mt-2">
+                  <p>📝 Start with your basic information. This will appear at the top of your resume.</p>
+                  {showATSRestoreWarning && (
+                    <p className="text-amber-600 text-sm mt-1">
+                      ⚠️ Previous work restored - consider signing in to save to dashboard for better ATS tracking
+                    </p>
+                  )}
+                </div>
               )}
               {currentStep === 1 && (
                 <p className="text-gray-600 mt-2">
-                  💼 Add your work experience. Include internships, part-time jobs, and volunteer work.
+                  💼 Add your work experience. Include quantifiable achievements to boost your ATS score!
                 </p>
               )}
               {currentStep === 2 && (
@@ -205,12 +282,12 @@ const ResumeBuilder = ({ onBack, initialData }: ResumeBuilderProps) => {
               )}
               {currentStep === 3 && (
                 <p className="text-gray-600 mt-2">
-                  🚀 Showcase your projects! This is especially important for new graduates and career changers.
+                  🚀 Showcase your projects! Include technical skills and measurable outcomes.
                 </p>
               )}
               {currentStep === 4 && (
                 <p className="text-gray-600 mt-2">
-                  ⚡ List your technical and soft skills. Be specific and honest about your abilities.
+                  ⚡ List relevant keywords and skills. This significantly impacts your ATS score.
                 </p>
               )}
             </CardHeader>

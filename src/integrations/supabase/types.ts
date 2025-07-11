@@ -14,13 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      resumes: {
+        Row: {
+          ats_feedback: Json | null
+          ats_score: number | null
+          created_at: string
+          expires_at: string
+          id: string
+          resume_data: Json
+          template_type: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ats_feedback?: Json | null
+          ats_score?: number | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          resume_data: Json
+          template_type?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ats_feedback?: Json | null
+          ats_score?: number | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          resume_data?: Json
+          template_type?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_expired_resumes: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
