@@ -448,7 +448,7 @@ const Index = () => {
               <Button 
                 size="lg" 
                 variant="outline"
-                className="text-lg px-10 py-6 border-2 border-white text-white hover:bg-white hover:text-gray-900 transition-all duration-300 transform hover:scale-105"
+                className="text-lg px-10 py-6 border-2 border-white text-foreground hover:bg-white hover:text-primary transition-all duration-300 transform hover:scale-105"
                 onClick={() => setShowLinkedInImport(true)}
               >
                 <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
