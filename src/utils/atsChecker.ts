@@ -8,18 +8,19 @@ export interface ATSFeedback {
 export const calculateATSScore = (resumeData: any): { score: number; feedback: ATSFeedback[] } => {
   const feedback: ATSFeedback[] = [];
   let totalScore = 0;
-  const maxScore = 100;
+  const maxScore = 25; // Updated to match the scoring system (5 categories × 5 points each)
 
   // Check contact information (20 points)
   const contactScore = checkContactInfo(resumeData.personalInfo);
   feedback.push({
     category: 'Contact Information',
     score: contactScore,
-    feedback: contactScore >= 15 ? 'Good contact information provided' : 'Missing or incomplete contact information',
-    suggestions: contactScore < 15 ? [
+    feedback: contactScore >= 4 ? 'Complete contact information provided' : 'Missing or incomplete contact information',
+    suggestions: contactScore < 4 ? [
       'Include full name, phone number, email, and location',
       'Consider adding LinkedIn profile URL',
-      'Ensure email is professional'
+      'Ensure email is professional',
+      'Add portfolio or website if relevant'
     ] : []
   });
   totalScore += contactScore;
@@ -29,11 +30,13 @@ export const calculateATSScore = (resumeData: any): { score: number; feedback: A
   feedback.push({
     category: 'Skills & Keywords',
     score: skillsScore,
-    feedback: skillsScore >= 20 ? 'Strong skills section with relevant keywords' : 'Skills section needs improvement',
-    suggestions: skillsScore < 20 ? [
+    feedback: skillsScore >= 4 ? 'Strong skills section with relevant keywords' : 'Skills section needs improvement',
+    suggestions: skillsScore < 4 ? [
       'Add more relevant technical skills',
       'Include industry-specific keywords',
-      'Organize skills by category (Technical, Soft Skills, etc.)'
+      'Organize skills by category (Technical, Soft Skills, etc.)',
+      'Include both hard and soft skills',
+      'Match skills to job requirements'
     ] : []
   });
   totalScore += skillsScore;
@@ -43,12 +46,14 @@ export const calculateATSScore = (resumeData: any): { score: number; feedback: A
   feedback.push({
     category: 'Work Experience',
     score: experienceScore,
-    feedback: experienceScore >= 25 ? 'Well-structured work experience section' : 'Work experience section needs enhancement',
-    suggestions: experienceScore < 25 ? [
+    feedback: experienceScore >= 4 ? 'Well-structured work experience section' : 'Work experience section needs enhancement',
+    suggestions: experienceScore < 4 ? [
       'Include specific dates and duration',
       'Use action verbs to start bullet points',
       'Add quantifiable achievements and metrics',
-      'Include 3-5 bullet points per role'
+      'Include 3-5 bullet points per role',
+      'Focus on accomplishments, not just duties',
+      'Use relevant keywords from job descriptions'
     ] : []
   });
   totalScore += experienceScore;
@@ -58,11 +63,13 @@ export const calculateATSScore = (resumeData: any): { score: number; feedback: A
   feedback.push({
     category: 'Education',
     score: educationScore,
-    feedback: educationScore >= 12 ? 'Education section is complete' : 'Education section could be improved',
-    suggestions: educationScore < 12 ? [
+    feedback: educationScore >= 4 ? 'Education section is complete' : 'Education section could be improved',
+    suggestions: educationScore < 4 ? [
       'Include degree, institution, and graduation year',
       'Add relevant coursework or academic achievements',
-      'Include GPA if above 3.5'
+      'Include GPA if above 3.5',
+      'Add certifications and professional development',
+      'Include honors or awards if applicable'
     ] : []
   });
   totalScore += educationScore;
@@ -72,12 +79,14 @@ export const calculateATSScore = (resumeData: any): { score: number; feedback: A
   feedback.push({
     category: 'Formatting & Structure',
     score: formatScore,
-    feedback: formatScore >= 8 ? 'Good formatting and structure' : 'Formatting needs improvement',
-    suggestions: formatScore < 8 ? [
+    feedback: formatScore >= 4 ? 'Good formatting and structure' : 'Formatting needs improvement',
+    suggestions: formatScore < 4 ? [
       'Use consistent formatting throughout',
       'Ensure proper section organization',
       'Use bullet points for easy scanning',
-      'Keep consistent font and spacing'
+      'Keep consistent font and spacing',
+      'Maintain proper white space',
+      'Use clear section headers'
     ] : []
   });
   totalScore += formatScore;
@@ -95,16 +104,17 @@ const checkContactInfo = (personalInfo: any): number => {
   if (personalInfo?.phone) score += 5;
   if (personalInfo?.location) score += 3;
   if (personalInfo?.linkedIn) score += 2;
-  return Math.min(score, 20);
+  return Math.min(score, 5);
 };
 
 const checkSkills = (skills: any[]): number => {
   if (!skills || skills.length === 0) return 0;
   
   let score = 0;
-  if (skills.length >= 5) score += 10;
-  else if (skills.length >= 3) score += 7;
-  else score += 3;
+  if (skills.length >= 8) score += 2;
+  else if (skills.length >= 5) score += 1.5;
+  else if (skills.length >= 3) score += 1;
+  else score += 0.5;
 
   // Check for technical skills variety
   const hasVariety = skills.some(skill => 
@@ -112,7 +122,7 @@ const checkSkills = (skills: any[]): number => {
     skill.toLowerCase().includes('software') ||
     skill.toLowerCase().includes('technical')
   );
-  if (hasVariety) score += 8;
+  if (hasVariety) score += 1.5;
 
   // Check for soft skills
   const hasSoftSkills = skills.some(skill =>
@@ -120,9 +130,9 @@ const checkSkills = (skills: any[]): number => {
       skill.toLowerCase().includes(soft)
     )
   );
-  if (hasSoftSkills) score += 7;
+  if (hasSoftSkills) score += 1.5;
 
-  return Math.min(score, 25);
+  return Math.min(score, 5);
 };
 
 const checkExperience = (experience: any[]): number => {
@@ -131,18 +141,18 @@ const checkExperience = (experience: any[]): number => {
   let score = 0;
   
   // Points for having experience entries
-  if (experience.length >= 3) score += 10;
-  else if (experience.length >= 2) score += 8;
-  else score += 5;
+  if (experience.length >= 3) score += 1.5;
+  else if (experience.length >= 2) score += 1;
+  else score += 0.5;
 
   // Check for detailed descriptions
   experience.forEach(exp => {
-    if (exp.description && exp.description.length > 50) score += 3;
-    if (exp.company && exp.position) score += 2;
-    if (exp.startDate && exp.endDate) score += 2;
+    if (exp.description && exp.description.length > 100) score += 0.5;
+    if (exp.company && exp.jobTitle) score += 0.5;
+    if (exp.startDate) score += 0.5;
   });
 
-  return Math.min(score, 30);
+  return Math.min(score, 5);
 };
 
 const checkEducation = (education: any[]): number => {
@@ -151,13 +161,13 @@ const checkEducation = (education: any[]): number => {
   let score = 0;
   
   education.forEach(edu => {
-    if (edu.degree) score += 5;
-    if (edu.institution) score += 3;
-    if (edu.graduationDate) score += 2;
-    if (edu.gpa && parseFloat(edu.gpa) >= 3.5) score += 2;
+    if (edu.degree) score += 1.5;
+    if (edu.school) score += 1;
+    if (edu.graduationDate) score += 1;
+    if (edu.gpa && parseFloat(edu.gpa) >= 3.5) score += 1.5;
   });
 
-  return Math.min(score, 15);
+  return Math.min(score, 5);
 };
 
 const checkFormatting = (resumeData: any): number => {
@@ -169,7 +179,7 @@ const checkFormatting = (resumeData: any): number => {
     (Array.isArray(resumeData[section]) ? resumeData[section].length > 0 : Object.keys(resumeData[section]).length > 0)
   );
   
-  score += (presentSections.length / sections.length) * 10;
+  score += (presentSections.length / sections.length) * 5;
   
   return Math.round(score);
 };

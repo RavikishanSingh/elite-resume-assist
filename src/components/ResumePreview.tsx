@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Download, Eye, FileText } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Download, Eye, FileText, TrendingUp } from 'lucide-react';
 import { generatePDF } from '../utils/html2pdfGenerator';
 import { sampleResumeData } from '../data/sample-resume';
+import ATSScoreTab from './ats/ATSScoreTab';
 
 // Import all templates
 import ModernTemplate from './templates/ModernTemplate';
@@ -101,66 +104,83 @@ const ResumePreview = ({ data, onUpdate, onNext, onPrevious, isLastStep, isFirst
         </div>
       </div>
 
-      {/* Data Status Alert */}
-      {!data && (
-        <div className="container mx-auto px-4 py-2">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-blue-600" />
-                <p className="text-sm text-blue-800">
-                  <strong>Preview Mode:</strong> This is showing sample data. Complete the previous steps to see your actual information here.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Resume Preview Area */}
+      {/* Main Content with Tabs */}
       <div className="container mx-auto px-4 py-6">
-        <div className="flex justify-center">
-          <Card className="w-full max-w-4xl shadow-2xl">
-            <CardContent className="p-0">
-              <div className="bg-white min-h-[297mm] print:shadow-none" id="resume-content">
-                {getCurrentTemplate()}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+        <Tabs defaultValue="preview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 max-w-lg">
+            <TabsTrigger value="preview">Resume Preview</TabsTrigger>
+            <TabsTrigger value="ats-score" className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
+              ATS Score
+            </TabsTrigger>
+          </TabsList>
 
-      {/* Template Gallery - Moved to top */}
-      <div className="container mx-auto px-4 py-6 border-b bg-card/30">
-        <h2 className="text-xl font-semibold mb-6 text-foreground text-center">Choose Your Template</h2>
-        <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-7 gap-3 max-w-6xl mx-auto">
-          {templates.map(template => {
-            const TemplateComponent = template.component;
-            return (
-              <Card 
-                key={template.id}
-                className={`cursor-pointer transition-all hover:shadow-lg hover:scale-105 ${
-                  selectedTemplate === template.id ? 'ring-2 ring-primary shadow-lg' : ''
-                }`}
-                onClick={() => setSelectedTemplate(template.id)}
-              >
-                <CardContent className="p-2">
-                  <div className="w-full h-20 bg-white rounded mb-2 overflow-hidden border relative">
-                    <div className="scale-[0.08] origin-top-left w-[1250%] h-[1250%] pointer-events-none">
-                      <TemplateComponent 
-                        data={resumeData}
-                        isPDFMode={true}
-                        isEditing={false}
-                      />
+          <TabsContent value="preview" className="space-y-6">
+            {/* Data Status Alert */}
+            {!data && (
+              <div className="container mx-auto px-4 py-2">
+                <div className="max-w-4xl mx-auto">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-blue-600" />
+                      <p className="text-sm text-blue-800">
+                        <strong>Preview Mode:</strong> This is showing sample data. Complete the previous steps to see your actual information here.
+                      </p>
                     </div>
                   </div>
-                  <h3 className="font-semibold text-xs mb-1 text-center">{template.name}</h3>
-                  <p className="text-[10px] text-muted-foreground text-center leading-tight">{template.description}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Resume Preview Area */}
+            <div className="flex justify-center">
+              <Card className="w-full max-w-4xl shadow-2xl">
+                <CardContent className="p-0">
+                  <div className="bg-white min-h-[297mm] print:shadow-none" id="resume-content">
+                    {getCurrentTemplate()}
+                  </div>
                 </CardContent>
               </Card>
-            );
-          })}
-        </div>
+            </div>
+
+            {/* Template Gallery */}
+            <div className="border-t pt-6">
+              <h2 className="text-xl font-semibold mb-6 text-foreground text-center">Choose Your Template</h2>
+              <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-7 gap-3 max-w-6xl mx-auto">
+                {templates.map(template => {
+                  const TemplateComponent = template.component;
+                  return (
+                    <Card 
+                      key={template.id}
+                      className={`cursor-pointer transition-all hover:shadow-lg hover:scale-105 ${
+                        selectedTemplate === template.id ? 'ring-2 ring-primary shadow-lg' : ''
+                      }`}
+                      onClick={() => setSelectedTemplate(template.id)}
+                    >
+                      <CardContent className="p-2">
+                        <div className="w-full h-20 bg-white rounded mb-2 overflow-hidden border relative">
+                          <div className="scale-[0.08] origin-top-left w-[1250%] h-[1250%] pointer-events-none">
+                            <TemplateComponent 
+                              data={resumeData}
+                              isPDFMode={true}
+                              isEditing={false}
+                            />
+                          </div>
+                        </div>
+                        <h3 className="font-semibold text-xs mb-1 text-center">{template.name}</h3>
+                        <p className="text-[10px] text-muted-foreground text-center leading-tight">{template.description}</p>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="ats-score" className="space-y-6">
+            <ATSScoreTab data={resumeData} />
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Navigation for builder context */}
