@@ -1,38 +1,18 @@
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
-    )
-
-    // Get the current user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseClient.auth.getUser()
-
-    if (userError || !user) {
-      throw new Error('Unauthorized')
-    }
+    console.log('LinkedIn import function called');
 
     const { accessToken } = await req.json()
 
@@ -42,12 +22,11 @@ serve(async (req) => {
 
     console.log('Fetching LinkedIn profile data...')
 
-    // Fetch basic profile information
-    const profileResponse = await fetch('https://api.linkedin.com/v2/people/~?projection=(id,firstName,lastName,profilePicture(displayImage~:playableStreams))', {
+    // Updated LinkedIn API v2 endpoints
+    const profileResponse = await fetch('https://api.linkedin.com/v2/me', {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
-        'cache-control': 'no-cache',
-        'X-Restli-Protocol-Version': '2.0.0'
+        'cache-control': 'no-cache'
       }
     })
 
@@ -61,11 +40,10 @@ serve(async (req) => {
     console.log('LinkedIn profile data:', profileData)
 
     // Fetch email address
-    const emailResponse = await fetch('https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))', {
+    const emailResponse = await fetch('https://api.linkedin.com/v2/clientAwareMemberHandles?q=members&projection=(elements*(primary,type,handle~))', {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
-        'cache-control': 'no-cache',
-        'X-Restli-Protocol-Version': '2.0.0'
+        'cache-control': 'no-cache'
       }
     })
 
@@ -73,33 +51,47 @@ serve(async (req) => {
     if (emailResponse.ok) {
       emailData = await emailResponse.json()
       console.log('LinkedIn email data:', emailData)
+    } else {
+      console.warn('Failed to fetch email data:', await emailResponse.text())
     }
 
-    // Fetch position information
-    const positionsResponse = await fetch('https://api.linkedin.com/v2/positions?q=person&person=urn:li:person:' + profileData.id + '&projection=(elements*(id,title,companyName,summary,startDate,endDate,company(name)))', {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'cache-control': 'no-cache',
-        'X-Restli-Protocol-Version': '2.0.0'
-      }
-    })
-
+    // Try to fetch positions (may require additional permissions)
     let positionsData = null
-    if (positionsResponse.ok) {
-      positionsData = await positionsResponse.json()
-      console.log('LinkedIn positions data:', positionsData)
+    try {
+      const positionsResponse = await fetch(`https://api.linkedin.com/v2/positions?q=person&person=urn:li:person:${profileData.id}`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'cache-control': 'no-cache'
+        }
+      })
+      
+      if (positionsResponse.ok) {
+        positionsData = await positionsResponse.json()
+        console.log('LinkedIn positions data:', positionsData)
+      } else {
+        console.warn('Failed to fetch positions:', await positionsResponse.text())
+      }
+    } catch (error) {
+      console.warn('Positions API not accessible:', error)
+    }
+
+    // Extract email from the response
+    let email = ''
+    if (emailData?.elements?.length > 0) {
+      const primaryEmail = emailData.elements.find(el => el.primary === true)
+      email = primaryEmail?.['handle~']?.emailAddress || emailData.elements[0]?.['handle~']?.emailAddress || ''
     }
 
     // Format the data for our application
     const formattedData = {
       personalInfo: {
-        fullName: `${profileData.firstName?.localized?.en_US || ''} ${profileData.lastName?.localized?.en_US || ''}`.trim(),
-        email: emailData?.elements?.[0]?.['handle~']?.emailAddress || '',
+        fullName: `${profileData.localizedFirstName || ''} ${profileData.localizedLastName || ''}`.trim(),
+        email: email,
         phone: '',
         location: '',
-        linkedIn: `https://linkedin.com/in/${profileData.id}`,
+        linkedIn: `https://linkedin.com/in/${profileData.vanityName || profileData.id}`,
         portfolio: '',
-        summary: ''
+        summary: profileData.localizedHeadline || ''
       },
       experience: positionsData?.elements?.map((position: any) => ({
         jobTitle: position.title || '',
@@ -115,35 +107,13 @@ serve(async (req) => {
       skills: []
     }
 
-    // Store the LinkedIn profile data in the database
-    const { error: insertError } = await supabaseClient
-      .from('linkedin_profiles')
-      .insert({
-        user_id: user.id,
-        linkedin_id: profileData.id,
-        raw_data: {
-          profile: profileData,
-          email: emailData,
-          positions: positionsData
-        },
-        personal_info: formattedData.personalInfo,
-        experience: formattedData.experience,
-        education: formattedData.education,
-        skills: formattedData.skills,
-        projects: formattedData.projects
-      })
-
-    if (insertError) {
-      console.error('Database insert error:', insertError)
-      throw new Error('Failed to store LinkedIn profile data')
-    }
-
-    console.log('LinkedIn profile imported successfully')
+    console.log('Formatted LinkedIn data:', formattedData)
 
     return new Response(
       JSON.stringify({ success: true, data: formattedData }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: {
+        ...corsHeaders, 
+        'Content-Type': 'application/json'
       },
     )
   } catch (error) {
@@ -153,7 +123,7 @@ serve(async (req) => {
       {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      },
+      }
     )
   }
 })

@@ -152,7 +152,6 @@ const LinkedInUrlInput = ({ onImportSuccess }: LinkedInUrlInputProps) => {
       toast({
         title: "Demo Profile Imported",
         description: "Demo data has been imported successfully. This is simulated data for demonstration purposes.",
-        variant: "default"
       });
       
       onImportSuccess(profileData);

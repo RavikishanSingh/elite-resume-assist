@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -78,13 +77,29 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const signInWithLinkedIn = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'linkedin_oidc',
-      options: {
-        redirectTo: `${window.location.origin}/`
+    try {
+      // Set a flag to indicate LinkedIn import is pending
+      sessionStorage.setItem('linkedin_import_pending', 'true');
+      
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'linkedin',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+          scopes: 'r_liteprofile r_emailaddress w_member_social'
+        }
+      });
+      
+      if (error) {
+        sessionStorage.removeItem('linkedin_import_pending');
+        console.error('LinkedIn OAuth error:', error);
       }
-    });
-    return { error };
+      
+      return { error };
+    } catch (error) {
+      sessionStorage.removeItem('linkedin_import_pending');
+      console.error('LinkedIn sign-in error:', error);
+      return { error };
+    }
   };
 
   const value = {

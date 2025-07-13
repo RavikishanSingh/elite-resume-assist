@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ExternalLink, AlertCircle } from "lucide-react";
+import { Loader2, ExternalLink, AlertCircle, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -14,21 +14,34 @@ interface RealLinkedInImportProps {
 const RealLinkedInImport = ({ onImportSuccess, onClose }: RealLinkedInImportProps) => {
   const [isImporting, setIsImporting] = useState(false);
   const [accessToken, setAccessToken] = useState('');
+  const [importStatus, setImportStatus] = useState<'idle' | 'authenticating' | 'importing' | 'success' | 'error'>('idle');
   const { toast } = useToast();
-  const { signInWithLinkedIn } = useAuth();
+  const { signInWithLinkedIn, user } = useAuth();
 
   const handleLinkedInOAuth = async () => {
-    setIsImporting(true);
-    sessionStorage.setItem('linkedin_import_pending', 'true');
-    const { error } = await signInWithLinkedIn();
+    try {
+      setIsImporting(true);
+      setImportStatus('authenticating');
+      
+      const { error } = await signInWithLinkedIn();
 
-    if (error) {
+      if (error) {
+        throw error;
+      }
+      
+      // The actual import will be handled by LinkedInCallbackHandler
+      toast({
+        title: "Redirecting to LinkedIn",
+        description: "You'll be redirected to LinkedIn for authentication.",
+      });
+      
+    } catch (error) {
       setIsImporting(false);
-      sessionStorage.removeItem('linkedin_import_pending');
+      setImportStatus('error');
       console.error('LinkedIn OAuth error:', error);
       toast({
         title: "Authentication Failed",
-        description: "Failed to authenticate with LinkedIn. Please try again.",
+        description: error.message || "Failed to authenticate with LinkedIn. Please try again.",
         variant: "destructive"
       });
     }
@@ -45,6 +58,7 @@ const RealLinkedInImport = ({ onImportSuccess, onClose }: RealLinkedInImportProp
     }
 
     setIsImporting(true);
+    setImportStatus('importing');
 
     try {
       const { data, error } = await supabase.functions.invoke('linkedin-import', {
@@ -56,10 +70,10 @@ const RealLinkedInImport = ({ onImportSuccess, onClose }: RealLinkedInImportProp
       }
 
       if (data.success) {
+        setImportStatus('success');
         toast({
           title: "Profile Imported Successfully",
           description: "Your LinkedIn profile has been imported successfully.",
-          variant: "default"
         });
         onImportSuccess(data.data);
       } else {
@@ -67,6 +81,7 @@ const RealLinkedInImport = ({ onImportSuccess, onClose }: RealLinkedInImportProp
       }
 
     } catch (error) {
+      setImportStatus('error');
       console.error('LinkedIn import error:', error);
       toast({
         title: "Import Failed",
@@ -77,6 +92,23 @@ const RealLinkedInImport = ({ onImportSuccess, onClose }: RealLinkedInImportProp
       setIsImporting(false);
     }
   };
+
+  const getStatusMessage = () => {
+    switch (importStatus) {
+      case 'authenticating':
+        return { icon: <Loader2 className="w-5 h-5 animate-spin" />, text: "Authenticating with LinkedIn...", color: "blue" };
+      case 'importing':
+        return { icon: <Loader2 className="w-5 h-5 animate-spin" />, text: "Importing profile data...", color: "blue" };
+      case 'success':
+        return { icon: <CheckCircle className="w-5 h-5" />, text: "Profile imported successfully!", color: "green" };
+      case 'error':
+        return { icon: <AlertCircle className="w-5 h-5" />, text: "Import failed. Please try again.", color: "red" };
+      default:
+        return null;
+    }
+  };
+
+  const statusMessage = getStatusMessage();
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -93,14 +125,24 @@ const RealLinkedInImport = ({ onImportSuccess, onClose }: RealLinkedInImportProp
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Status Message */}
+          {statusMessage && (
+            <div className={`bg-${statusMessage.color}-50 border border-${statusMessage.color}-200 rounded-lg p-4`}>
+              <div className="flex items-center space-x-2">
+                {statusMessage.icon}
+                <span className={`text-${statusMessage.color}-800`}>{statusMessage.text}</span>
+              </div>
+            </div>
+          )}
+
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-start space-x-2">
               <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
               <div>
                 <h4 className="font-medium text-blue-900 mb-1">Real LinkedIn API Integration</h4>
                 <p className="text-sm text-blue-800">
-                  This feature connects to the real LinkedIn API to import your professional profile data. 
-                  You'll need to authenticate with LinkedIn and grant permissions.
+                  Connect to LinkedIn's API to import your professional profile. 
+                  {user ? 'Click below to authenticate and import your data.' : 'Please sign in first to use this feature.'}
                 </p>
               </div>
             </div>
@@ -113,13 +155,18 @@ const RealLinkedInImport = ({ onImportSuccess, onClose }: RealLinkedInImportProp
             </p>
             <Button 
               onClick={handleLinkedInOAuth}
-              disabled={isImporting}
+              disabled={isImporting || !user}
               className="w-full bg-blue-600 hover:bg-blue-700"
             >
-              {isImporting ? (
+              {importStatus === 'authenticating' ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Authenticating with LinkedIn...
+                </>
+              ) : !user ? (
+                <>
+                  <AlertCircle className="w-4 h-4 mr-2" />
+                  Sign In Required
                 </>
               ) : (
                 <>
@@ -128,6 +175,11 @@ const RealLinkedInImport = ({ onImportSuccess, onClose }: RealLinkedInImportProp
                 </>
               )}
             </Button>
+            {!user && (
+              <p className="text-sm text-gray-500 text-center">
+                Please sign in to your account first to use LinkedIn import.
+              </p>
+            )}
           </div>
 
           <div className="border-t pt-6">
@@ -167,10 +219,13 @@ const RealLinkedInImport = ({ onImportSuccess, onClose }: RealLinkedInImportProp
             <h4 className="font-medium text-yellow-900 mb-2">⚠️ Setup Required</h4>
             <div className="text-sm text-yellow-800 space-y-2">
               <p>
-                <strong>For OAuth to work:</strong> You need to configure LinkedIn OAuth in your Supabase project settings.
+                <strong>For OAuth:</strong> LinkedIn OAuth must be configured in Supabase project settings with proper redirect URLs.
               </p>
               <p>
-                <strong>For API access:</strong> You need a LinkedIn Developer account and approved application.
+                <strong>For API access:</strong> Requires LinkedIn Developer account with approved application and proper scopes.
+              </p>
+              <p>
+                <strong>Redirect URL:</strong> Add <code>{window.location.origin}</code> to your LinkedIn app settings.
               </p>
             </div>
           </div>
