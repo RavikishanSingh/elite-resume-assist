@@ -3,7 +3,6 @@ import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Download, Eye, FileText, TrendingUp } from 'lucide-react';
 import { generatePDF } from '../utils/html2pdfGenerator';
 import { sampleResumeData } from '../data/sample-resume';
