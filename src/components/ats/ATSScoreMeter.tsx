@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, Target, Award, CheckCircle } from 'lucide-react';
 
 interface ATSScoreMeterProps {
   score: number;
@@ -51,6 +51,12 @@ const ATSScoreMeter = ({ score, size = 'medium', showLabel = true }: ATSScoreMet
   const strokeDasharray = circumference;
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
+  const getScoreIcon = (score: number) => {
+    if (score >= 90) return Award;
+    if (score >= 70) return CheckCircle;
+    return Target;
+  };
+
   return (
     <div className="flex flex-col items-center">
       <div className={`relative ${sizeClasses.container}`}>
@@ -86,6 +92,7 @@ const ATSScoreMeter = ({ score, size = 'medium', showLabel = true }: ATSScoreMet
         {/* Score text */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
+            {size === 'large' && React.createElement(getScoreIcon(score), { className: "w-8 h-8 mx-auto mb-2 text-gray-600" })}
             <div className={`font-bold ${sizeClasses.text} text-gray-900`}>
               {score}
             </div>
@@ -98,12 +105,26 @@ const ATSScoreMeter = ({ score, size = 'medium', showLabel = true }: ATSScoreMet
         </div>
 
         {/* Animated pulse effect for high scores */}
-        {score >= 80 && (
-          <div className="absolute inset-0 rounded-full animate-pulse">
-            <div className={`w-full h-full rounded-full bg-gradient-to-r ${getScoreGradient(score)} opacity-20`}></div>
+        {score >= 80 && size === 'large' && (
+          <div className="absolute inset-0 rounded-full">
+            <div className={`w-full h-full rounded-full bg-gradient-to-r ${getScoreGradient(score)} opacity-10 animate-pulse`}></div>
+          </div>
+        )}
+
+        {/* Progress rings for large size */}
+        {size === 'large' && (
+          <div className="absolute inset-2 rounded-full border-2 border-gray-100">
+            <div className="absolute inset-2 rounded-full border border-gray-50"></div>
           </div>
         )}
       </div>
+
+      {/* Score breakdown for large size */}
+      {size === 'large' && (
+        <div className="mt-2 text-xs text-gray-500 text-center">
+          <div>Applicant Tracking System Compatibility</div>
+        </div>
+      )}
 
       {showLabel && size !== 'large' && (
         <div className="mt-3 text-center">
@@ -116,15 +137,57 @@ const ATSScoreMeter = ({ score, size = 'medium', showLabel = true }: ATSScoreMet
 
       {/* Score interpretation */}
       {size === 'large' && (
-        <div className="mt-4 text-center">
-          <div className="text-lg font-semibold text-gray-900 mb-1">
+        <div className="mt-6 text-center max-w-sm">
+          <div className="text-xl font-bold text-gray-900 mb-2">
             {score >= 90 ? 'Excellent' : 
              score >= 80 ? 'Very Good' : 
              score >= 70 ? 'Good' : 
              score >= 60 ? 'Fair' : 
              score >= 40 ? 'Needs Work' : 'Poor'}
           </div>
-          <div className="text-sm text-gray-600 max-w-xs">
+          <div className="text-sm text-gray-600 leading-relaxed">
+            {score >= 90 ? 'Outstanding! Your resume is perfectly optimized for ATS systems and will likely pass through automated screening.' :
+             score >= 80 ? 'Great job! Your resume is well-optimized and should perform excellently with most ATS systems.' :
+             score >= 70 ? 'Good foundation! Your resume has solid ATS compatibility with some room for improvement.' :
+             score >= 60 ? 'Decent start! Consider adding more keywords and improving formatting for better ATS performance.' :
+             score >= 40 ? 'Needs attention! Your resume requires significant optimization to pass through ATS systems effectively.' :
+             'Critical improvements needed! Your resume may struggle with ATS systems and needs immediate optimization.'}
+          </div>
+          
+          {/* Action recommendations */}
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+            <div className="text-xs font-medium text-blue-900 mb-1">
+              {score >= 80 ? '🎉 Keep it up!' : score >= 60 ? '💡 Quick wins available' : '🚀 Let\'s improve this'}
+            </div>
+            <div className="text-xs text-blue-800">
+              {score >= 80 ? 'Your resume is performing excellently!' :
+               score >= 60 ? 'Focus on adding more relevant keywords and quantifiable achievements.' :
+               'Start with contact information, skills section, and job descriptions.'}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mini progress indicators for medium/large sizes */}
+      {(size === 'medium' || size === 'large') && (
+        <div className="mt-4 flex justify-center space-x-1">
+          {[20, 40, 60, 80, 100].map((threshold, index) => (
+            <div
+              key={threshold}
+              className={`w-2 h-1 rounded-full transition-all duration-500 ${
+                score >= threshold 
+                  ? threshold <= 60 ? 'bg-red-400' : threshold <= 80 ? 'bg-yellow-400' : 'bg-green-400'
+                  : 'bg-gray-200'
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ATSScoreMeter;
             {score >= 80 ? 'Your resume is highly optimized for ATS systems' :
              score >= 60 ? 'Your resume has good ATS compatibility with room for improvement' :
              'Your resume needs significant optimization for ATS systems'}

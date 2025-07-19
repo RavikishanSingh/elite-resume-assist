@@ -1,16 +1,21 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, CheckCircle, Star, Users, FileText, Brain, Sparkles, Zap, Shield, Globe } from "lucide-react";
+import { ArrowRight, CheckCircle, Star, Users, FileText, Brain, Sparkles, Zap, Shield, Globe, Plus, Edit, Eye, Download, Trash2, Calendar, Clock, TrendingUp } from "lucide-react";
 import ResumeBuilder from "@/components/ResumeBuilder";
 import SignInModal from "@/components/auth/SignInModal";
 import ResumeManager from "@/components/resume/ResumeManager";
 import LinkedInImport from "@/components/LinkedInImport";
 import { generatePDF } from "@/utils/pdfGenerator";
 import { useAuth } from '@/components/auth/AuthProvider';
+import { useResumes } from '@/hooks/useResumes';
 import RealLinkedInImport from '@/components/linkedin/RealLinkedInImport';
 import TemplateShowcase from '@/components/TemplateShowcase';
 import LinkedInCallbackHandler from '@/components/linkedin/LinkedInCallbackHandler';
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { calculateATSScore } from "@/utils/atsChecker";
+import { format } from 'date-fns';
 
 const Index = () => {
   const [showBuilder, setShowBuilder] = useState(false);
@@ -22,7 +27,9 @@ const Index = () => {
   const [showResumes, setShowResumes] = useState(false);
   const [importedData, setImportedData] = useState<any>(null);
   const { user, signOut, loading, session } = useAuth();
+  const { resumes, loading: resumesLoading, deleteResume } = useResumes();
   const [isImportingLinkedIn, setIsImportingLinkedIn] = useState(false);
+  const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
 
   const handleSignIn = (email: string, password: string) => {
     // Simple mock authentication
@@ -41,6 +48,7 @@ const Index = () => {
   const handleCreateNewResume = () => {
     setShowResumes(false);
     setImportedData(null);
+    setSelectedResumeId(null);
     setShowBuilder(true);
   };
 
@@ -67,7 +75,8 @@ const Index = () => {
   const handleEditResume = (resume: any) => {
     // Load resume data and open builder
     setShowResumes(false);
-    setImportedData(resume.data);
+    setImportedData(resume.resume_data);
+    setSelectedResumeId(resume.id);
     setShowBuilder(true);
   };
 
@@ -109,16 +118,18 @@ const Index = () => {
       onBack={() => {
         setShowBuilder(false);
         setImportedData(null);
+        setSelectedResumeId(null);
         // Only show resumes if user is signed in
-        if (isSignedIn) {
+        if (user) {
           setShowResumes(true);
         }
       }}
       initialData={importedData}
+      resumeId={selectedResumeId}
     />;
   }
 
-  if (showResumes && isSignedIn) {
+  if (showResumes && user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <header className="container mx-auto px-4 py-6">
@@ -132,7 +143,7 @@ const Index = () => {
               </h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-gray-600">Welcome, {userName}!</span>
+              <span className="text-gray-600">Welcome, {user.email?.split('@')[0]}!</span>
               <Button variant="outline" onClick={handleSignOut}>
                 Sign Out
               </Button>
@@ -141,11 +152,173 @@ const Index = () => {
         </header>
         
         <main className="container mx-auto px-4 py-8">
-          <ResumeManager
-            onCreateNew={handleCreateNewResume}
-            onEditResume={handleEditResume}
-            onDownloadResume={handleDownloadResume}
-          />
+          <div className="space-y-6">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">My Resumes</h1>
+                <p className="text-gray-600">Manage and create professional resumes</p>
+              </div>
+              <Button onClick={handleCreateNewResume} className="bg-primary hover:bg-primary/90">
+                <Plus className="w-4 h-4 mr-2" />
+                Create New Resume
+              </Button>
+            </div>
+
+            {/* Stats Cards */}
+            {resumes.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Resumes</CardTitle>
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{resumes.length}</div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Average ATS Score</CardTitle>
+                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {resumes.length > 0 
+                        ? Math.round(resumes.reduce((acc, resume) => acc + (resume.ats_score || 0), 0) / resumes.length)
+                        : 0
+                      }%
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Days Until Cleanup</CardTitle>
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {resumes.length > 0 
+                        ? Math.min(...resumes.map(r => Math.ceil((new Date(r.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24))))
+                        : 'N/A'
+                      }
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Resumes Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {resumesLoading ? (
+                <div className="col-span-full text-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p>Loading your resumes...</p>
+                </div>
+              ) : resumes.length > 0 ? (
+                resumes.map((resume) => {
+                  const atsData = calculateATSScore(resume.resume_data);
+                  const daysLeft = Math.ceil((new Date(resume.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                  
+                  const getATSBadge = (score: number) => {
+                    if (score >= 80) return <Badge className="bg-green-100 text-green-800">Excellent</Badge>;
+                    if (score >= 60) return <Badge className="bg-yellow-100 text-yellow-800">Good</Badge>;
+                    return <Badge className="bg-red-100 text-red-800">Needs Work</Badge>;
+                  };
+
+                  const getATSColor = (score: number) => {
+                    if (score >= 80) return 'text-green-600';
+                    if (score >= 60) return 'text-yellow-600';
+                    return 'text-red-600';
+                  };
+                  
+                  return (
+                    <Card key={resume.id} className="hover:shadow-lg transition-shadow">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <CardTitle className="text-lg mb-2">{resume.title}</CardTitle>
+                            <CardDescription className="capitalize">
+                              {resume.template_type} Template
+                            </CardDescription>
+                          </div>
+                          {getATSBadge(atsData.score)}
+                        </div>
+                      </CardHeader>
+                      
+                      <CardContent className="space-y-4">
+                        {/* ATS Score */}
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium">ATS Score</span>
+                            <span className={`text-sm font-bold ${getATSColor(atsData.score)}`}>
+                              {atsData.score}%
+                            </span>
+                          </div>
+                          <Progress value={atsData.score} className="h-2" />
+                        </div>
+
+                        {/* Dates */}
+                        <div className="text-xs text-muted-foreground space-y-1">
+                          <div className="flex items-center">
+                            <Calendar className="w-3 h-3 mr-1" />
+                            Created: {format(new Date(resume.created_at), 'MMM dd, yyyy')}
+                          </div>
+                          <div className="flex items-center">
+                            <Clock className="w-3 h-3 mr-1" />
+                            Expires in: {daysLeft} days
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => handleEditResume(resume)}
+                            className="flex-1"
+                          >
+                            <Eye className="w-3 h-3 mr-1" />
+                            Open
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => handleEditResume(resume)}
+                          >
+                            <Edit className="w-3 h-3" />
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => deleteResume(resume.id)}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              ) : (
+                <Card className="col-span-full">
+                  <CardContent className="flex flex-col items-center justify-center py-12">
+                    <FileText className="w-16 h-16 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No resumes yet</h3>
+                    <p className="text-muted-foreground mb-4 text-center">
+                      Create your first resume to get started with professional templates and ATS optimization.
+                    </p>
+                    <Button onClick={handleCreateNewResume}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Your First Resume
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
         </main>
       </div>
     );

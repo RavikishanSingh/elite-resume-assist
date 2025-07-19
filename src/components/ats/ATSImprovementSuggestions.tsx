@@ -143,21 +143,59 @@ const ATSImprovementSuggestions = ({ data, feedback }: ATSImprovementSuggestions
 
   return (
     <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">Personalized Improvement Plan</h3>
-        <p className="text-gray-600">
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center space-x-2 bg-blue-100 border border-blue-200 px-4 py-2 rounded-full mb-4">
+          <Lightbulb className="w-5 h-5 text-blue-600" />
+          <span className="text-blue-700 font-medium text-sm">AI-Powered Improvement Plan</span>
+        </div>
+        <h3 className="text-3xl font-bold text-gray-900 mb-3">Personalized Action Plan</h3>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
           Follow these recommendations to boost your ATS score and improve your chances of getting noticed
         </p>
       </div>
 
+      {/* Overall Progress Summary */}
+      <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-semibold text-blue-900">Improvement Potential</h3>
+              <p className="text-blue-700">Complete these actions to maximize your ATS score</p>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-blue-900">
+                +{Math.round(highPriorityItems.reduce((acc, item) => acc + (25 - item.score), 0) * 1.6)}%
+              </div>
+              <div className="text-sm text-blue-700">Potential Score Increase</div>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="p-3 bg-white/60 rounded-lg">
+              <div className="text-lg font-bold text-red-700">{highPriorityItems.length}</div>
+              <div className="text-xs text-red-600">High Priority</div>
+            </div>
+            <div className="p-3 bg-white/60 rounded-lg">
+              <div className="text-lg font-bold text-yellow-700">{mediumPriorityItems.length}</div>
+              <div className="text-xs text-yellow-600">Medium Priority</div>
+            </div>
+            <div className="p-3 bg-white/60 rounded-lg">
+              <div className="text-lg font-bold text-green-700">{lowPriorityItems.length}</div>
+              <div className="text-xs text-green-600">Nice to Have</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Quick Action Items */}
       {highPriorityItems.length > 0 && (
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-red-200 bg-gradient-to-r from-red-50 to-orange-50 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-red-200/20 rounded-full -translate-y-10 translate-x-10"></div>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-red-900">
               <Zap className="w-5 h-5" />
-              High Priority Actions ({highPriorityItems.length})
+              🚨 High Priority Actions ({highPriorityItems.length})
             </CardTitle>
+            <p className="text-red-800">Address these first for maximum impact on your ATS score</p>
           </CardHeader>
           <CardContent className="space-y-4">
             {highPriorityItems.map((item, index) => {
@@ -165,7 +203,7 @@ const ATSImprovementSuggestions = ({ data, feedback }: ATSImprovementSuggestions
               const PriorityIcon = getPriorityIcon(item.priority);
               
               return (
-                <div key={index} className="bg-white p-4 rounded-lg border border-red-200">
+                <div key={index} className="bg-white/80 p-5 rounded-xl border border-red-200 shadow-sm hover:shadow-md transition-all">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <IconComponent className="w-5 h-5 text-red-600" />
@@ -174,27 +212,40 @@ const ATSImprovementSuggestions = ({ data, feedback }: ATSImprovementSuggestions
                         <p className="text-sm text-gray-600">{item.feedback}</p>
                       </div>
                     </div>
-                    <Badge className={getPriorityColor(item.priority)}>
+                    <div className="flex flex-col items-end gap-2">
+                      <div className="text-2xl font-bold text-red-600">
+                        {Math.round(item.score * 4)}%
+                      </div>
+                      <Badge className={getPriorityColor(item.priority)}>
                       <PriorityIcon className="w-3 h-3 mr-1" />
                       {item.priority.toUpperCase()}
                     </Badge>
+                    </div>
                   </div>
                   
-                  <div className="space-y-2">
+                  <div className="space-y-2 mb-4">
                     {item.specificSuggestions.slice(0, 3).map((suggestion, idx) => (
-                      <div key={idx} className="flex items-start gap-2 text-sm">
+                      <div key={idx} className="flex items-start gap-2 text-sm p-2 bg-red-50/50 rounded">
                         <ArrowRight className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
                         <span className="text-gray-700">{suggestion}</span>
                       </div>
                     ))}
                   </div>
                   
-                  <div className="mt-3 pt-3 border-t border-red-100">
+                  <div className="pt-3 border-t border-red-100">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">
-                        Current Score: {Math.round(item.score * 4)}%
-                      </span>
-                      <Button size="sm" variant="outline" className="text-red-700 border-red-300 hover:bg-red-50">
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 bg-red-100 rounded-full h-2">
+                          <div 
+                            className="bg-red-500 h-2 rounded-full transition-all duration-500"
+                            style={{ width: `${item.score * 4}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-xs text-gray-600">
+                          {Math.round(item.score * 4)}%
+                        </span>
+                      </div>
+                      <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white">
                         Fix Now
                       </Button>
                     </div>

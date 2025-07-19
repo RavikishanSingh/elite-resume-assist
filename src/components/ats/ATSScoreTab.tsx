@@ -123,7 +123,11 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
       </div>
 
       {/* Score Meter Card */}
-      <Card className="border-2 border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50">
+      <Card className="border-2 border-blue-100 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-200/20 to-purple-200/20 rounded-full -translate-y-16 translate-x-16"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-indigo-200/20 to-blue-200/20 rounded-full translate-y-12 -translate-x-12"></div>
+        
         <CardHeader className="text-center pb-4">
           <div className="flex items-center justify-center gap-4 mb-4">
             <div className="flex items-center gap-2">
@@ -143,9 +147,9 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
             </Badge>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative">
           <ATSScoreMeter score={atsAnalysis.score} size="large" />
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
             <div className="p-4 bg-white rounded-lg border">
               <Award className="w-8 h-8 text-blue-600 mx-auto mb-2" />
               <p className="text-sm text-gray-600">ATS Compatibility</p>
@@ -161,6 +165,18 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
               <p className="text-sm text-gray-600">Areas to Improve</p>
               <p className="text-lg font-bold text-gray-900">{atsAnalysis.feedback.filter(f => f.score < 15).length}</p>
             </div>
+          </div>
+          
+          {/* Quick action buttons */}
+          <div className="mt-6 flex justify-center gap-3">
+            <Button size="sm" variant="outline" className="bg-white/80 hover:bg-white">
+              <Target className="w-4 h-4 mr-2" />
+              View Improvements
+            </Button>
+            <Button size="sm" variant="outline" className="bg-white/80 hover:bg-white">
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Analyze Keywords
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -182,12 +198,23 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
               const isFair = item.score >= 10 && item.score < 15;
               
               return (
-                <Card key={index} className={`border-l-4 ${
+                <Card key={index} className={`border-l-4 transition-all hover:shadow-md ${
                   isGood ? 'border-l-green-500 bg-green-50' : 
                   isFair ? 'border-l-yellow-500 bg-yellow-50' : 
                   'border-l-red-500 bg-red-50'
                 }`}>
-                  <CardContent className="p-6">
+                  <CardContent className="p-6 relative">
+                    {/* Score indicator */}
+                    <div className="absolute top-4 right-4">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold ${
+                        isGood ? 'bg-green-100 text-green-800' :
+                        isFair ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {Math.round(item.score * 4)}%
+                      </div>
+                    </div>
+                    
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <IconComponent className={`w-6 h-6 ${
@@ -200,25 +227,24 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
                           <p className="text-gray-600">{item.feedback}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className={`text-2xl font-bold ${getScoreColor(item.score * 4)}`}>
-                          {Math.round(item.score * 4)}%
-                        </div>
-                        <Progress value={item.score * 4} className="w-24 mt-2" />
-                      </div>
+                    </div>
+                    
+                    {/* Progress bar */}
+                    <div className="mb-4">
+                      <Progress value={item.score * 4} className="h-2" />
                     </div>
                     
                     {item.suggestions.length > 0 && (
-                      <div className="mt-4 p-4 bg-white rounded-lg border">
+                      <div className="p-4 bg-white/80 rounded-lg border border-white/50">
                         <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
                           <Lightbulb className="w-4 h-4 text-yellow-600" />
                           Improvement Suggestions
                         </h4>
-                        <ul className="space-y-1">
+                        <ul className="space-y-2">
                           {item.suggestions.map((suggestion, idx) => (
-                            <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
-                              <span className="text-blue-600 mt-1">•</span>
-                              {suggestion}
+                            <li key={idx} className="text-sm text-gray-700 flex items-start gap-2 p-2 rounded hover:bg-blue-50/50 transition-colors">
+                              <CheckCircle className="w-3 h-3 text-blue-600 mt-0.5 flex-shrink-0" />
+                              <span>{suggestion}</span>
                             </li>
                           ))}
                         </ul>
