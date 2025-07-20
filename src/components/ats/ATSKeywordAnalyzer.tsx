@@ -13,7 +13,8 @@ import {
   Plus,
   Target,
   Lightbulb,
-  BarChart3
+  BarChart3,
+  FileText
 } from 'lucide-react';
 
 interface ATSKeywordAnalyzerProps {
