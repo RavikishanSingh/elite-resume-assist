@@ -343,14 +343,16 @@ const Index = () => {
         <div className="container mx-auto px-4 py-6 relative">
           <nav className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                <FileText className="w-6 h-6 text-white" />
-              </div>
+              <img 
+                src="/upscalemedia-transformed.png" 
+                alt="Resume Pilot Logo" 
+                className="w-12 h-12 object-contain"
+              />
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  SmartResume
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent">
+                  Resume Pilot
                 </h1>
-                <p className="text-xs text-gray-500">AI-Powered Resume Builder</p>
+                <p className="text-xs text-gray-500">Where Resumes Take Off</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
@@ -386,7 +388,7 @@ const Index = () => {
           <div className="max-w-5xl mx-auto text-center">
             <div className="inline-flex items-center space-x-2 bg-blue-50 border border-blue-200 px-4 py-2 rounded-full mb-8">
               <Sparkles className="w-4 h-4 text-blue-600" />
-              <span className="text-blue-700 font-medium text-sm">AI-Powered Resume Generation</span>
+              <span className="text-blue-700 font-medium text-sm">AI-Powered Resume Creation</span>
             </div>
             
             <h1 className="text-6xl md:text-7xl font-bold mb-8 leading-tight">
@@ -395,22 +397,22 @@ const Index = () => {
               </span>
               <br />
               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                Resume with AI
+                Resume Journey
               </span>
             </h1>
             
             <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Create professional, ATS-friendly resumes in minutes. Import directly from LinkedIn or build from scratch with intelligent AI assistance.
+              Navigate your career with AI-powered resume creation. Import from LinkedIn or build from scratch with intelligent guidance that helps your resume soar.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
               <Button 
                 size="lg" 
-                className="text-lg px-10 py-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
+                className="text-lg px-10 py-6 bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
                 onClick={() => { setImportedData(null); setShowBuilder(true); }}
               >
                 <Zap className="mr-3 w-5 h-5" />
-                Start Building Free
+                Take Off Now
                 <ArrowRight className="ml-3 w-5 h-5" />
               </Button>
               <Button 
@@ -473,17 +475,15 @@ const Index = () => {
         <div className="container mx-auto px-4 relative">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm border border-white/30 px-6 py-3 rounded-full mb-8">
-              <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-              </svg>
+              <img src="/upscalemedia-transformed.png" alt="Resume Pilot" className="w-6 h-6" />
               <span className="text-white font-semibold">LinkedIn Integration Now Live!</span>
             </div>
             
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-              Skip the Manual Work
+              Skip the Manual Flight Plan
             </h2>
             <p className="text-xl text-blue-100 mb-12 max-w-2xl mx-auto">
-              Import your professional profile directly from LinkedIn in seconds. Save hours of typing and get a perfectly formatted resume instantly.
+              Import your professional profile directly from LinkedIn in seconds. Let your career take flight with perfectly formatted resumes instantly.
             </p>
             
             <div className="grid md:grid-cols-2 gap-8 mb-12">
@@ -647,12 +647,10 @@ const Index = () => {
       <footer className="bg-gray-900 text-white py-12">
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center space-x-3 mb-6">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <FileText className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold">SmartResume</span>
+            <img src="/upscalemedia-transformed.png" alt="Resume Pilot" className="w-8 h-8" />
+            <span className="text-xl font-bold">Resume Pilot</span>
           </div>
-          <p className="text-gray-400 mb-4">&copy; 2025 SmartResume. Built with AI to help you succeed.</p>
+          <p className="text-gray-400 mb-4">&copy; 2025 Resume Pilot. Where Resumes Take Off.</p>
           <div className="flex justify-center space-x-6 text-sm text-gray-400">
             <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
