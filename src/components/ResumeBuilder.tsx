@@ -200,7 +200,6 @@ const ResumeBuilder = ({ onBack, initialData, template = 'modern', resumeId }: R
                   Resume Pilot Builder
                 </h1>
               </div>
-              </h1>
               <p className="text-sm text-gray-600">
                 Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}
               </p>
