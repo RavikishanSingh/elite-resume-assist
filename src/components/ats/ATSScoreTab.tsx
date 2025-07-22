@@ -23,11 +23,13 @@ import {
   ArrowUp,
   ArrowDown,
   Minus
+  RefreshCw
 } from 'lucide-react';
 import { calculateATSScore, type ATSFeedback } from '@/utils/atsChecker';
 import ATSScoreMeter from './ATSScoreMeter';
 import ATSImprovementSuggestions from './ATSImprovementSuggestions';
 import ATSKeywordAnalyzer from './ATSKeywordAnalyzer';
+import { useToast } from '@/hooks/use-toast';
 
 interface ATSScoreTabProps {
   data: any;
@@ -37,21 +39,55 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
   const [atsAnalysis, setAtsAnalysis] = useState<{ score: number; feedback: ATSFeedback[] } | null>(null);
   const [previousScore, setPreviousScore] = useState<number | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [lastAnalyzedData, setLastAnalyzedData] = useState<string>('');
+  const { toast } = useToast();
 
   useEffect(() => {
-    if (data) {
+    const dataString = JSON.stringify(data);
+    if (data && dataString !== lastAnalyzedData) {
       setIsAnalyzing(true);
-      // Simulate analysis delay for better UX
+      
+      // Store previous score before updating
+      if (atsAnalysis) {
+        setPreviousScore(atsAnalysis.score);
+      }
+      
       setTimeout(() => {
         const analysis = calculateATSScore(data);
-        if (atsAnalysis) {
-          setPreviousScore(atsAnalysis.score);
-        }
         setAtsAnalysis(analysis);
+        setLastAnalyzedData(dataString);
         setIsAnalyzing(false);
+        
+        // Show toast notification for score changes
+        if (previousScore !== null && analysis.score !== previousScore) {
+          const change = analysis.score - previousScore;
+          toast({
+            title: change > 0 ? "ATS Score Improved!" : "ATS Score Changed",
+            description: `Your score ${change > 0 ? 'increased' : 'changed'} by ${Math.abs(change)} points`,
+            variant: change > 0 ? "default" : "destructive"
+          });
+        }
       }, 1000);
     }
-  }, [data]);
+  }, [data, lastAnalyzedData, atsAnalysis, previousScore, toast]);
+
+  const handleRefreshAnalysis = () => {
+    if (data) {
+      setIsAnalyzing(true);
+      setPreviousScore(atsAnalysis?.score || null);
+      
+      setTimeout(() => {
+        const analysis = calculateATSScore(data);
+        setAtsAnalysis(analysis);
+        setIsAnalyzing(false);
+        
+        toast({
+          title: "Analysis Refreshed",
+          description: "Your ATS score has been recalculated with the latest data",
+        });
+      }, 1500);
+    }
+  };
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600';
@@ -87,12 +123,48 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
     }
   };
 
+  // Calculate real-time statistics
+  const getResumeStats = () => {
+    const stats = {
+      totalSections: 0,
+      completedSections: 0,
+      totalWords: 0,
+      keywordCount: 0,
+      experienceYears: 0
+    };
+
+    if (data.personalInfo?.fullName) stats.completedSections++;
+    if (data.experience?.length > 0) {
+      stats.completedSections++;
+      stats.totalWords += data.experience.reduce((acc: number, exp: any) => 
+        acc + (exp.description?.split(' ').length || 0), 0);
+      
+      // Calculate years of experience
+      const currentYear = new Date().getFullYear();
+      stats.experienceYears = data.experience.reduce((acc: number, exp: any) => {
+        const startYear = exp.startDate ? parseInt(exp.startDate) : currentYear;
+        const endYear = exp.current ? currentYear : (exp.endDate ? parseInt(exp.endDate) : currentYear);
+        return acc + Math.max(0, endYear - startYear);
+      }, 0);
+    }
+    if (data.education?.length > 0) stats.completedSections++;
+    if (data.skills?.length > 0) {
+      stats.completedSections++;
+      stats.keywordCount = data.skills.length;
+    }
+    if (data.projects?.length > 0) stats.completedSections++;
+    
+    stats.totalSections = 5; // personalInfo, experience, education, skills, projects
+    
+    return stats;
+  };
   if (isAnalyzing) {
     return (
-      <div className="flex items-center justify-center py-12">
+      <div className="flex flex-col items-center justify-center py-12">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Analyzing your resume for ATS compatibility...</p>
+          <p className="text-sm text-gray-500 mt-2">Processing {Object.keys(data).length} sections...</p>
         </div>
       </div>
     );
@@ -103,7 +175,7 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
       <Alert>
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
-          Unable to analyze resume. Please ensure you have filled out the required sections.
+          Unable to analyze resume. Please ensure you have filled out at least your personal information and one other section.
         </AlertDescription>
       </Alert>
     );
@@ -111,20 +183,61 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
 
   const scoreBadge = getScoreBadge(atsAnalysis.score);
   const scoreChange = getScoreChange();
+  const resumeStats = getResumeStats();
 
   return (
     <div className="space-y-6">
       {/* Header with Score Overview */}
       <div className="text-center">
         <div className="flex items-center justify-center gap-3 mb-4">
-          <img src="/upscalemedia-transformed.png" alt="Resume Pilot" className="w-10 h-10" />
+          <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-blue-600 rounded-xl flex items-center justify-center">
+            <FileText className="w-6 h-6 text-white" />
+          </div>
           <h2 className="text-3xl font-bold text-gray-900">ATS Flight Check</h2>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefreshAnalysis}
+            disabled={isAnalyzing}
+            className="ml-4"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${isAnalyzing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
         </div>
         <p className="text-gray-600 mb-6">
           Comprehensive analysis to ensure your resume is ready for takeoff through ATS systems
         </p>
       </div>
 
+      {/* Real-time Resume Statistics */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <Card className="text-center p-4">
+          <div className="text-2xl font-bold text-blue-600">{resumeStats.completedSections}</div>
+          <div className="text-xs text-gray-600">Sections Complete</div>
+          <div className="text-xs text-gray-500">of {resumeStats.totalSections}</div>
+        </Card>
+        <Card className="text-center p-4">
+          <div className="text-2xl font-bold text-green-600">{resumeStats.totalWords}</div>
+          <div className="text-xs text-gray-600">Total Words</div>
+          <div className="text-xs text-gray-500">in descriptions</div>
+        </Card>
+        <Card className="text-center p-4">
+          <div className="text-2xl font-bold text-purple-600">{resumeStats.keywordCount}</div>
+          <div className="text-xs text-gray-600">Skills Listed</div>
+          <div className="text-xs text-gray-500">keywords</div>
+        </Card>
+        <Card className="text-center p-4">
+          <div className="text-2xl font-bold text-orange-600">{resumeStats.experienceYears}</div>
+          <div className="text-xs text-gray-600">Years Experience</div>
+          <div className="text-xs text-gray-500">calculated</div>
+        </Card>
+        <Card className="text-center p-4">
+          <div className="text-2xl font-bold text-indigo-600">{data.experience?.length || 0}</div>
+          <div className="text-xs text-gray-600">Job Positions</div>
+          <div className="text-xs text-gray-500">listed</div>
+        </Card>
+      </div>
       {/* Score Meter Card */}
       <Card className="border-2 border-blue-100 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
         {/* Background decoration */}
@@ -151,7 +264,7 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
           </div>
         </CardHeader>
         <CardContent className="relative">
-          <ATSScoreMeter score={atsAnalysis.score} size="large" />
+          <ATSScoreMeter score={atsAnalysis.score} showDetails={true} />
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
             <div className="p-4 bg-white rounded-lg border">
               <Award className="w-8 h-8 text-blue-600 mx-auto mb-2" />

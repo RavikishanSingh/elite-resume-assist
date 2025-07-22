@@ -33,7 +33,7 @@ const EditableText = ({
     if (isActiveEdit && inputRef.current) {
       inputRef.current.focus();
       // Select all text when editing starts
-      if (inputRef.current.select) {
+      if ('select' in inputRef.current && typeof inputRef.current.select === 'function') {
         inputRef.current.select();
       }
     }
@@ -63,6 +63,29 @@ const EditableText = ({
     }
   };
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // Allow text selection by preventing immediate edit mode
+    e.stopPropagation();
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (!isEditing) return;
+    
+    // Delay check for selection to allow text selection to complete
+    setTimeout(() => {
+      const selection = window.getSelection();
+      if (!selection || selection.toString().length === 0) {
+        setIsActiveEdit(true);
+      }
+    }, 150); // Increased delay for better text selection
+  };
+
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    if (!isEditing) return;
+    e.stopPropagation();
+    e.preventDefault();
+    setIsActiveEdit(true);
+  };
   // If not in editing mode, just show the text
   if (!isEditing) {
     return (
@@ -82,9 +105,10 @@ const EditableText = ({
         onChange={(e) => setEditValue(e.target.value)}
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
-        className={`${className} border-2 border-blue-500 bg-white min-w-[200px] focus:ring-2 focus:ring-blue-300`}
+        className={`${className} border-2 border-blue-500 bg-white min-w-[200px] focus:ring-2 focus:ring-blue-300 focus:border-blue-600`}
         placeholder={placeholder}
         rows={multiline ? 3 : undefined}
+        autoFocus
       />
     );
   }
@@ -92,27 +116,22 @@ const EditableText = ({
   // If in edit mode but not currently editing this field - show clickable text
   return (
     <div 
-      className={`${className} group cursor-text hover:bg-blue-50 rounded px-2 py-1 relative inline-block min-h-[2rem] border border-transparent hover:border-blue-300 transition-all duration-200 select-text`}
-      onMouseDown={(e) => {
-        // Allow text selection by preventing immediate edit mode
-        e.stopPropagation();
-      }}
-      onClick={(e) => {
-        // Delay check for selection to allow text selection to complete
-        setTimeout(() => {
-          const selection = window.getSelection();
-          if (!selection || selection.toString().length === 0) {
-            setIsActiveEdit(true);
-          }
-        }, 100);
-      }}
-      onDoubleClick={(e) => {
-        e.stopPropagation();
-        setIsActiveEdit(true);
-      }}
+      className={`${className} group cursor-text hover:bg-blue-50 rounded px-2 py-1 relative inline-block min-h-[2rem] border border-transparent hover:border-blue-300 transition-all duration-200`}
+      onMouseDown={handleMouseDown}
+      onClick={handleClick}
+      onDoubleClick={handleDoubleClick}
       title="Click to edit or double-click"
+      style={{ userSelect: 'text', WebkitUserSelect: 'text', MozUserSelect: 'text' }}
     >
-      <span className="break-words select-text user-select-text" style={{ userSelect: 'text' }}>
+      <span 
+        className="break-words" 
+        style={{ 
+          userSelect: 'text', 
+          WebkitUserSelect: 'text', 
+          MozUserSelect: 'text',
+          cursor: 'text'
+        }}
+      >
         {value || (
           <span className="text-gray-400 italic">{placeholder}</span>
         )}

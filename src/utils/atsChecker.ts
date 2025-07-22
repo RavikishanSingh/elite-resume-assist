@@ -8,9 +8,9 @@ export interface ATSFeedback {
 export const calculateATSScore = (resumeData: any): { score: number; feedback: ATSFeedback[] } => {
   const feedback: ATSFeedback[] = [];
   let totalScore = 0;
-  const maxScore = 25; // Updated to match the scoring system (5 categories × 5 points each)
+  const maxScore = 25; // 5 categories × 5 points each
 
-  // Check contact information (20 points)
+  // Check contact information (5 points max)
   const contactScore = checkContactInfo(resumeData.personalInfo);
   feedback.push({
     category: 'Contact Information',
@@ -25,7 +25,7 @@ export const calculateATSScore = (resumeData: any): { score: number; feedback: A
   });
   totalScore += contactScore;
 
-  // Check skills section (25 points)
+  // Check skills section (5 points max)
   const skillsScore = checkSkills(resumeData.skills);
   feedback.push({
     category: 'Skills & Keywords',
@@ -41,7 +41,7 @@ export const calculateATSScore = (resumeData: any): { score: number; feedback: A
   });
   totalScore += skillsScore;
 
-  // Check experience section (30 points)
+  // Check experience section (5 points max)
   const experienceScore = checkExperience(resumeData.experience);
   feedback.push({
     category: 'Work Experience',
@@ -58,7 +58,7 @@ export const calculateATSScore = (resumeData: any): { score: number; feedback: A
   });
   totalScore += experienceScore;
 
-  // Check education section (15 points)
+  // Check education section (5 points max)
   const educationScore = checkEducation(resumeData.education);
   feedback.push({
     category: 'Education',
@@ -74,7 +74,7 @@ export const calculateATSScore = (resumeData: any): { score: number; feedback: A
   });
   totalScore += educationScore;
 
-  // Check formatting and readability (10 points)
+  // Check formatting and readability (5 points max)
   const formatScore = checkFormatting(resumeData);
   feedback.push({
     category: 'Formatting & Structure',
@@ -99,11 +99,11 @@ export const calculateATSScore = (resumeData: any): { score: number; feedback: A
 
 const checkContactInfo = (personalInfo: any): number => {
   let score = 0;
-  if (personalInfo?.fullName) score += 5;
-  if (personalInfo?.email) score += 5;
-  if (personalInfo?.phone) score += 5;
-  if (personalInfo?.location) score += 3;
-  if (personalInfo?.linkedIn) score += 2;
+  if (personalInfo?.fullName?.trim()) score += 1.5;
+  if (personalInfo?.email?.trim()) score += 1.5;
+  if (personalInfo?.phone?.trim()) score += 1;
+  if (personalInfo?.location?.trim()) score += 0.5;
+  if (personalInfo?.linkedIn?.trim()) score += 0.5;
   return Math.min(score, 5);
 };
 
@@ -111,26 +111,29 @@ const checkSkills = (skills: any[]): number => {
   if (!skills || skills.length === 0) return 0;
   
   let score = 0;
-  if (skills.length >= 8) score += 2;
-  else if (skills.length >= 5) score += 1.5;
-  else if (skills.length >= 3) score += 1;
-  else score += 0.5;
+  
+  // Base score for having skills
+  if (skills.length >= 10) score += 2;
+  else if (skills.length >= 7) score += 1.5;
+  else if (skills.length >= 5) score += 1;
+  else if (skills.length >= 3) score += 0.5;
 
   // Check for technical skills variety
-  const hasVariety = skills.some(skill => 
-    skill.toLowerCase().includes('programming') ||
-    skill.toLowerCase().includes('software') ||
-    skill.toLowerCase().includes('technical')
+  const technicalKeywords = ['programming', 'software', 'technical', 'development', 'coding', 'javascript', 'python', 'react', 'node', 'sql', 'database'];
+  const hasTechnicalSkills = skills.some(skill => 
+    technicalKeywords.some(keyword => skill.toLowerCase().includes(keyword))
   );
-  if (hasVariety) score += 1.5;
+  if (hasTechnicalSkills) score += 1;
 
   // Check for soft skills
+  const softSkillKeywords = ['communication', 'leadership', 'teamwork', 'problem-solving', 'management', 'collaboration', 'analytical'];
   const hasSoftSkills = skills.some(skill =>
-    ['communication', 'leadership', 'teamwork', 'problem-solving', 'management'].some(soft =>
-      skill.toLowerCase().includes(soft)
-    )
+    softSkillKeywords.some(keyword => skill.toLowerCase().includes(keyword))
   );
-  if (hasSoftSkills) score += 1.5;
+  if (hasSoftSkills) score += 1;
+  
+  // Bonus for diverse skill set
+  if (hasTechnicalSkills && hasSoftSkills) score += 1;
 
   return Math.min(score, 5);
 };
@@ -141,15 +144,26 @@ const checkExperience = (experience: any[]): number => {
   let score = 0;
   
   // Points for having experience entries
-  if (experience.length >= 3) score += 1.5;
+  if (experience.length >= 4) score += 2;
+  else if (experience.length >= 3) score += 1.5;
   else if (experience.length >= 2) score += 1;
-  else score += 0.5;
+  else if (experience.length >= 1) score += 0.5;
 
   // Check for detailed descriptions
   experience.forEach(exp => {
-    if (exp.description && exp.description.length > 100) score += 0.5;
-    if (exp.company && exp.jobTitle) score += 0.5;
-    if (exp.startDate) score += 0.5;
+    if (exp.description && exp.description.trim().length > 100) score += 0.3;
+    if (exp.company?.trim() && exp.jobTitle?.trim()) score += 0.3;
+    if (exp.startDate?.trim()) score += 0.2;
+    
+    // Bonus for quantifiable achievements
+    if (exp.description && /\d+%|\d+\+|\$\d+|increased|improved|reduced|achieved/i.test(exp.description)) {
+      score += 0.4;
+    }
+    
+    // Bonus for action verbs
+    if (exp.description && /^•?\s*(Led|Developed|Implemented|Managed|Created|Designed|Built|Optimized)/im.test(exp.description)) {
+      score += 0.3;
+    }
   });
 
   return Math.min(score, 5);
@@ -161,10 +175,10 @@ const checkEducation = (education: any[]): number => {
   let score = 0;
   
   education.forEach(edu => {
-    if (edu.degree) score += 1.5;
-    if (edu.school) score += 1;
-    if (edu.graduationDate) score += 1;
-    if (edu.gpa && parseFloat(edu.gpa) >= 3.5) score += 1.5;
+    if (edu.degree?.trim()) score += 1.5;
+    if (edu.school?.trim()) score += 1.5;
+    if (edu.graduationDate?.trim()) score += 1;
+    if (edu.gpa && parseFloat(edu.gpa) >= 3.5) score += 1;
   });
 
   return Math.min(score, 5);
@@ -179,7 +193,14 @@ const checkFormatting = (resumeData: any): number => {
     (Array.isArray(resumeData[section]) ? resumeData[section].length > 0 : Object.keys(resumeData[section]).length > 0)
   );
   
-  score += (presentSections.length / sections.length) * 5;
+  // Base score for section presence
+  score += (presentSections.length / sections.length) * 3;
+  
+  // Bonus for having summary
+  if (resumeData.personalInfo?.summary?.trim()) score += 1;
+  
+  // Bonus for having projects
+  if (resumeData.projects && resumeData.projects.length > 0) score += 1;
   
   return Math.round(score);
 };
