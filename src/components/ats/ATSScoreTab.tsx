@@ -116,9 +116,12 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
     <div className="space-y-6">
       {/* Header with Score Overview */}
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">ATS Compatibility Analysis</h2>
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <img src="/upscalemedia-transformed.png" alt="Resume Pilot" className="w-10 h-10" />
+          <h2 className="text-3xl font-bold text-gray-900">ATS Flight Check</h2>
+        </div>
         <p className="text-gray-600 mb-6">
-          Comprehensive analysis of how well your resume performs with Applicant Tracking Systems
+          Comprehensive analysis to ensure your resume is ready for takeoff through ATS systems
         </p>
       </div>
 

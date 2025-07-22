@@ -194,8 +194,12 @@ const ResumeBuilder = ({ onBack, initialData, template = 'modern', resumeId }: R
               <span>Back to Home</span>
             </Button>
             <div className="text-center">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Resume Builder
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <img src="/upscalemedia-transformed.png" alt="Resume Pilot" className="w-6 h-6" />
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent">
+                  Resume Pilot Builder
+                </h1>
+              </div>
               </h1>
               <p className="text-sm text-gray-600">
                 Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}

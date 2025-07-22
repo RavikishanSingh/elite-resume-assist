@@ -86,7 +86,10 @@ export default function Dashboard() {
       <header className="bg-white/80 backdrop-blur-sm border-b">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Resume Dashboard</h1>
+            <div className="flex items-center gap-3">
+              <img src="/upscalemedia-transformed.png" alt="Resume Pilot" className="w-8 h-8" />
+              <h1 className="text-2xl font-bold text-foreground">Resume Pilot Dashboard</h1>
+            </div>
             <p className="text-muted-foreground">Welcome back, {profile?.full_name || user?.email}</p>
           </div>
           <div className="flex items-center gap-4">

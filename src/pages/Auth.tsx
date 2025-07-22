@@ -90,7 +90,10 @@ const Auth = () => {
         <div className="max-w-md mx-auto">
           <Card className="shadow-xl">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold">Welcome to SmartResume</CardTitle>
+              <CardTitle className="text-2xl font-bold flex items-center justify-center gap-3">
+                <img src="/upscalemedia-transformed.png" alt="Resume Pilot" className="w-8 h-8" />
+                Welcome to Resume Pilot
+              </CardTitle>
               <CardDescription>Sign in to your account or create a new one</CardDescription>
             </CardHeader>
             <CardContent>

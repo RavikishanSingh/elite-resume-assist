@@ -154,7 +154,7 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
 
     const pdf = new jsPDF({
       orientation: 'portrait',
-      unit: 'mm',
+      creator: 'Resume Pilot - Where Resumes Take Off',
       format: 'a4'
     });
 

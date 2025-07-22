@@ -83,15 +83,15 @@ const TemplateShowcase = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <div className="inline-flex items-center space-x-2 bg-blue-100 border border-blue-200 px-4 py-2 rounded-full mb-6">
-            <LayoutTemplate className="w-5 h-5 text-blue-600" />
+            <img src="/upscalemedia-transformed.png" alt="Resume Pilot" className="w-5 h-5" />
             <span className="text-blue-700 font-medium text-sm">Professionally Designed Templates</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
-            Find a Style That Fits You
+            Find a Template That Helps You Soar
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Choose from a variety of templates designed to impress recruiters and pass through ATS scans. 
-            Each one is fully customizable.
+            Choose from professionally designed templates that help your resume take flight. 
+            Each template is ATS-optimized and fully customizable to match your career journey.
           </p>
         </div>
 
