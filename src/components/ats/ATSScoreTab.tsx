@@ -22,7 +22,7 @@ import {
   Zap,
   ArrowUp,
   ArrowDown,
-  Minus
+  Minus,
   RefreshCw
 } from 'lucide-react';
 import { calculateATSScore, type ATSFeedback } from '@/utils/atsChecker';
