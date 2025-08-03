@@ -213,13 +213,12 @@ const ResumeBuilder = ({ onBack, initialData, resumeId }: ResumeBuilderProps) =>
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <Card className="shadow-xl">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl flex items-center justify-center space-x-2">
-                <steps[currentStep].icon className="w-6 h-6" />
-                <span>{steps[currentStep].title}</span>
-              </CardTitle>
-              <p className="text-gray-600">{steps[currentStep].description}</p>
-            </CardHeader>
+           <CardHeader className="text-center">
+  <CardTitle className="text-2xl flex items-center justify-center space-x-2">
+    <Icon className="w-6 h-6" />
+    <span>{steps[currentStep].title}</span>
+  </CardTitle>
+</CardHeader>
             <CardContent className="p-8">
               <CurrentStepComponent
                 data={resumeData}
