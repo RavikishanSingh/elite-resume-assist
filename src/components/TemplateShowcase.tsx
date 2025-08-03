@@ -9,6 +9,36 @@ import CreativeTemplate from "@/components/templates/CreativeTemplate";
 import MinimalTemplate from "@/components/templates/MinimalTemplate";
 import ExecutiveTemplate from "@/components/templates/ExecutiveTemplate";
 import TechTemplate from "@/components/templates/TechTemplate";
+import AcademicTemplate from "@/components/templates/AcademicTemplate";
+import HealthcareTemplate from "@/components/templates/HealthcareTemplate";
+import LegalTemplate from "@/components/templates/LegalTemplate";
+import SalesTemplate from "@/components/templates/SalesTemplate";
+import MarketingTemplate from "@/components/templates/MarketingTemplate";
+import FinanceTemplate from "@/components/templates/FinanceTemplate";
+import ConsultingTemplate from "@/components/templates/ConsultingTemplate";
+import EducationTemplate from "@/components/templates/EducationTemplate";
+import NonProfitTemplate from "@/components/templates/NonProfitTemplate";
+import StartupTemplate from "@/components/templates/StartupTemplate";
+import RetailTemplate from "@/components/templates/RetailTemplate";
+import HospitalityTemplate from "@/components/templates/HospitalityTemplate";
+import ManufacturingTemplate from "@/components/templates/ManufacturingTemplate";
+import MediaTemplate from "@/components/templates/MediaTemplate";
+import GovernmentTemplate from "@/components/templates/GovernmentTemplate";
+import EngineeringTemplate from "@/components/templates/EngineeringTemplate";
+import ArchitectureTemplate from "@/components/templates/ArchitectureTemplate";
+import FreelancerTemplate from "@/components/templates/FreelancerTemplate";
+import InternTemplate from "@/components/templates/InternTemplate";
+import RemoteTemplate from "@/components/templates/RemoteTemplate";
+import InternationalTemplate from "@/components/templates/InternationalTemplate";
+import ScienceTemplate from "@/components/templates/ScienceTemplate";
+import ArtisticTemplate from "@/components/templates/ArtisticTemplate";
+import SportsTemplate from "@/components/templates/SportsTemplate";
+import VeteranTemplate from "@/components/templates/VeteranTemplate";
+import EntryLevelTemplate from "@/components/templates/EntryLevelTemplate";
+import CareerChangeTemplate from "@/components/templates/CareerChangeTemplate";
+import ExecutiveCTemplate from "@/components/templates/ExecutiveCTemplate";
+import DataScienceTemplate from "@/components/templates/DataScienceTemplate";
+import CybersecurityTemplate from "@/components/templates/CybersecurityTemplate";
 
 const TemplatePreview = ({ children }: { children: React.ReactNode }) => (
   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -27,6 +57,15 @@ const templates = [
     preview: (
       <TemplatePreview>
         <ModernTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Professional',
+    description: 'Two-column sidebar layout.',
+    preview: (
+      <TemplatePreview>
+        <ProfessionalTemplate data={sampleResumeData} isEditing={false} />
       </TemplatePreview>
     ),
   },
@@ -75,6 +114,276 @@ const templates = [
       </TemplatePreview>
     ),
   },
+  {
+    name: 'Academic',
+    description: 'Research and academia focused.',
+    preview: (
+      <TemplatePreview>
+        <AcademicTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Healthcare',
+    description: 'Medical professionals.',
+    preview: (
+      <TemplatePreview>
+        <HealthcareTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Legal',
+    description: 'Law and legal professionals.',
+    preview: (
+      <TemplatePreview>
+        <LegalTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Sales',
+    description: 'Sales and business development.',
+    preview: (
+      <TemplatePreview>
+        <SalesTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Marketing',
+    description: 'Marketing professionals.',
+    preview: (
+      <TemplatePreview>
+        <MarketingTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Finance',
+    description: 'Financial sector professionals.',
+    preview: (
+      <TemplatePreview>
+        <FinanceTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Consulting',
+    description: 'Management consultants.',
+    preview: (
+      <TemplatePreview>
+        <ConsultingTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Education',
+    description: 'Teachers and educators.',
+    preview: (
+      <TemplatePreview>
+        <EducationTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Non-Profit',
+    description: 'Social impact organizations.',
+    preview: (
+      <TemplatePreview>
+        <NonProfitTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Startup',
+    description: 'Entrepreneurial roles.',
+    preview: (
+      <TemplatePreview>
+        <StartupTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Retail',
+    description: 'Customer service focused.',
+    preview: (
+      <TemplatePreview>
+        <RetailTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Hospitality',
+    description: 'Hotels and restaurants.',
+    preview: (
+      <TemplatePreview>
+        <HospitalityTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Manufacturing',
+    description: 'Industrial professionals.',
+    preview: (
+      <TemplatePreview>
+        <ManufacturingTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Media',
+    description: 'Creative media professionals.',
+    preview: (
+      <TemplatePreview>
+        <MediaTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Government',
+    description: 'Public sector roles.',
+    preview: (
+      <TemplatePreview>
+        <GovernmentTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Engineering',
+    description: 'Engineering professionals.',
+    preview: (
+      <TemplatePreview>
+        <EngineeringTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Architecture',
+    description: 'Architects and designers.',
+    preview: (
+      <TemplatePreview>
+        <ArchitectureTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Freelancer',
+    description: 'Independent contractors.',
+    preview: (
+      <TemplatePreview>
+        <FreelancerTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Intern',
+    description: 'Students and interns.',
+    preview: (
+      <TemplatePreview>
+        <InternTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Remote',
+    description: 'Remote work specialists.',
+    preview: (
+      <TemplatePreview>
+        <RemoteTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'International',
+    description: 'Global professionals.',
+    preview: (
+      <TemplatePreview>
+        <InternationalTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Science',
+    description: 'Research scientists.',
+    preview: (
+      <TemplatePreview>
+        <ScienceTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Artistic',
+    description: 'Artists and creatives.',
+    preview: (
+      <TemplatePreview>
+        <ArtisticTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Sports',
+    description: 'Athletic professionals.',
+    preview: (
+      <TemplatePreview>
+        <SportsTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Veteran',
+    description: 'Military veterans.',
+    preview: (
+      <TemplatePreview>
+        <VeteranTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Entry Level',
+    description: 'Recent graduates.',
+    preview: (
+      <TemplatePreview>
+        <EntryLevelTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Career Change',
+    description: 'Career transition.',
+    preview: (
+      <TemplatePreview>
+        <CareerChangeTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'C-Suite',
+    description: 'Executive leadership.',
+    preview: (
+      <TemplatePreview>
+        <ExecutiveCTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Data Science',
+    description: 'Data professionals.',
+    preview: (
+      <TemplatePreview>
+        <DataScienceTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
+  {
+    name: 'Cybersecurity',
+    description: 'Security experts.',
+    preview: (
+      <TemplatePreview>
+        <CybersecurityTemplate data={sampleResumeData} isEditing={false} />
+      </TemplatePreview>
+    ),
+  },
 ];
 
 const TemplateShowcase = () => {
@@ -90,23 +399,32 @@ const TemplateShowcase = () => {
             Find a Template That Helps You Soar
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Choose from professionally designed templates that help your resume take flight. 
+            Choose from 33+ professionally designed templates that help your resume take flight. 
             Each template is ATS-optimized and fully customizable to match your career journey.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {templates.map((template) => (
             <Card key={template.name} className="overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 group transform hover:-translate-y-2">
-              <div className="h-64 bg-gray-200 border-b border-gray-300 overflow-hidden relative">
+              <div className="h-48 bg-gray-200 border-b border-gray-300 overflow-hidden relative">
                 {template.preview}
               </div>
-              <CardContent className="p-6 text-center">
-                <CardTitle className="text-xl mb-2">{template.name}</CardTitle>
-                <CardDescription>{template.description}</CardDescription>
+              <CardContent className="p-4 text-center">
+                <CardTitle className="text-lg mb-1">{template.name}</CardTitle>
+                <CardDescription className="text-sm">{template.description}</CardDescription>
               </CardContent>
             </Card>
           ))}
+        </div>
+        
+        <div className="text-center mt-12">
+          <p className="text-lg text-gray-600 mb-6">
+            Can't find the perfect template? Our AI-powered builder adapts to any industry or role.
+          </p>
+          <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+            Start Building Your Resume
+          </Button>
         </div>
       </div>
     </section>

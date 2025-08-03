@@ -16,6 +16,36 @@ import MinimalTemplate from './templates/MinimalTemplate';
 import TechTemplate from './templates/TechTemplate';
 import ExecutiveTemplate from './templates/ExecutiveTemplate';
 import ProfessionalTemplate from './templates/ProfessionalTemplate';
+import AcademicTemplate from './templates/AcademicTemplate';
+import HealthcareTemplate from './templates/HealthcareTemplate';
+import LegalTemplate from './templates/LegalTemplate';
+import SalesTemplate from './templates/SalesTemplate';
+import MarketingTemplate from './templates/MarketingTemplate';
+import FinanceTemplate from './templates/FinanceTemplate';
+import ConsultingTemplate from './templates/ConsultingTemplate';
+import EducationTemplate from './templates/EducationTemplate';
+import NonProfitTemplate from './templates/NonProfitTemplate';
+import StartupTemplate from './templates/StartupTemplate';
+import RetailTemplate from './templates/RetailTemplate';
+import HospitalityTemplate from './templates/HospitalityTemplate';
+import ManufacturingTemplate from './templates/ManufacturingTemplate';
+import MediaTemplate from './templates/MediaTemplate';
+import GovernmentTemplate from './templates/GovernmentTemplate';
+import EngineeringTemplate from './templates/EngineeringTemplate';
+import ArchitectureTemplate from './templates/ArchitectureTemplate';
+import FreelancerTemplate from './templates/FreelancerTemplate';
+import InternTemplate from './templates/InternTemplate';
+import RemoteTemplate from './templates/RemoteTemplate';
+import InternationalTemplate from './templates/InternationalTemplate';
+import ScienceTemplate from './templates/ScienceTemplate';
+import ArtisticTemplate from './templates/ArtisticTemplate';
+import SportsTemplate from './templates/SportsTemplate';
+import VeteranTemplate from './templates/VeteranTemplate';
+import EntryLevelTemplate from './templates/EntryLevelTemplate';
+import CareerChangeTemplate from './templates/CareerChangeTemplate';
+import ExecutiveCTemplate from './templates/ExecutiveCTemplate';
+import DataScienceTemplate from './templates/DataScienceTemplate';
+import CybersecurityTemplate from './templates/CybersecurityTemplate';
 
 const templates = [
   { id: 'modern', name: 'Modern', component: ModernTemplate, description: 'Clean and contemporary design' },
@@ -24,6 +54,37 @@ const templates = [
   { id: 'creative', name: 'Creative', component: CreativeTemplate, description: 'Bold and artistic layout' },
   { id: 'minimal', name: 'Minimal', component: MinimalTemplate, description: 'Simple and elegant design' },
   { id: 'executive', name: 'Executive', component: ExecutiveTemplate, description: 'Premium executive format' },
+  { id: 'tech', name: 'Tech', component: TechTemplate, description: 'Developer-focused dark theme' },
+  { id: 'academic', name: 'Academic', component: AcademicTemplate, description: 'Research and academia focused' },
+  { id: 'healthcare', name: 'Healthcare', component: HealthcareTemplate, description: 'Medical and healthcare professionals' },
+  { id: 'legal', name: 'Legal', component: LegalTemplate, description: 'Law and legal professionals' },
+  { id: 'sales', name: 'Sales', component: SalesTemplate, description: 'Sales and business development' },
+  { id: 'marketing', name: 'Marketing', component: MarketingTemplate, description: 'Marketing and brand professionals' },
+  { id: 'finance', name: 'Finance', component: FinanceTemplate, description: 'Financial and banking sector' },
+  { id: 'consulting', name: 'Consulting', component: ConsultingTemplate, description: 'Management consulting' },
+  { id: 'education', name: 'Education', component: EducationTemplate, description: 'Teachers and educators' },
+  { id: 'nonprofit', name: 'Non-Profit', component: NonProfitTemplate, description: 'Social impact organizations' },
+  { id: 'startup', name: 'Startup', component: StartupTemplate, description: 'Entrepreneurial and startup roles' },
+  { id: 'retail', name: 'Retail', component: RetailTemplate, description: 'Retail and customer service' },
+  { id: 'hospitality', name: 'Hospitality', component: HospitalityTemplate, description: 'Hotels and restaurants' },
+  { id: 'manufacturing', name: 'Manufacturing', component: ManufacturingTemplate, description: 'Industrial and production' },
+  { id: 'media', name: 'Media', component: MediaTemplate, description: 'Creative media and entertainment' },
+  { id: 'government', name: 'Government', component: GovernmentTemplate, description: 'Public sector and civil service' },
+  { id: 'engineering', name: 'Engineering', component: EngineeringTemplate, description: 'Engineering professionals' },
+  { id: 'architecture', name: 'Architecture', component: ArchitectureTemplate, description: 'Architects and designers' },
+  { id: 'freelancer', name: 'Freelancer', component: FreelancerTemplate, description: 'Independent contractors' },
+  { id: 'intern', name: 'Intern', component: InternTemplate, description: 'Students and interns' },
+  { id: 'remote', name: 'Remote', component: RemoteTemplate, description: 'Remote work specialists' },
+  { id: 'international', name: 'International', component: InternationalTemplate, description: 'Global professionals' },
+  { id: 'science', name: 'Science', component: ScienceTemplate, description: 'Research scientists' },
+  { id: 'artistic', name: 'Artistic', component: ArtisticTemplate, description: 'Artists and creatives' },
+  { id: 'sports', name: 'Sports', component: SportsTemplate, description: 'Athletic professionals' },
+  { id: 'veteran', name: 'Veteran', component: VeteranTemplate, description: 'Military veterans' },
+  { id: 'entrylevel', name: 'Entry Level', component: EntryLevelTemplate, description: 'Recent graduates' },
+  { id: 'careerchange', name: 'Career Change', component: CareerChangeTemplate, description: 'Career transition' },
+  { id: 'executivec', name: 'C-Suite', component: ExecutiveCTemplate, description: 'C-level executives' },
+  { id: 'datascience', name: 'Data Science', component: DataScienceTemplate, description: 'Data scientists and analysts' },
+  { id: 'cybersecurity', name: 'Cybersecurity', component: CybersecurityTemplate, description: 'Security professionals' },
 ];
 
 interface ResumePreviewProps {
