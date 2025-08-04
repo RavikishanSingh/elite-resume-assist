@@ -9,7 +9,7 @@ interface ProfessionalTemplateProps {
   sectionOrder?: string[];
 }
 
-export default function ProfessionalTemplate({ data, onUpdate, isEditing = false, isPDFMode = false }: ProfessionalTemplateProps) {
+const ProfessionalTemplate = ({ data, onUpdate, isEditing = false, isPDFMode = false }: ProfessionalTemplateProps) => {
   const { personalInfo, experience, education, skills, projects } = data || {};
 
   return (
@@ -201,4 +201,3 @@ export default function ProfessionalTemplate({ data, onUpdate, isEditing = false
       </div>
     </div>
   );
-}
