@@ -201,3 +201,4 @@ export default function ProfessionalTemplate({ data, onUpdate, isEditing = false
       </div>
     </div>
   );
+}
