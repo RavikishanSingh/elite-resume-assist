@@ -201,3 +201,6 @@ const ProfessionalTemplate = ({ data, onUpdate, isEditing = false, isPDFMode = f
       </div>
     </div>
   );
+};
+
+export default ProfessionalTemplate;
