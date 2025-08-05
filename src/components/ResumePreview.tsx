@@ -15,7 +15,7 @@ import CreativeTemplate from './templates/CreativeTemplate';
 import MinimalTemplate from './templates/MinimalTemplate';
 import TechTemplate from './templates/TechTemplate';
 import ExecutiveTemplate from './templates/ExecutiveTemplate';
-import ProfessionalTemplate from './templates/ProfessionalTemplate';
+import { ProfessionalTemplate } from './templates/ProfessionalTemplate';
 import AcademicTemplate from './templates/AcademicTemplate';
 import HealthcareTemplate from './templates/HealthcareTemplate';
 import LegalTemplate from './templates/LegalTemplate';
