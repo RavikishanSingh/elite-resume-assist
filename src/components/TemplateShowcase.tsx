@@ -1,5 +1,6 @@
 
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { LayoutTemplate } from "lucide-react";
 
 import { sampleResumeData } from "@/data/sample-resume";
