@@ -6,6 +6,7 @@ interface ATSScoreMeterProps {
   size?: number;
   strokeWidth?: number;
   className?: string;
+  showDetails?: boolean;
 }
 
 const ATSScoreMeter: React.FC<ATSScoreMeterProps> = ({ 
@@ -13,7 +14,8 @@ const ATSScoreMeter: React.FC<ATSScoreMeterProps> = ({
   maxScore = 100, 
   size = 120, 
   strokeWidth = 8,
-  className = ""
+  className = "",
+  showDetails = false
 }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
@@ -67,9 +69,14 @@ const ATSScoreMeter: React.FC<ATSScoreMeterProps> = ({
           <div className="text-2xl font-bold" style={{ color: scoreColor }}>
             {Math.round(score)}
           </div>
-          <div className="text-xs text-gray-500">
-            /{maxScore}
+          <div className="text-xs text-gray-500 font-medium">
+            {showDetails ? `out of ${maxScore}` : `/${maxScore}`}
           </div>
+          {showDetails && (
+            <div className="text-xs text-gray-400 mt-1">
+              ATS Score
+            </div>
+          )}
         </div>
       </div>
     </div>

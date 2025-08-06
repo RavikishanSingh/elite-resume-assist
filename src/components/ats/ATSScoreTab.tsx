@@ -26,6 +26,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { calculateATSScore, type ATSFeedback } from '@/utils/atsChecker';
+import type { ATSAnalysis } from '@/utils/atsChecker';
 import ATSScoreMeter from './ATSScoreMeter';
 import ATSImprovementSuggestions from './ATSImprovementSuggestions';
 import ATSKeywordAnalyzer from './ATSKeywordAnalyzer';
@@ -36,7 +37,7 @@ interface ATSScoreTabProps {
 }
 
 const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
-  const [atsAnalysis, setAtsAnalysis] = useState<{ score: number; feedback: ATSFeedback[] } | null>(null);
+  const [atsAnalysis, setAtsAnalysis] = useState<ATSAnalysis | null>(null);
   const [previousScore, setPreviousScore] = useState<number | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [lastAnalyzedData, setLastAnalyzedData] = useState<string>('');
@@ -121,6 +122,10 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
       case 'formatting & structure': return FileText;
       default: return Target;
     }
+  };
+
+  const getScorePercentage = (score: number, maxScore: number) => {
+    return Math.round((score / maxScore) * 100);
   };
 
   // Calculate real-time statistics
@@ -311,7 +316,8 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
             {atsAnalysis.feedback.map((item, index) => {
               const IconComponent = getCategoryIcon(item.category);
               const isGood = item.score >= 15;
-              const isFair = item.score >= 10 && item.score < 15;
+              const isFair = item.score >= (item.maxScore * 0.6) && item.score < (item.maxScore * 0.8);
+              const scorePercentage = getScorePercentage(item.score, item.maxScore);
               
               return (
                 <Card key={index} className={`border-l-4 transition-all hover:shadow-md ${
@@ -322,12 +328,15 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
                   <CardContent className="p-6 relative">
                     {/* Score indicator */}
                     <div className="absolute top-4 right-4">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold ${
+                      <div className={`w-16 h-16 rounded-full flex items-center justify-center text-sm font-bold ${
                         isGood ? 'bg-green-100 text-green-800' :
                         isFair ? 'bg-yellow-100 text-yellow-800' :
                         'bg-red-100 text-red-800'
                       }`}>
-                        {Math.round(item.score * 4)}%
+                        <div className="text-center">
+                          <div className="text-lg font-bold">{scorePercentage}%</div>
+                          <div className="text-xs">{item.score}/{item.maxScore}</div>
+                        </div>
                       </div>
                     </div>
                     
@@ -347,7 +356,7 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
                     
                     {/* Progress bar */}
                     <div className="mb-4">
-                      <Progress value={item.score * 4} className="h-2" />
+                      <Progress value={scorePercentage} className="h-2" />
                     </div>
                     
                     {item.suggestions.length > 0 && (
@@ -364,6 +373,24 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
                             </li>
                           ))}
                         </ul>
+                        
+                        {/* Show detailed breakdown if available */}
+                        {item.details && (
+                          <div className="mt-4 pt-4 border-t border-gray-200">
+                            {item.details.found.length > 0 && (
+                              <div className="mb-2">
+                                <h5 className="text-xs font-semibold text-green-700 mb-1">✓ Found:</h5>
+                                <p className="text-xs text-green-600">{item.details.found.join(', ')}</p>
+                              </div>
+                            )}
+                            {item.details.missing.length > 0 && (
+                              <div>
+                                <h5 className="text-xs font-semibold text-red-700 mb-1">✗ Missing:</h5>
+                                <p className="text-xs text-red-600">{item.details.missing.join(', ')}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     )}
                   </CardContent>
@@ -374,7 +401,7 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
         </TabsContent>
 
         <TabsContent value="improvements">
-          <ATSImprovementSuggestions data={data} feedback={atsAnalysis.feedback} />
+          <ATSImprovementSuggestions data={data} analysis={atsAnalysis} />
         </TabsContent>
 
         <TabsContent value="keywords">
@@ -392,24 +419,12 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
-                    <div>
-                      <strong>Add contact information:</strong> Ensure phone, email, and location are clearly visible
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
-                    <div>
-                      <strong>Include relevant keywords:</strong> Add industry-specific terms from job descriptions
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
-                    <div>
-                      <strong>Use standard section headers:</strong> "Experience", "Education", "Skills" work best
-                    </div>
-                  </li>
+                  {atsAnalysis.recommendations.slice(0, 3).map((rec, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
+                      <div>{rec}</div>
+                    </li>
+                  ))}
                 </ul>
               </CardContent>
             </Card>
@@ -423,24 +438,12 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
-                    <div>
-                      <strong>Quantify achievements:</strong> Add numbers, percentages, and metrics to bullet points
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
-                    <div>
-                      <strong>Optimize job descriptions:</strong> Start with action verbs and include relevant skills
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
-                    <div>
-                      <strong>Add a professional summary:</strong> 2-3 sentences highlighting your value proposition
-                    </div>
-                  </li>
+                  {atsAnalysis.recommendations.slice(3, 6).map((rec, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
+                      <div>{rec}</div>
+                    </li>
+                  ))}
                 </ul>
               </CardContent>
             </Card>
@@ -454,24 +457,12 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
-                    <div>
-                      <strong>Tailor for each application:</strong> Customize keywords and skills for specific job postings
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
-                    <div>
-                      <strong>Add relevant projects:</strong> Include portfolio work that demonstrates key skills
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
-                    <div>
-                      <strong>Optimize for industry:</strong> Research and include industry-specific terminology
-                    </div>
-                  </li>
+                  {atsAnalysis.recommendations.slice(6, 9).map((rec, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
+                      <div>{rec}</div>
+                    </li>
+                  ))}
                 </ul>
               </CardContent>
             </Card>

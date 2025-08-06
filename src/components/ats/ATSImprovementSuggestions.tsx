@@ -15,20 +15,24 @@ import {
   Zap,
   Target
 } from 'lucide-react';
-import type { ATSFeedback } from '@/utils/atsChecker';
+import type { ATSFeedback, ATSAnalysis } from '@/utils/atsChecker';
 
 interface ATSImprovementSuggestionsProps {
   data: any;
-  feedback: ATSFeedback[];
+  analysis: ATSAnalysis;
 }
 
-const ATSImprovementSuggestions = ({ data, feedback }: ATSImprovementSuggestionsProps) => {
+const ATSImprovementSuggestions = ({ data, analysis }: ATSImprovementSuggestionsProps) => {
+  const { feedback, breakdown, recommendations } = analysis;
+  
   const getImprovementPriority = (category: string, score: number) => {
-    const maxPossibleScore = 25; // Adjust based on your scoring system
-    const completionPercentage = (score / maxPossibleScore) * 100;
+    // Get the actual max score for this category
+    const feedbackItem = feedback.find(f => f.category === category);
+    const maxScore = feedbackItem?.maxScore || 25;
+    const completionPercentage = (score / maxScore) * 100;
     
-    if (completionPercentage < 40) return 'high';
-    if (completionPercentage < 70) return 'medium';
+    if (completionPercentage < 50) return 'high';
+    if (completionPercentage < 80) return 'medium';
     return 'low';
   };
 
@@ -120,14 +124,13 @@ const ATSImprovementSuggestions = ({ data, feedback }: ATSImprovementSuggestions
   };
 
   const improvementItems = feedback.map(item => {
-    const priority = getImprovementPriority(item.category, item.score);
-    const specificSuggestions = getSpecificSuggestions(item.category, data);
-    const allSuggestions = [...item.suggestions, ...specificSuggestions];
+    const priority = getImprovementPriority(item.category, item.score);    
+    const allSuggestions = item.details?.recommendations || item.suggestions;
     
     return {
       ...item,
       priority,
-      specificSuggestions: allSuggestions.slice(0, 5) // Limit to 5 suggestions
+      specificSuggestions: allSuggestions.slice(0, 6)
     };
   });
 
@@ -181,6 +184,13 @@ const ATSImprovementSuggestions = ({ data, feedback }: ATSImprovementSuggestions
             <div className="p-3 bg-white/60 rounded-lg">
               <div className="text-lg font-bold text-green-700">{lowPriorityItems.length}</div>
               <div className="text-xs text-green-600">Nice to Have</div>
+            </div>
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-600">
+                Potential score increase: <span className="font-bold text-blue-600">
+                  +{Math.round(highPriorityItems.reduce((acc, item) => acc + (item.maxScore - item.score), 0) * 1.2)}%
+                </span>
+              </p>
             </div>
           </div>
         </CardContent>
@@ -342,7 +352,7 @@ const ATSImprovementSuggestions = ({ data, feedback }: ATSImprovementSuggestions
             </h3>
             <p className="text-blue-800 mb-4">
               Addressing the {highPriorityItems.length} high priority items could improve your ATS score by up to{' '}
-              {Math.round(highPriorityItems.reduce((acc, item) => acc + (25 - item.score), 0) * 1.6)}%
+              {Math.round(highPriorityItems.reduce((acc, item) => acc + (item.maxScore - item.score), 0) * 1.2)}%
             </p>
             <Button className="bg-blue-600 hover:bg-blue-700 text-white">
               Start Improving Now

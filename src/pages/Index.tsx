@@ -219,7 +219,8 @@ const Index = () => {
                 </div>
               ) : resumes.length > 0 ? (
                 resumes.map((resume) => {
-                  const atsData = calculateATSScore(resume.resume_data);
+                  // Use stored ATS score or calculate if not available
+                  const atsScore = resume.ats_score || calculateATSScore(resume.resume_data).score;
                   const daysLeft = Math.ceil((new Date(resume.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
                   
                   const getATSBadge = (score: number) => {
@@ -244,7 +245,7 @@ const Index = () => {
                               {resume.template_type} Template
                             </CardDescription>
                           </div>
-                          {getATSBadge(atsData.score)}
+                          {getATSBadge(atsScore)}
                         </div>
                       </CardHeader>
                       
@@ -253,11 +254,11 @@ const Index = () => {
                         <div>
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-sm font-medium">ATS Score</span>
-                            <span className={`text-sm font-bold ${getATSColor(atsData.score)}`}>
-                              {atsData.score}%
+                            <span className={`text-sm font-bold ${getATSColor(atsScore)}`}>
+                              {atsScore}%
                             </span>
                           </div>
-                          <Progress value={atsData.score} className="h-2" />
+                          <Progress value={atsScore} className="h-2" />
                         </div>
 
                         {/* Dates */}

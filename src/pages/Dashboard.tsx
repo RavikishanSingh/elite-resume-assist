@@ -158,7 +158,8 @@ export default function Dashboard() {
             {/* Resumes Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {resumes.map((resume) => {
-                const atsData = calculateATSScore(resume.resume_data);
+                // Use stored ATS score or calculate if not available
+                const atsScore = resume.ats_score || calculateATSScore(resume.resume_data).score;
                 const daysLeft = Math.ceil((new Date(resume.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
                 
                 return (
@@ -171,7 +172,7 @@ export default function Dashboard() {
                             {resume.template_type} Template
                           </CardDescription>
                         </div>
-                        {getATSBadge(atsData.score)}
+                        {getATSBadge(atsScore)}
                       </div>
                     </CardHeader>
                     
@@ -180,11 +181,11 @@ export default function Dashboard() {
                       <div>
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm font-medium">ATS Score</span>
-                          <span className={`text-sm font-bold ${getATSColor(atsData.score)}`}>
-                            {atsData.score}%
+                          <span className={`text-sm font-bold ${getATSColor(atsScore)}`}>
+                            {atsScore}%
                           </span>
                         </div>
-                        <Progress value={atsData.score} className="h-2" />
+                        <Progress value={atsScore} className="h-2" />
                       </div>
 
                       {/* Dates */}

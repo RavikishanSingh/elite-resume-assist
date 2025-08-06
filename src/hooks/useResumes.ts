@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import type { Json } from '@/integrations/supabase/types';
+import { calculateATSScore } from '@/utils/atsChecker';
 
 export interface SavedResume {
   id: string;
@@ -52,6 +53,9 @@ export const useResumes = () => {
   const saveResume = async (resumeData: any, title: string, templateType: string) => {
     if (!user) return null;
 
+    // Calculate ATS score before saving
+    const atsAnalysis = calculateATSScore(resumeData);
+
     try {
       const { data, error } = await supabase
         .from('resumes')
@@ -60,6 +64,8 @@ export const useResumes = () => {
           title,
           resume_data: resumeData,
           template_type: templateType,
+          ats_score: atsAnalysis.score,
+          ats_feedback: atsAnalysis.feedback
         })
         .select()
         .single();
@@ -86,6 +92,12 @@ export const useResumes = () => {
   const updateResume = async (id: string, updates: Partial<SavedResume>) => {
     if (!user) return;
 
+    // If resume_data is being updated, recalculate ATS score
+    if (updates.resume_data) {
+      const atsAnalysis = calculateATSScore(updates.resume_data);
+      updates.ats_score = atsAnalysis.score;
+      updates.ats_feedback = atsAnalysis.feedback;
+    }
     try {
       const { data, error } = await supabase
         .from('resumes')
