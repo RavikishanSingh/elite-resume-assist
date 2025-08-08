@@ -190,6 +190,21 @@ const ATSScoreTab = ({ data }: ATSScoreTabProps) => {
   const scoreChange = getScoreChange();
   const resumeStats = getResumeStats();
 
+  const getCategoryIcon = (category: string) => {
+    switch (category.toLowerCase()) {
+      case 'contact information': return User;
+      case 'skills & keywords': return Wrench;
+      case 'work experience': return Briefcase;
+      case 'education': return GraduationCap;
+      case 'formatting & structure': return FileText;
+      default: return Target;
+    }
+  };
+
+  const getScorePercentage = (score: number, maxScore: number) => {
+    return Math.round((score / maxScore) * 100);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header with Score Overview */}
