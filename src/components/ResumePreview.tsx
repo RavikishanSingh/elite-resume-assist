@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Download, Eye, FileText, TrendingUp } from 'lucide-react';
+import { Download, Eye, FileText, TrendingUp, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
 import { generatePDF } from '../utils/html2pdfGenerator';
 import { sampleResumeData } from '../data/sample-resume';
 import ATSScoreTab from './ats/ATSScoreTab';
@@ -98,7 +97,8 @@ interface ResumePreviewProps {
 
 const ResumePreview = ({ data, onUpdate, onNext, onPrevious, isLastStep, isFirstStep }: ResumePreviewProps) => {
   const [selectedTemplate, setSelectedTemplate] = useState('modern');
-  const [isPreviewMode, setIsPreviewMode] = useState(true);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [currentTemplateIndex, setCurrentTemplateIndex] = useState(0);
 
   // Use provided data or fallback to sample data
   const resumeData = data || sampleResumeData;
@@ -120,9 +120,57 @@ const ResumePreview = ({ data, onUpdate, onNext, onPrevious, isLastStep, isFirst
       <TemplateComponent 
         data={resumeData}
         isPDFMode={true}
-        isEditing={false}
+        isEditing={isEditMode}
+        onUpdate={onUpdate}
       />
     );
+  };
+
+  const handleTemplateChange = (templateId: string) => {
+    setSelectedTemplate(templateId);
+    const index = templates.findIndex(t => t.id === templateId);
+    setCurrentTemplateIndex(index);
+  };
+
+  const handlePreviousTemplate = () => {
+    const newIndex = currentTemplateIndex > 0 ? currentTemplateIndex - 1 : templates.length - 1;
+    setCurrentTemplateIndex(newIndex);
+    setSelectedTemplate(templates[newIndex].id);
+  };
+
+  const handleNextTemplate = () => {
+    const newIndex = currentTemplateIndex < templates.length - 1 ? currentTemplateIndex + 1 : 0;
+    setCurrentTemplateIndex(newIndex);
+    setSelectedTemplate(templates[newIndex].id);
+  };
+
+  const updateResumeData = (section: string, field: string, value: string, index?: number) => {
+    if (!onUpdate) return;
+    
+    const updatedData = { ...resumeData };
+    
+    if (index !== undefined) {
+      // Handle array updates (experience, education, projects, skills)
+      if (section === 'skills') {
+        const skillsArray = value.split(',').map(s => s.trim()).filter(s => s);
+        updatedData[section] = skillsArray;
+      } else if (updatedData[section] && Array.isArray(updatedData[section])) {
+        updatedData[section][index] = {
+          ...updatedData[section][index],
+          [field]: value
+        };
+      }
+    } else {
+      // Handle object updates (personalInfo)
+      if (section === 'personalInfo') {
+        updatedData.personalInfo = {
+          ...updatedData.personalInfo,
+          [field]: value
+        };
+      }
+    }
+    
+    onUpdate(section, updatedData[section]);
   };
 
   return (
@@ -133,33 +181,97 @@ const ResumePreview = ({ data, onUpdate, onNext, onPrevious, isLastStep, isFirst
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <h1 className="text-2xl font-bold text-foreground">Resume Preview</h1>
-              <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
-                <SelectTrigger className="w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {templates.map(template => (
-                    <SelectItem key={template.id} value={template.id}>
-                      {template.name} Template
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Template:</span>
+                <span className="font-medium text-gray-900">{templates[currentTemplateIndex].name}</span>
+              </div>
             </div>
             
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
-                onClick={() => setIsPreviewMode(!isPreviewMode)}
+                onClick={() => setIsEditMode(!isEditMode)}
+                className={isEditMode ? 'bg-blue-100 border-blue-300' : ''}
               >
-                <Eye className="w-4 h-4 mr-2" />
-                {isPreviewMode ? 'Edit Mode' : 'Preview Mode'}
+                <Edit className="w-4 h-4 mr-2" />
+                {isEditMode ? 'Exit Edit' : 'Edit Mode'}
               </Button>
               <Button onClick={handleDownloadPDF} className="bg-primary hover:bg-primary/90">
                 <Download className="w-4 h-4 mr-2" />
                 Download PDF
               </Button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Template Slider */}
+      <div className="border-b bg-white">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePreviousTemplate}
+              className="flex items-center gap-2"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Previous
+            </Button>
+            
+            <div className="flex-1 mx-6">
+              <div className="flex items-center justify-center gap-4 overflow-x-auto pb-2">
+                {templates.slice(Math.max(0, currentTemplateIndex - 2), currentTemplateIndex + 3).map((template, index) => {
+                  const actualIndex = Math.max(0, currentTemplateIndex - 2) + index;
+                  const isSelected = template.id === selectedTemplate;
+                  
+                  return (
+                    <div
+                      key={template.id}
+                      className={`flex-shrink-0 cursor-pointer transition-all duration-200 ${
+                        isSelected ? 'scale-110' : 'scale-100 opacity-70 hover:opacity-100'
+                      }`}
+                      onClick={() => handleTemplateChange(template.id)}
+                    >
+                      <Card className={`w-24 h-32 ${isSelected ? 'ring-2 ring-primary shadow-lg' : 'hover:shadow-md'}`}>
+                        <CardContent className="p-2 h-full flex flex-col">
+                          <div className="flex-1 bg-gray-100 rounded mb-2 overflow-hidden relative">
+                            <div className="scale-[0.06] origin-top-left w-[1667%] h-[1667%] pointer-events-none">
+                              <template.component 
+                                data={resumeData}
+                                isPDFMode={true}
+                                isEditing={false}
+                              />
+                            </div>
+                          </div>
+                          <div className="text-center">
+                            <h3 className="font-semibold text-xs mb-1">{template.name}</h3>
+                            <p className="text-[8px] text-muted-foreground leading-tight">{template.description}</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {/* Template counter */}
+              <div className="text-center mt-2">
+                <span className="text-xs text-gray-500">
+                  {currentTemplateIndex + 1} of {templates.length} templates
+                </span>
+              </div>
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNextTemplate}
+              className="flex items-center gap-2"
+            >
+              Next
+              <ChevronRight className="w-4 h-4" />
+            </Button>
           </div>
         </div>
       </div>
@@ -176,18 +288,26 @@ const ResumePreview = ({ data, onUpdate, onNext, onPrevious, isLastStep, isFirst
           </TabsList>
 
           <TabsContent value="preview" className="space-y-6">
+            {/* Edit Mode Notice */}
+            {isEditMode && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center gap-2">
+                  <Edit className="w-4 h-4 text-blue-600" />
+                  <p className="text-sm text-blue-800">
+                    <strong>Edit Mode Active:</strong> Click on any text in the resume to edit it directly. Changes are saved automatically.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Data Status Alert */}
             {!data && (
-              <div className="container mx-auto px-4 py-2">
-                <div className="max-w-4xl mx-auto">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-blue-600" />
-                      <p className="text-sm text-blue-800">
-                        <strong>Preview Mode:</strong> This is showing sample data. Complete the previous steps to see your actual information here.
-                      </p>
-                    </div>
-                  </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-blue-600" />
+                  <p className="text-sm text-blue-800">
+                    <strong>Preview Mode:</strong> This is showing sample data. Complete the previous steps to see your actual information here.
+                  </p>
                 </div>
               </div>
             )}
@@ -203,36 +323,33 @@ const ResumePreview = ({ data, onUpdate, onNext, onPrevious, isLastStep, isFirst
               </Card>
             </div>
 
-            {/* Template Gallery */}
+            {/* Quick Template Navigation */}
             <div className="border-t pt-6">
-              <h2 className="text-xl font-semibold mb-6 text-foreground text-center">Choose Your Template</h2>
-              <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-7 gap-3 max-w-6xl mx-auto">
-                {templates.map(template => {
-                  const TemplateComponent = template.component;
-                  return (
-                    <Card 
-                      key={template.id}
-                      className={`cursor-pointer transition-all hover:shadow-lg hover:scale-105 ${
-                        selectedTemplate === template.id ? 'ring-2 ring-primary shadow-lg' : ''
-                      }`}
-                      onClick={() => setSelectedTemplate(template.id)}
-                    >
-                      <CardContent className="p-2">
-                        <div className="w-full h-20 bg-white rounded mb-2 overflow-hidden border relative">
-                          <div className="scale-[0.08] origin-top-left w-[1250%] h-[1250%] pointer-events-none">
-                            <TemplateComponent 
-                              data={resumeData}
-                              isPDFMode={true}
-                              isEditing={false}
-                            />
-                          </div>
+              <h2 className="text-xl font-semibold mb-6 text-foreground text-center">All Templates</h2>
+              <div className="grid grid-cols-4 md:grid-cols-8 lg:grid-cols-10 gap-3 max-w-6xl mx-auto">
+                {templates.map(template => (
+                  <Card 
+                    key={template.id}
+                    className={`cursor-pointer transition-all hover:shadow-lg hover:scale-105 ${
+                      selectedTemplate === template.id ? 'ring-2 ring-primary shadow-lg' : ''
+                    }`}
+                    onClick={() => handleTemplateChange(template.id)}
+                  >
+                    <CardContent className="p-2">
+                      <div className="w-full h-16 bg-white rounded mb-2 overflow-hidden border relative">
+                        <div className="scale-[0.05] origin-top-left w-[2000%] h-[2000%] pointer-events-none">
+                          <template.component 
+                            data={resumeData}
+                            isPDFMode={true}
+                            isEditing={false}
+                          />
                         </div>
-                        <h3 className="font-semibold text-xs mb-1 text-center">{template.name}</h3>
-                        <p className="text-[10px] text-muted-foreground text-center leading-tight">{template.description}</p>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+                      </div>
+                      <h3 className="font-semibold text-[10px] mb-1 text-center">{template.name}</h3>
+                      <p className="text-[8px] text-muted-foreground text-center leading-tight">{template.description}</p>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             </div>
           </TabsContent>
@@ -245,7 +362,7 @@ const ResumePreview = ({ data, onUpdate, onNext, onPrevious, isLastStep, isFirst
 
       {/* Navigation for builder context */}
       {(onNext || onPrevious) && (
-        <div className="container mx-auto px-4 py-6">
+        <div className="container mx-auto px-4 py-6 border-t bg-white">
           <div className="max-w-4xl mx-auto flex justify-between">
             {onPrevious && (
               <Button variant="outline" onClick={onPrevious}>
