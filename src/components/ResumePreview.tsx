@@ -322,36 +322,6 @@ const ResumePreview = ({ data, onUpdate, onNext, onPrevious, isLastStep, isFirst
                 </CardContent>
               </Card>
             </div>
-
-            {/* Quick Template Navigation */}
-            <div className="border-t pt-6">
-              <h2 className="text-xl font-semibold mb-6 text-foreground text-center">All Templates</h2>
-              <div className="grid grid-cols-4 md:grid-cols-8 lg:grid-cols-10 gap-3 max-w-6xl mx-auto">
-                {templates.map(template => (
-                  <Card 
-                    key={template.id}
-                    className={`cursor-pointer transition-all hover:shadow-lg hover:scale-105 ${
-                      selectedTemplate === template.id ? 'ring-2 ring-primary shadow-lg' : ''
-                    }`}
-                    onClick={() => handleTemplateChange(template.id)}
-                  >
-                    <CardContent className="p-2">
-                      <div className="w-full h-16 bg-white rounded mb-2 overflow-hidden border relative">
-                        <div className="scale-[0.05] origin-top-left w-[2000%] h-[2000%] pointer-events-none">
-                          <template.component 
-                            data={resumeData}
-                            isPDFMode={true}
-                            isEditing={false}
-                          />
-                        </div>
-                      </div>
-                      <h3 className="font-semibold text-[10px] mb-1 text-center">{template.name}</h3>
-                      <p className="text-[8px] text-muted-foreground text-center leading-tight">{template.description}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
           </TabsContent>
 
           <TabsContent value="ats-score" className="space-y-6">

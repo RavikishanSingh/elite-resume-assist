@@ -146,7 +146,7 @@ const SkillsForm = ({ data, onUpdate, onNext }: SkillsFormProps) => {
           type="submit" 
           className="bg-gradient-to-r from-blue-600 to-purple-600 px-8"
         >
-          Preview Resume
+          Continue to Projects
         </Button>
       </div>
     </form>
