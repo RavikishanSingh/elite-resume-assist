@@ -47,9 +47,20 @@ const Auth = () => {
     const { error } = await signIn(email, password);
     
     if (error) {
+      let errorMessage = error.message;
+      
+      // Provide more user-friendly error messages
+      if (error.message?.includes('invalid_credentials')) {
+        errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+      } else if (error.message?.includes('email_not_confirmed')) {
+        errorMessage = 'Please check your email and click the confirmation link before signing in.';
+      } else if (error.message?.includes('too_many_requests')) {
+        errorMessage = 'Too many login attempts. Please wait a moment before trying again.';
+      }
+      
       toast({
         title: "Sign In Failed",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive"
       });
     } else {
