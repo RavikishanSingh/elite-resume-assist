@@ -74,18 +74,33 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         // If there's an error getting the session, clear auth data
         if (error.message?.includes('refresh_token_not_found') || 
             error.message?.includes('Invalid Refresh Token')) {
-          clearAuthData();
+          // Use signOut to ensure complete cleanup including Supabase client state
+          signOut().catch(console.error);
+          return; // Don't set loading to false here, let onAuthStateChange handle it
         }
+        setSession(null);
+        setUser(null);
+        setLoading(false);
       } else {
         setSession(session);
         setUser(session?.user ?? null);
+        setLoading(false);
       }
-      setLoading(false);
     }).catch((error) => {
       if (!mounted) return;
       
       console.error('Failed to get session:', error);
-      clearAuthData();
+      // Handle network errors or other fetch failures
+      if (error.message?.includes('Failed to fetch') || 
+          error.message?.includes('refresh_token_not_found') ||
+          error.message?.includes('Invalid Refresh Token')) {
+        // Use signOut to ensure complete cleanup
+        signOut().catch(console.error);
+        return; // Don't set loading to false here, let onAuthStateChange handle it
+      }
+      
+      setSession(null);
+      setUser(null);
       setLoading(false);
     });
 
@@ -93,7 +108,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [signOut]);
 
   const signUp = async (email: string, password: string) => {
     try {
