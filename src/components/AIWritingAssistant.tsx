@@ -41,7 +41,7 @@ const AIWritingAssistant = ({ value, onChange, placeholder, userContext }: AIWri
       }
       
       // Simulate API delay for better UX
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       onChange(enhancedContent);
       

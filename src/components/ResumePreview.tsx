@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Download, Eye, FileText, TrendingUp, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Download, Eye, FileText, TrendingUp, Edit, ChevronLeft, ChevronRight, Settings, Palette, Layout } from 'lucide-react';
 import { generatePDF } from '../utils/html2pdfGenerator';
 import { sampleResumeData } from '../data/sample-resume';
 import ATSScoreTab from './ats/ATSScoreTab';
@@ -99,6 +99,7 @@ const ResumePreview = ({ data, onUpdate, onNext, onPrevious, isLastStep, isFirst
   const [selectedTemplate, setSelectedTemplate] = useState('modern');
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentTemplateIndex, setCurrentTemplateIndex] = useState(0);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
 
   // Use provided data or fallback to sample data
   const resumeData = data || sampleResumeData;
@@ -122,6 +123,7 @@ const ResumePreview = ({ data, onUpdate, onNext, onPrevious, isLastStep, isFirst
         isPDFMode={true}
         isEditing={isEditMode}
         onUpdate={onUpdate}
+        activeSection={activeSection}
       />
     );
   };
@@ -144,33 +146,8 @@ const ResumePreview = ({ data, onUpdate, onNext, onPrevious, isLastStep, isFirst
     setSelectedTemplate(templates[newIndex].id);
   };
 
-  const updateResumeData = (section: string, field: string, value: string, index?: number) => {
-    if (!onUpdate) return;
-    
-    const updatedData = { ...resumeData };
-    
-    if (index !== undefined) {
-      // Handle array updates (experience, education, projects, skills)
-      if (section === 'skills') {
-        const skillsArray = value.split(',').map(s => s.trim()).filter(s => s);
-        updatedData[section] = skillsArray;
-      } else if (updatedData[section] && Array.isArray(updatedData[section])) {
-        updatedData[section][index] = {
-          ...updatedData[section][index],
-          [field]: value
-        };
-      }
-    } else {
-      // Handle object updates (personalInfo)
-      if (section === 'personalInfo') {
-        updatedData.personalInfo = {
-          ...updatedData.personalInfo,
-          [field]: value
-        };
-      }
-    }
-    
-    onUpdate(section, updatedData[section]);
+  const handleSectionClick = (sectionId: string) => {
+    setActiveSection(activeSection === sectionId ? null : sectionId);
   };
 
   return (
@@ -188,6 +165,14 @@ const ResumePreview = ({ data, onUpdate, onNext, onPrevious, isLastStep, isFirst
             </div>
             
             <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setActiveSection(null)}
+                className={!activeSection ? 'bg-blue-100 border-blue-300' : ''}
+              >
+                <Layout className="w-4 h-4 mr-2" />
+                Full View
+              </Button>
               <Button
                 variant="outline"
                 onClick={() => setIsEditMode(!isEditMode)}
@@ -276,14 +261,46 @@ const ResumePreview = ({ data, onUpdate, onNext, onPrevious, isLastStep, isFirst
         </div>
       </div>
 
+      {/* Section Navigation */}
+      <div className="border-b bg-gray-50">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center gap-2 overflow-x-auto">
+            <span className="text-sm font-medium text-gray-600 mr-4">Quick Edit:</span>
+            {[
+              { id: 'personalInfo', name: 'Personal Info', icon: '👤' },
+              { id: 'experience', name: 'Experience', icon: '💼' },
+              { id: 'education', name: 'Education', icon: '🎓' },
+              { id: 'skills', name: 'Skills', icon: '🛠️' },
+              { id: 'projects', name: 'Projects', icon: '📁' }
+            ].map((section) => (
+              <Button
+                key={section.id}
+                variant="ghost"
+                size="sm"
+                onClick={() => handleSectionClick(section.id)}
+                className={`flex items-center gap-2 ${
+                  activeSection === section.id ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'
+                }`}
+              >
+                <span>{section.icon}</span>
+                <span className="text-xs">{section.name}</span>
+              </Button>
+            ))}
+          </div>
+        </div>
+      </div>
       {/* Main Content with Tabs */}
       <div className="container mx-auto px-4 py-6">
         <Tabs defaultValue="preview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 max-w-lg">
+          <TabsList className="grid w-full grid-cols-3 max-w-2xl">
             <TabsTrigger value="preview">Resume Preview</TabsTrigger>
             <TabsTrigger value="ats-score" className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
               ATS Score
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Settings
             </TabsTrigger>
           </TabsList>
 
@@ -326,6 +343,88 @@ const ResumePreview = ({ data, onUpdate, onNext, onPrevious, isLastStep, isFirst
 
           <TabsContent value="ats-score" className="space-y-6">
             <ATSScoreTab data={resumeData} />
+          </TabsContent>
+
+          <TabsContent value="settings" className="space-y-6">
+            <div className="grid gap-6">
+              {/* Template Customization */}
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Palette className="w-5 h-5" />
+                    Template Customization
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {templates.slice(0, 8).map((template) => (
+                      <div
+                        key={template.id}
+                        className={`cursor-pointer p-3 rounded-lg border-2 transition-all ${
+                          selectedTemplate === template.id 
+                            ? 'border-primary bg-primary/5' 
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => handleTemplateChange(template.id)}
+                      >
+                        <div className="text-center">
+                          <div className="w-full h-16 bg-gray-100 rounded mb-2 overflow-hidden">
+                            <div className="scale-[0.03] origin-top-left w-[3333%] h-[3333%]">
+                              <template.component 
+                                data={resumeData}
+                                isPDFMode={true}
+                                isEditing={false}
+                              />
+                            </div>
+                          </div>
+                          <h4 className="font-medium text-xs">{template.name}</h4>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Export Options */}
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold mb-4">Export Options</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Button onClick={handleDownloadPDF} className="flex items-center gap-2">
+                      <Download className="w-4 h-4" />
+                      Download as PDF
+                    </Button>
+                    <Button variant="outline" className="flex items-center gap-2">
+                      <FileText className="w-4 h-4" />
+                      Export as Word
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Resume Tips */}
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold mb-4">Resume Tips</h3>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-start gap-2">
+                      <span className="text-green-600">✓</span>
+                      <span>Keep your resume to 1-2 pages maximum</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-green-600">✓</span>
+                      <span>Use action verbs to start bullet points</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-green-600">✓</span>
+                      <span>Include quantifiable achievements with numbers</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-green-600">✓</span>
+                      <span>Tailor your resume for each job application</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

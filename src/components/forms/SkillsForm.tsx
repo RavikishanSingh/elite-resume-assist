@@ -12,6 +12,7 @@ interface SkillsFormProps {
   onPrevious: () => void;
   isLastStep: boolean;
   isFirstStep: boolean;
+  completedSteps?: Set<number>;
 }
 
 const SkillsForm = ({ data, onUpdate, onNext }: SkillsFormProps) => {
@@ -142,12 +143,22 @@ const SkillsForm = ({ data, onUpdate, onNext }: SkillsFormProps) => {
       </div>
 
       <div className="flex justify-end pt-6">
-        <Button 
-          type="submit" 
-          className="bg-gradient-to-r from-blue-600 to-purple-600 px-8"
-        >
-          Continue to Projects
-        </Button>
+        <div className="flex justify-between w-full">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onPrevious}
+            className="flex items-center space-x-2"
+          >
+            <span>← Previous</span>
+          </Button>
+          <Button 
+            type="submit" 
+            className="bg-gradient-to-r from-blue-600 to-purple-600 px-8"
+          >
+            Continue to Projects →
+          </Button>
+        </div>
       </div>
     </form>
   );

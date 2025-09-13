@@ -53,6 +53,16 @@ export const useResumes = () => {
   const saveResume = async (resumeData: any, title: string, templateType: string) => {
     if (!user) return null;
 
+    // Validate resume data
+    if (!resumeData.personalInfo?.fullName?.trim()) {
+      toast({
+        title: "Cannot save resume",
+        description: "Please enter your name before saving the resume.",
+        variant: "destructive",
+      });
+      return null;
+    }
+
     // Calculate ATS score before saving
     const atsAnalysis = calculateATSScore(resumeData);
 
@@ -75,7 +85,7 @@ export const useResumes = () => {
       setResumes(prev => [data, ...prev]);
       toast({
         title: "Resume saved",
-        description: "Your resume has been saved successfully.",
+        description: `"${title}" has been saved successfully with an ATS score of ${atsAnalysis.score}%.`,
       });
       
       return data;
@@ -115,7 +125,7 @@ export const useResumes = () => {
       
       toast({
         title: "Resume updated",
-        description: "Your resume has been updated successfully.",
+        description: `Your resume has been updated with an ATS score of ${updates.ats_score || 'calculated'}%.`,
       });
     } catch (error: any) {
       toast({

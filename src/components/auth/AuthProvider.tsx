@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextType {
   user: User | null;
@@ -30,6 +31,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   const clearAuthData = () => {
     // Clear all auth-related data from localStorage
@@ -42,6 +44,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
     keysToRemove.forEach(key => localStorage.removeItem(key));
     
+    // Clear session storage as well
+    sessionStorage.removeItem('linkedin_import_pending');
+    
     setSession(null);
     setUser(null);
   };
@@ -53,9 +58,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       async (event, session) => {
         if (!mounted) return;
         
+        console.log('Auth state change:', event, session?.user?.id);
+        
         if (event === 'TOKEN_REFRESHED') {
           console.log('Token refreshed successfully');
+        } else if (event === 'SIGNED_IN') {
+          console.log('User signed in successfully');
+          toast({
+            title: "Welcome back!",
+            description: "You've been signed in successfully.",
+          });
         } else if (event === 'SIGNED_OUT') {
+          console.log('User signed out');
+          clearAuthData();
+        } else if (event === 'TOKEN_REFRESH_FAILED') {
+          console.warn('Token refresh failed, clearing auth data');
           clearAuthData();
         }
         
@@ -73,7 +90,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         console.error('Session error:', error);
         // If there's an error getting the session, clear auth data
         if (error.message?.includes('refresh_token_not_found') || 
-            error.message?.includes('Invalid Refresh Token')) {
+            error.message?.includes('Invalid Refresh Token') ||
+            error.message?.includes('JWT expired')) {
           // Use signOut to ensure complete cleanup including Supabase client state
           signOut().catch(console.error);
           return; // Don't set loading to false here, let onAuthStateChange handle it
@@ -112,6 +130,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signUp = async (email: string, password: string) => {
     try {
+      setLoading(true);
       const redirectUrl = `${window.location.origin}/`;
       
       const { error } = await supabase.auth.signUp({
@@ -121,15 +140,26 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           emailRedirectTo: redirectUrl
         }
       });
+      
+      if (!error) {
+        toast({
+          title: "Account created successfully!",
+          description: "Please check your email to verify your account.",
+        });
+      }
+      
       return { error };
     } catch (error) {
       console.error('Sign up error:', error);
       return { error };
+    } finally {
+      setLoading(false);
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
+      setLoading(true);
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password
@@ -145,19 +175,33 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       return { error };
     } catch (error) {
       console.error('Sign in error:', error);
+      toast({
+        title: "Sign in failed",
+        description: "Please check your credentials and try again.",
+        variant: "destructive"
+      });
       clearAuthData();
       return { error };
+    } finally {
+      setLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
+      setLoading(true);
       await supabase.auth.signOut();
       clearAuthData();
+      toast({
+        title: "Signed out successfully",
+        description: "You've been signed out of your account.",
+      });
     } catch (error) {
       console.error('Sign out error:', error);
       // Even if sign out fails, clear local data
       clearAuthData();
+    } finally {
+      setLoading(false);
     }
   };
 

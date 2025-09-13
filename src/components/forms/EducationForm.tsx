@@ -21,9 +21,13 @@ interface EducationFormProps {
   data: any;
   onUpdate: (section: string, data: any) => void;
   onNext: () => void;
+  onPrevious: () => void;
+  isLastStep: boolean;
+  isFirstStep: boolean;
+  completedSteps?: Set<number>;
 }
 
-const EducationForm = ({ data, onUpdate, onNext }: EducationFormProps) => {
+const EducationForm = ({ data, onUpdate, onNext, onPrevious }: EducationFormProps) => {
   const [education, setEducation] = useState<Education[]>(
     data.education?.length > 0 ? data.education : [
       {
@@ -189,12 +193,22 @@ const EducationForm = ({ data, onUpdate, onNext }: EducationFormProps) => {
       </Button>
 
       <div className="flex justify-end pt-6">
-        <Button 
-          type="submit" 
-          className="bg-gradient-to-r from-blue-600 to-purple-600 px-8"
-        >
-          Continue to Skills
-        </Button>
+        <div className="flex justify-between w-full">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onPrevious}
+            className="flex items-center space-x-2"
+          >
+            <span>← Previous</span>
+          </Button>
+          <Button 
+            type="submit" 
+            className="bg-gradient-to-r from-blue-600 to-purple-600 px-8"
+          >
+            Continue to Skills →
+          </Button>
+        </div>
       </div>
     </form>
   );

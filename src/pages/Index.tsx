@@ -52,6 +52,24 @@ const Index = () => {
     setShowBuilder(true);
   };
 
+  const handleQuickStart = () => {
+    // Pre-fill with basic template data for quick start
+    const quickStartData = {
+      personalInfo: {
+        fullName: '',
+        email: '',
+        phone: '',
+        location: '',
+        summary: ''
+      },
+      experience: [],
+      education: [],
+      skills: [],
+      projects: []
+    };
+    setImportedData(quickStartData);
+    setShowBuilder(true);
+  };
   const handleLinkedInImport = (data: any) => {
     console.log('LinkedIn data imported in Index:', data);
     console.log('Data structure:', JSON.stringify(data, null, 2));
@@ -410,7 +428,7 @@ const Index = () => {
               <Button 
                 size="lg" 
                 className="text-lg px-10 py-6 bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
-                onClick={() => { setImportedData(null); setShowBuilder(true); }}
+                onClick={handleQuickStart}
               >
                 <Zap className="mr-3 w-5 h-5" />
                 Take Off Now
@@ -619,7 +637,7 @@ const Index = () => {
               <Button 
                 size="lg" 
                 className="text-lg px-10 py-6 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
-                onClick={() => { setImportedData(null); setShowBuilder(true); }}
+                onClick={handleQuickStart}
               >
                 <Sparkles className="mr-3 w-5 h-5" />
                 Start From Scratch

@@ -20,6 +20,7 @@ interface ResumeBuilderProps {
 
 const ResumeBuilder = ({ onBack, initialData, resumeId }: ResumeBuilderProps) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [resumeData, setResumeData] = useState({
     personalInfo: {},
     experience: [],
@@ -92,6 +93,9 @@ const ResumeBuilder = ({ onBack, initialData, resumeId }: ResumeBuilderProps) =>
       ...prev,
       [section]: data
     }));
+    
+    // Mark current step as completed
+    setCompletedSteps(prev => new Set(prev).add(currentStep));
   };
 
   const handleNext = () => {
@@ -106,6 +110,9 @@ const ResumeBuilder = ({ onBack, initialData, resumeId }: ResumeBuilderProps) =>
     }
   };
 
+  const handleStepClick = (stepIndex: number) => {
+    setCurrentStep(stepIndex);
+  };
   const handleSave = async () => {
     if (!user) {
       toast({
@@ -185,19 +192,28 @@ const ResumeBuilder = ({ onBack, initialData, resumeId }: ResumeBuilderProps) =>
             {steps.map((step, index) => {
               const Icon = step.icon;
               const isActive = index === currentStep;
-              const isCompleted = index < currentStep;
+              const isCompleted = completedSteps.has(index);
+              const isAccessible = index <= currentStep || completedSteps.has(index);
               
               return (
                 <div key={step.id} className="flex items-center">
-                  <div className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${
+                  <div 
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all cursor-pointer ${
                     isActive 
                       ? 'bg-blue-100 text-blue-700 border-2 border-blue-300' 
                       : isCompleted 
                         ? 'bg-green-100 text-green-700' 
-                        : 'bg-gray-100 text-gray-500'
-                  }`}>
+                        : isAccessible
+                          ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                  }`}
+                    onClick={() => isAccessible && handleStepClick(index)}
+                  >
                     <Icon className="w-4 h-4" />
                     <span className="font-medium text-sm">{step.title}</span>
+                    {isCompleted && !isActive && (
+                      <span className="text-green-600">✓</span>
+                    )}
                   </div>
                   {index < steps.length - 1 && (
                     <ArrowRight className="w-4 h-4 mx-2 text-gray-400" />
@@ -221,6 +237,7 @@ const ResumeBuilder = ({ onBack, initialData, resumeId }: ResumeBuilderProps) =>
                 })()}
                 <span>{steps[currentStep].title}</span>
               </CardTitle>
+              <p className="text-gray-600 mt-2">{steps[currentStep].description}</p>
             </CardHeader>
             <CardContent className="p-8">
               <CurrentStepComponent
@@ -230,6 +247,7 @@ const ResumeBuilder = ({ onBack, initialData, resumeId }: ResumeBuilderProps) =>
                 onPrevious={handlePrevious}
                 isLastStep={isLastStep}
                 isFirstStep={isFirstStep}
+                completedSteps={completedSteps}
               />
             </CardContent>
           </Card>

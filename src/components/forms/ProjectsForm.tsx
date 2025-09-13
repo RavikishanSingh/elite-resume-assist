@@ -12,6 +12,7 @@ interface ProjectsFormProps {
   onPrevious: () => void;
   isLastStep: boolean;
   isFirstStep: boolean;
+  completedSteps?: Set<number>;
 }
 
 const ProjectsForm = ({ data, onUpdate, onNext, onPrevious }: ProjectsFormProps) => {
@@ -225,13 +226,13 @@ const ProjectsForm = ({ data, onUpdate, onNext, onPrevious }: ProjectsFormProps)
           onClick={onPrevious}
           className="flex items-center space-x-2"
         >
-          <span>Previous</span>
+          <span>← Previous</span>
         </Button>
         <Button 
           type="submit" 
           className="bg-gradient-to-r from-blue-600 to-purple-600 px-8"
         >
-          Continue to Skills
+          Continue to Preview →
         </Button>
       </div>
     </form>

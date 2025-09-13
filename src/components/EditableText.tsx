@@ -77,7 +77,7 @@ const EditableText = ({
       if (!selection || selection.toString().length === 0) {
         setIsActiveEdit(true);
       }
-    }, 150); // Increased delay for better text selection
+    }, 100);
   };
 
   const handleDoubleClick = (e: React.MouseEvent) => {
@@ -116,11 +116,11 @@ const EditableText = ({
   // If in edit mode but not currently editing this field - show clickable text
   return (
     <div 
-      className={`${className} group cursor-text hover:bg-blue-50 rounded px-2 py-1 relative inline-block min-h-[2rem] border border-transparent hover:border-blue-300 transition-all duration-200`}
+      className={`${className} group cursor-text hover:bg-blue-50 rounded px-2 py-1 relative inline-block min-h-[1.5rem] border border-transparent hover:border-blue-300 transition-all duration-200`}
       onMouseDown={handleMouseDown}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
-      title="Click to edit or double-click"
+      title="Click to edit"
       style={{ userSelect: 'text', WebkitUserSelect: 'text', MozUserSelect: 'text' }}
     >
       <span 
@@ -136,7 +136,7 @@ const EditableText = ({
           <span className="text-gray-400 italic">{placeholder}</span>
         )}
       </span>
-      <Edit className="w-3 h-3 absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 text-blue-600 bg-white rounded shadow-sm p-0.5 pointer-events-none" />
+      <Edit className="w-3 h-3 absolute -top-1 -right-1 opacity-0 group-hover:opacity-60 text-blue-600 bg-white rounded shadow-sm p-0.5 pointer-events-none transition-opacity" />
     </div>
   );
 };

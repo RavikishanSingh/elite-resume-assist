@@ -14,6 +14,7 @@ interface PersonalInfoFormProps {
   onPrevious: () => void;
   isLastStep: boolean;
   isFirstStep: boolean;
+  completedSteps?: Set<number>;
 }
 
 const PersonalInfoForm = ({ data, onUpdate, onNext }: PersonalInfoFormProps) => {
@@ -83,7 +84,18 @@ const PersonalInfoForm = ({ data, onUpdate, onNext }: PersonalInfoFormProps) => 
     if (missingFields.length > 0) {
       toast({
         title: "Please fill in required fields",
-        description: `Missing: ${missingFields.join(', ')}`,
+        description: `Missing: ${missingFields.map(field => field.replace(/([A-Z])/g, ' $1').toLowerCase()).join(', ')}`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast({
+        title: "Invalid email format",
+        description: "Please enter a valid email address.",
         variant: "destructive"
       });
       return;
@@ -252,12 +264,14 @@ const PersonalInfoForm = ({ data, onUpdate, onNext }: PersonalInfoFormProps) => 
         <div className="text-sm text-gray-600">
           * Required fields
         </div>
-        <Button 
-          type="submit" 
-          className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
-        >
-          Continue to Experience →
-        </Button>
+        <div className="flex gap-3">
+          <Button 
+            type="submit" 
+            className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
+          >
+            Continue to Experience →
+          </Button>
+        </div>
       </div>
     </form>
   );

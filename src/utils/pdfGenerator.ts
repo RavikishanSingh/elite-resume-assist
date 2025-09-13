@@ -148,8 +148,12 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
   console.log('Template:', templateName);
 
   try {
-    if (!data || !data.personalInfo?.fullName) {
-      throw new Error('Please fill in at least your name before downloading');
+    if (!data) {
+      throw new Error('No resume data available for PDF generation');
+    }
+    
+    if (!data.personalInfo?.fullName?.trim()) {
+      throw new Error('Please enter your name before downloading the resume');
     }
 
     const pdf = new jsPDF({
@@ -731,6 +735,6 @@ export const generatePDF = async (data: any, templateName: string = 'modern') =>
 
   } catch (error) {
     console.error('Enhanced PDF generation error:', error);
-    throw new Error('Failed to generate enhanced PDF: ' + (error as Error).message);
+    throw new Error('PDF generation failed: ' + (error as Error).message);
   }
 };

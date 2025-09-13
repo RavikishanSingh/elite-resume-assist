@@ -21,9 +21,13 @@ interface ExperienceFormProps {
   data: any;
   onUpdate: (section: string, data: any) => void;
   onNext: () => void;
+  onPrevious: () => void;
+  isLastStep: boolean;
+  isFirstStep: boolean;
+  completedSteps?: Set<number>;
 }
 
-const ExperienceForm = ({ data, onUpdate, onNext }: ExperienceFormProps) => {
+const ExperienceForm = ({ data, onUpdate, onNext, onPrevious }: ExperienceFormProps) => {
   const [experiences, setExperiences] = useState<Experience[]>(
     data.experience?.length > 0 ? data.experience : [
       {
@@ -214,12 +218,22 @@ const ExperienceForm = ({ data, onUpdate, onNext }: ExperienceFormProps) => {
       </Button>
 
       <div className="flex justify-end pt-6">
-        <Button 
-          type="submit" 
-          className="bg-gradient-to-r from-blue-600 to-purple-600 px-8"
-        >
-          Continue to Education
-        </Button>
+        <div className="flex justify-between w-full">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onPrevious}
+            className="flex items-center space-x-2"
+          >
+            <span>← Previous</span>
+          </Button>
+          <Button 
+            type="submit" 
+            className="bg-gradient-to-r from-blue-600 to-purple-600 px-8"
+          >
+            Continue to Education →
+          </Button>
+        </div>
       </div>
     </form>
   );
