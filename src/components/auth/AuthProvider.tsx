@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const clearAuthData = () => {
+  const clearAuthData = useCallback(() => {
     // Clear all auth-related data from localStorage
     const keysToRemove = [];
     for (let i = 0; i < localStorage.length; i++) {
@@ -49,7 +49,26 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     
     setSession(null);
     setUser(null);
-  };
+  }, []);
+
+  const signOut = useCallback(async () => {
+    try {
+      setLoading(true);
+      await supabase.auth.signOut();
+      clearAuthData();
+      toast({
+        title: "Signed out successfully",
+        description: "You've been signed out of your account.",
+      });
+    } catch (error) {
+      console.error('Sign out error:', error);
+      // Even if sign out fails, clear local data
+      clearAuthData();
+    } finally {
+      setLoading(false);
+    }
+  }, [clearAuthData, toast]);
+
   useEffect(() => {
     let mounted = true;
 
@@ -182,24 +201,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       });
       clearAuthData();
       return { error };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const signOut = async () => {
-    try {
-      setLoading(true);
-      await supabase.auth.signOut();
-      clearAuthData();
-      toast({
-        title: "Signed out successfully",
-        description: "You've been signed out of your account.",
-      });
-    } catch (error) {
-      console.error('Sign out error:', error);
-      // Even if sign out fails, clear local data
-      clearAuthData();
     } finally {
       setLoading(false);
     }
