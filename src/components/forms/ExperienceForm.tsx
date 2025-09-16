@@ -227,12 +227,22 @@ const ExperienceForm = ({ data, onUpdate, onNext, onPrevious }: ExperienceFormPr
           >
             <span>← Previous</span>
           </Button>
-          <Button 
-            type="submit" 
-            className="bg-gradient-to-r from-blue-600 to-purple-600 px-8"
-          >
-            Continue to Education →
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              type="submit" 
+              className="bg-gradient-to-r from-blue-600 to-purple-600 px-8"
+            >
+              Continue to Education →
+            </Button>
+            <Button 
+              type="button"
+              variant="outline"
+              onClick={() => window.location.href = '#preview'}
+              className="px-6"
+            >
+              Skip to Preview
+            </Button>
+          </div>
         </div>
       </div>
     </form>

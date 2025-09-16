@@ -228,12 +228,22 @@ const ProjectsForm = ({ data, onUpdate, onNext, onPrevious }: ProjectsFormProps)
         >
           <span>← Previous</span>
         </Button>
-        <Button 
-          type="submit" 
-          className="bg-gradient-to-r from-blue-600 to-purple-600 px-8"
-        >
-          Continue to Preview →
-        </Button>
+        <div className="flex gap-3">
+          <Button 
+            type="submit" 
+            className="bg-gradient-to-r from-blue-600 to-purple-600 px-8"
+          >
+            Continue to Preview →
+          </Button>
+          <Button 
+            type="button"
+            variant="outline"
+            onClick={() => window.location.href = '#preview'}
+            className="px-6"
+          >
+            Skip to Preview
+          </Button>
+        </div>
       </div>
     </form>
   );
