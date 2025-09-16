@@ -33,45 +33,45 @@ const ResumeBuilder = ({ onBack, initialData, resumeId }: ResumeBuilderProps) =>
   const { saveResume, updateResume } = useResumes();
 
   const steps = [
-    { 
-      id: 'personal', 
-      title: 'Personal Info', 
-      icon: User, 
+    {
+      id: 'personal',
+      title: 'Personal Info',
+      icon: User,
       component: PersonalInfoForm,
       description: 'Basic contact information'
     },
-    { 
-      id: 'experience', 
-      title: 'Experience', 
-      icon: Briefcase, 
+    {
+      id: 'experience',
+      title: 'Experience',
+      icon: Briefcase,
       component: ExperienceForm,
       description: 'Work history and achievements'
     },
-    { 
-      id: 'education', 
-      title: 'Education', 
-      icon: GraduationCap, 
+    {
+      id: 'education',
+      title: 'Education',
+      icon: GraduationCap,
       component: EducationForm,
       description: 'Educational background'
     },
-    { 
-      id: 'skills', 
-      title: 'Skills', 
-      icon: Wrench, 
+    {
+      id: 'skills',
+      title: 'Skills',
+      icon: Wrench,
       component: SkillsForm,
       description: 'Technical and soft skills'
     },
-    { 
-      id: 'projects', 
-      title: 'Projects', 
-      icon: FileText, 
+    {
+      id: 'projects',
+      title: 'Projects',
+      icon: FileText,
       component: ProjectsForm,
       description: 'Portfolio and key projects'
     },
-    { 
-      id: 'preview', 
-      title: 'Preview', 
-      icon: Eye, 
+    {
+      id: 'preview',
+      title: 'Preview',
+      icon: Eye,
       component: ResumePreview,
       description: 'Review and download'
     }
@@ -93,7 +93,7 @@ const ResumeBuilder = ({ onBack, initialData, resumeId }: ResumeBuilderProps) =>
       ...prev,
       [section]: data
     }));
-    
+
     // Mark current step as completed
     setCompletedSteps(prev => new Set(prev).add(currentStep));
   };
@@ -124,7 +124,7 @@ const ResumeBuilder = ({ onBack, initialData, resumeId }: ResumeBuilderProps) =>
     }
 
     try {
-      const title = resumeData.personalInfo?.fullName 
+      const title = resumeData.personalInfo?.fullName
         ? `${resumeData.personalInfo.fullName} Resume`
         : 'My Resume';
 
@@ -194,22 +194,24 @@ const ResumeBuilder = ({ onBack, initialData, resumeId }: ResumeBuilderProps) =>
               const isActive = index === currentStep;
               const isCompleted = completedSteps.has(index);
               const isAccessible = index <= currentStep || completedSteps.has(index);
-              
+
               return (
                 <div key={step.id} className="flex items-center">
-            const isAccessible = true; // Allow access to all steps
+                  <div
                     className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all cursor-pointer ${
-                    isActive 
-                      ? 'bg-blue-100 text-blue-700 border-2 border-blue-300' 
-                      : isCompleted 
-                        ? 'bg-green-100 text-green-700' 
-                        : isAccessible
-                          ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                          : 'bg-gray-50 text-gray-400 cursor-not-allowed'
-                  }`}
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      isActive
+                        ? 'bg-blue-100 text-blue-700 border-2 border-blue-300'
+                        : isCompleted
+                          ? 'bg-green-100 text-green-700'
+                          : isAccessible
+                            ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                    }`}
+                    onClick={() => isAccessible && handleStepClick(index)}
+                  >
+                    <Icon className="w-4 h-4" />
                     <span className="font-medium text-sm">{step.title}</span>
-                  onClick={() => handleStepClick(index)}
+                    {isCompleted && (
                       <span className="text-green-600">✓</span>
                     )}
                   </div>
@@ -228,26 +230,26 @@ const ResumeBuilder = ({ onBack, initialData, resumeId }: ResumeBuilderProps) =>
         <div className="max-w-4xl mx-auto">
           <Card className="shadow-xl">
            <CardHeader className="text-center">
-              <CardTitle className="text-2xl flex items-center justify-center space-x-2">
-                {(() => {
-                  const Icon = steps[currentStep].icon;
-                  return <Icon className="w-6 h-6" />;
-                })()}
-                <span>{steps[currentStep].title}</span>
-              </CardTitle>
-              <p className="text-gray-600 mt-2">{steps[currentStep].description}</p>
-            </CardHeader>
-            <CardContent className="p-8">
-              <CurrentStepComponent
-                data={resumeData}
-                onUpdate={updateResumeData}
-                onNext={handleNext}
-                onPrevious={handlePrevious}
-                isLastStep={isLastStep}
-                isFirstStep={isFirstStep}
-                completedSteps={completedSteps}
-              />
-            </CardContent>
+             <CardTitle className="text-2xl flex items-center justify-center space-x-2">
+               {(() => {
+                 const Icon = steps[currentStep].icon;
+                 return <Icon className="w-6 h-6" />;
+               })()}
+               <span>{steps[currentStep].title}</span>
+             </CardTitle>
+             <p className="text-gray-600 mt-2">{steps[currentStep].description}</p>
+           </CardHeader>
+           <CardContent className="p-8">
+             <CurrentStepComponent
+               data={resumeData}
+               onUpdate={updateResumeData}
+               onNext={handleNext}
+               onPrevious={handlePrevious}
+               isLastStep={isLastStep}
+               isFirstStep={isFirstStep}
+               completedSteps={completedSteps}
+             />
+           </CardContent>
           </Card>
         </div>
       </main>
