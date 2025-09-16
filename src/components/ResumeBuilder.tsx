@@ -197,7 +197,7 @@ const ResumeBuilder = ({ onBack, initialData, resumeId }: ResumeBuilderProps) =>
               
               return (
                 <div key={step.id} className="flex items-center">
-                  <div 
+            const isAccessible = true; // Allow access to all steps
                     className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all cursor-pointer ${
                     isActive 
                       ? 'bg-blue-100 text-blue-700 border-2 border-blue-300' 
@@ -207,11 +207,9 @@ const ResumeBuilder = ({ onBack, initialData, resumeId }: ResumeBuilderProps) =>
                           ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                           : 'bg-gray-50 text-gray-400 cursor-not-allowed'
                   }`}
-                    onClick={() => isAccessible && handleStepClick(index)}
-                  >
-                    <Icon className="w-4 h-4" />
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     <span className="font-medium text-sm">{step.title}</span>
-                    {isCompleted && !isActive && (
+                  onClick={() => handleStepClick(index)}
                       <span className="text-green-600">✓</span>
                     )}
                   </div>

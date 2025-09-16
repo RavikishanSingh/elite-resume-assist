@@ -77,36 +77,20 @@ const PersonalInfoForm = ({ data, onUpdate, onNext }: PersonalInfoFormProps) => 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate required fields
-    const requiredFields = ['fullName', 'email', 'phone', 'location'];
-    const missingFields = requiredFields.filter(field => !formData[field].trim());
-    
-    if (missingFields.length > 0) {
+    // Optional validation - users can proceed even with incomplete data
+    if (formData.fullName.trim()) {
       toast({
-        title: "Please fill in required fields",
-        description: `Missing: ${missingFields.map(field => field.replace(/([A-Z])/g, ' $1').toLowerCase()).join(', ')}`,
-        variant: "destructive"
+        title: "Information saved!",
+        description: "Moving to next section...",
       });
-      return;
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
+    } else {
       toast({
-        title: "Invalid email format",
-        description: "Please enter a valid email address.",
-        variant: "destructive"
+        title: "Proceeding to next section",
+        description: "You can return to complete this section anytime.",
       });
-      return;
     }
-
-    toast({
-      title: "Information saved!",
-      description: "Moving to experience section...",
-    });
     
-    setTimeout(() => onNext(), 500);
+    onNext();
   };
 
   const getFieldIcon = (field: string) => {
