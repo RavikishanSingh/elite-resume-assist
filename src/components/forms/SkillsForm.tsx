@@ -16,6 +16,7 @@ interface SkillsFormProps {
 }
 
 const SkillsForm = ({ data, onUpdate, onNext }: SkillsFormProps) => {
+const SkillsForm = ({ data, onUpdate, onNext, onPrevious }: SkillsFormProps) => {
   const [skills, setSkills] = useState<string[]>(data.skills || []);
   const [currentSkill, setCurrentSkill] = useState('');
 
