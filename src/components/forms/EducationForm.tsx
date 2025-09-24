@@ -27,7 +27,7 @@ interface EducationFormProps {
   completedSteps?: Set<number>;
 }
 
-const EducationForm = ({ data, onUpdate, onNext, onPrevious }: EducationFormProps) => {
+const EducationForm = ({ data, onUpdate, onNext, onPrevious, isLastStep, isFirstStep }: EducationFormProps) => {
   const [education, setEducation] = useState<Education[]>(
     data.education?.length > 0 ? data.education : [
       {
@@ -73,7 +73,21 @@ const EducationForm = ({ data, onUpdate, onNext, onPrevious }: EducationFormProp
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onNext();
+    if (onNext && typeof onNext === 'function') {
+      onNext();
+    }
+  };
+
+  const handleNext = () => {
+    if (onNext && typeof onNext === 'function') {
+      onNext();
+    }
+  };
+
+  const handlePrevious = () => {
+    if (onPrevious && typeof onPrevious === 'function') {
+      onPrevious();
+    }
   };
 
   return (
@@ -112,7 +126,6 @@ const EducationForm = ({ data, onUpdate, onNext, onPrevious }: EducationFormProp
                   value={edu.degree}
                   onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)}
                   placeholder="Bachelor of Science in Computer Science"
-                  required
                   className="mt-1"
                 />
               </div>
@@ -124,7 +137,6 @@ const EducationForm = ({ data, onUpdate, onNext, onPrevious }: EducationFormProp
                   value={edu.school}
                   onChange={(e) => updateEducation(edu.id, 'school', e.target.value)}
                   placeholder="University of California"
-                  required
                   className="mt-1"
                 />
               </div>
@@ -144,13 +156,12 @@ const EducationForm = ({ data, onUpdate, onNext, onPrevious }: EducationFormProp
               </div>
               <div>
                 <Label className="text-sm font-medium text-gray-700">
-                  Graduation Date {!edu.current && '*'}
+                  Graduation Date
                 </Label>
                 <Input
                   type="month"
                   value={edu.graduationDate}
                   onChange={(e) => updateEducation(edu.id, 'graduationDate', e.target.value)}
-                  required={!edu.current}
                   disabled={edu.current}
                   className="mt-1"
                 />
@@ -197,14 +208,15 @@ const EducationForm = ({ data, onUpdate, onNext, onPrevious }: EducationFormProp
           <Button 
             type="button" 
             variant="outline" 
-            onClick={onPrevious}
+            onClick={handlePrevious}
             className="flex items-center space-x-2"
           >
             <span>← Previous</span>
           </Button>
           <div className="flex gap-3">
             <Button 
-              type="submit" 
+              type="button"
+              onClick={handleNext}
               className="bg-gradient-to-r from-blue-600 to-purple-600 px-8"
             >
               Continue to Skills →
@@ -212,7 +224,15 @@ const EducationForm = ({ data, onUpdate, onNext, onPrevious }: EducationFormProp
             <Button 
               type="button"
               variant="outline"
-              onClick={() => window.location.href = '#preview'}
+              onClick={() => {
+                // Navigate to preview step (step 5)
+                if (onNext && typeof onNext === 'function') {
+                  // Call onNext multiple times to reach preview
+                  for (let i = 0; i < 3; i++) {
+                    setTimeout(() => onNext(), i * 100);
+                  }
+                }
+              }}
               className="px-6"
             >
               Skip to Preview
