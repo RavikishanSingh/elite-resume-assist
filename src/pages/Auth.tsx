@@ -42,6 +42,16 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email.trim() || !password.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter both email and password.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     const { error } = await signIn(email, password);
@@ -51,11 +61,15 @@ const Auth = () => {
       
       // Provide more user-friendly error messages
       if (error.message?.includes('invalid_credentials')) {
-        errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+        errorMessage = 'Invalid email or password. Please check your credentials or create a new account.';
       } else if (error.message?.includes('email_not_confirmed')) {
         errorMessage = 'Please check your email and click the confirmation link before signing in.';
       } else if (error.message?.includes('too_many_requests')) {
         errorMessage = 'Too many login attempts. Please wait a moment before trying again.';
+      } else if (error.message?.includes('Email not confirmed')) {
+        errorMessage = 'Please check your email and confirm your account before signing in.';
+      } else if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = 'The email or password you entered is incorrect. Please try again or create a new account.';
       }
       
       toast({
