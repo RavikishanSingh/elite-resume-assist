@@ -1,4 +1,5 @@
 import React from 'react';
+import EditableText from '../EditableText';
 
 interface ModernTemplateProps {
   data: any;
