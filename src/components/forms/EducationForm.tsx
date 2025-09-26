@@ -221,22 +221,6 @@ const EducationForm = ({ data, onUpdate, onNext, onPrevious, isLastStep, isFirst
             >
               Continue to Skills →
             </Button>
-            <Button 
-              type="button"
-              variant="outline"
-              onClick={() => {
-                // Navigate to preview step (step 5)
-                if (onNext && typeof onNext === 'function') {
-                  // Call onNext multiple times to reach preview
-                  for (let i = 0; i < 3; i++) {
-                    setTimeout(() => onNext(), i * 100);
-                  }
-                }
-              }}
-              className="px-6"
-            >
-              Skip to Preview
-            </Button>
           </div>
         </div>
       </div>

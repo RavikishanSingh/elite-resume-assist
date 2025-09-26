@@ -220,7 +220,7 @@ const ResumeBuilder = ({ onBack, initialData, resumeId }: ResumeBuilderProps) =>
               const Icon = step.icon;
               const isActive = index === currentStep;
               const isCompleted = completedSteps.has(index);
-              const isAccessible = index <= currentStep || completedSteps.has(index);
+              const isAccessible = true; // Allow access to all steps
 
               return (
                 <div key={step.id} className="flex items-center">
@@ -230,11 +230,9 @@ const ResumeBuilder = ({ onBack, initialData, resumeId }: ResumeBuilderProps) =>
                         ? 'bg-blue-100 text-blue-700 border-2 border-blue-300'
                         : isCompleted
                           ? 'bg-green-100 text-green-700'
-                          : isAccessible
-                            ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
-                    onClick={() => isAccessible && handleStepClick(index)}
+                    onClick={() => handleStepClick(index)}
                   >
                     <Icon className="w-4 h-4" />
                     <span className="font-medium text-sm">{step.title}</span>

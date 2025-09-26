@@ -73,14 +73,6 @@ const SkillsForm = ({ data, onUpdate, onNext, onPrevious }: SkillsFormProps) => 
             className="flex-1"
           />
           <Button 
-            type="button" 
-            onClick={addSkill}
-            variant="outline"
-            className="px-3"
-          >
-            <Plus className="w-4 h-4" />
-          </Button>
-        </div>
       </div>
 
       {skills.length > 0 && (

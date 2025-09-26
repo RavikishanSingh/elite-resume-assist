@@ -234,14 +234,6 @@ const ExperienceForm = ({ data, onUpdate, onNext, onPrevious }: ExperienceFormPr
             >
               Continue to Education →
             </Button>
-            <Button 
-              type="button"
-              variant="outline"
-              onClick={() => window.location.href = '#preview'}
-              className="px-6"
-            >
-              Skip to Preview
-            </Button>
           </div>
         </div>
       </div>

@@ -235,14 +235,6 @@ const ProjectsForm = ({ data, onUpdate, onNext, onPrevious }: ProjectsFormProps)
           >
             Continue to Preview →
           </Button>
-          <Button 
-            type="button"
-            variant="outline"
-            onClick={() => window.location.href = '#preview'}
-            className="px-6"
-          >
-            Skip to Preview
-          </Button>
         </div>
       </div>
     </form>

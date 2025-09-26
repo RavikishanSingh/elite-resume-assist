@@ -248,14 +248,6 @@ const PersonalInfoForm = ({ data, onUpdate, onNext }: PersonalInfoFormProps) => 
         <div className="text-sm text-gray-600">
           * Required fields
         </div>
-        <div className="flex gap-3">
-          <Button 
-            type="submit" 
-            className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
-          >
-            Continue to Experience →
-          </Button>
-        </div>
       </div>
     </form>
   );
