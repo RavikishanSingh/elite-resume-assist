@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, CheckCircle, Star, Users, FileText, Brain, Sparkles, Zap, Shield, Globe, Plus, Edit, Eye, Download, Trash2, Calendar, Clock, TrendingUp } from "lucide-react";
+import { ArrowRight, CircleCheck as CheckCircle, Star, Users, FileText, Brain, Sparkles, Zap, Shield, Globe, Plus, CreditCard as Edit, Eye, Download, Trash2, Calendar, Clock, TrendingUp } from "lucide-react";
 import ResumeBuilder from "@/components/ResumeBuilder";
 import SignInModal from "@/components/auth/SignInModal";
 import ResumeManager from "@/components/resume/ResumeManager";
