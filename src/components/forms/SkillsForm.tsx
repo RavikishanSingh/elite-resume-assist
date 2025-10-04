@@ -114,8 +114,8 @@ export function SkillsForm({ data, onUpdate, onNext, onPrevious }: SkillsFormPro
                 placeholder="e.g., JavaScript, Project Management, Adobe Photoshop"
               />
             </div>
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               onClick={handleAddSkill}
               className="mt-6"
             >
@@ -148,16 +148,16 @@ export function SkillsForm({ data, onUpdate, onNext, onPrevious }: SkillsFormPro
         </div>
 
         <div className="flex justify-between pt-4">
-          <Button 
-            type="button" 
-            variant="outline" 
+          <Button
+            type="button"
+            variant="outline"
             onClick={handlePrevious}
             disabled={!onPrevious}
           >
             Previous
           </Button>
-          <Button 
-            type="button" 
+          <Button
+            type="button"
             onClick={handleNext}
             disabled={!onNext}
           >
@@ -168,3 +168,5 @@ export function SkillsForm({ data, onUpdate, onNext, onPrevious }: SkillsFormPro
     </Card>
   );
 }
+
+export default SkillsForm;
