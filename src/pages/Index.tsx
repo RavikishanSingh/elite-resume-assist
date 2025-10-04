@@ -5,13 +5,14 @@ import { ArrowRight, CheckCircle, Star, Users, FileText, Brain, Sparkles, Zap, S
 import ResumeBuilder from "@/components/ResumeBuilder";
 import SignInModal from "@/components/auth/SignInModal";
 import ResumeManager from "@/components/resume/ResumeManager";
-import LinkedInImport from "@/components/LinkedInImport";
+// LINKEDIN INTEGRATION - COMMENTED OUT FOR FUTURE USE
+// import LinkedInImport from "@/components/LinkedInImport";
+// import RealLinkedInImport from '@/components/linkedin/RealLinkedInImport';
+// import LinkedInCallbackHandler from '@/components/linkedin/LinkedInCallbackHandler';
 import { generatePDF } from "@/utils/pdfGenerator";
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useResumes } from '@/hooks/useResumes';
-import RealLinkedInImport from '@/components/linkedin/RealLinkedInImport';
 import TemplateShowcase from '@/components/TemplateShowcase';
-import LinkedInCallbackHandler from '@/components/linkedin/LinkedInCallbackHandler';
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { calculateATSScore } from "@/utils/atsChecker";
@@ -20,15 +21,16 @@ import { format } from 'date-fns';
 const Index = () => {
   const [showBuilder, setShowBuilder] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
-  const [showLinkedInImport, setShowLinkedInImport] = useState(false);
-  const [showRealLinkedInImport, setShowRealLinkedInImport] = useState(false);
+  // LINKEDIN INTEGRATION - COMMENTED OUT FOR FUTURE USE
+  // const [showLinkedInImport, setShowLinkedInImport] = useState(false);
+  // const [showRealLinkedInImport, setShowRealLinkedInImport] = useState(false);
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [userName, setUserName] = useState('');
   const [showResumes, setShowResumes] = useState(false);
   const [importedData, setImportedData] = useState<any>(null);
   const { user, signOut, loading, session } = useAuth();
   const { resumes, loading: resumesLoading, deleteResume } = useResumes();
-  const [isImportingLinkedIn, setIsImportingLinkedIn] = useState(false);
+  // const [isImportingLinkedIn, setIsImportingLinkedIn] = useState(false);
   const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
 
   const handleSignIn = (email: string, password: string) => {
@@ -70,25 +72,26 @@ const Index = () => {
     setImportedData(quickStartData);
     setShowBuilder(true);
   };
-  const handleLinkedInImport = (data: any) => {
-    console.log('LinkedIn data imported in Index:', data);
-    console.log('Data structure:', JSON.stringify(data, null, 2));
-    
-    // Set the new imported data
-    setImportedData(data);
-    setShowLinkedInImport(false);
-    setShowBuilder(true);
-    
-    // Show success toast
-    console.log('Successfully imported LinkedIn profile data');
-  };
+  // LINKEDIN INTEGRATION - COMMENTED OUT FOR FUTURE USE
+  // const handleLinkedInImport = (data: any) => {
+  //   console.log('LinkedIn data imported in Index:', data);
+  //   console.log('Data structure:', JSON.stringify(data, null, 2));
+  //
+  //   // Set the new imported data
+  //   setImportedData(data);
+  //   setShowLinkedInImport(false);
+  //   setShowBuilder(true);
+  //
+  //   // Show success toast
+  //   console.log('Successfully imported LinkedIn profile data');
+  // };
 
-  const handleRealLinkedInImport = (data: any) => {
-    console.log('Real LinkedIn data imported:', data);
-    setImportedData(data);
-    setShowRealLinkedInImport(false);
-    setShowBuilder(true);
-  };
+  // const handleRealLinkedInImport = (data: any) => {
+  //   console.log('Real LinkedIn data imported:', data);
+  //   setImportedData(data);
+  //   setShowRealLinkedInImport(false);
+  //   setShowBuilder(true);
+  // };
 
   const handleEditResume = (resume: any) => {
     // Load resume data and open builder
@@ -119,17 +122,18 @@ const Index = () => {
     );
   }
 
-  if (isImportingLinkedIn) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Importing your LinkedIn profile...</p>
-          <p className="text-sm text-gray-500 mt-2">Please wait, this may take a moment.</p>
-        </div>
-      </div>
-    );
-  }
+  // LINKEDIN INTEGRATION - COMMENTED OUT FOR FUTURE USE
+  // if (isImportingLinkedIn) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+  //       <div className="text-center">
+  //         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+  //         <p className="text-gray-600">Importing your LinkedIn profile...</p>
+  //         <p className="text-sm text-gray-500 mt-2">Please wait, this may take a moment.</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   if (showBuilder) {
     return <ResumeBuilder 
@@ -345,7 +349,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      <LinkedInCallbackHandler
+      {/* LINKEDIN INTEGRATION - COMMENTED OUT FOR FUTURE USE */}
+      {/* <LinkedInCallbackHandler
         onImportStart={() => setIsImportingLinkedIn(true)}
         onImportSuccess={(data) => {
           setIsImportingLinkedIn(false);
@@ -355,7 +360,7 @@ const Index = () => {
           setIsImportingLinkedIn(false);
           setShowRealLinkedInImport(false);
         }}
-      />
+      /> */}
       {/* Header */}
       <header className="relative">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5"></div>
@@ -380,6 +385,9 @@ const Index = () => {
                   <span className="text-gray-600 font-medium">Welcome, {user.email?.split('@')[0]}!</span>
                   <Button variant="outline" onClick={() => setShowResumes(true)} className="hover:bg-blue-50">
                     My Resumes
+                  </Button>
+                  <Button variant="outline" onClick={() => window.location.href = '/blog'} className="hover:bg-blue-50">
+                    Blog
                   </Button>
                   <Button variant="outline" onClick={signOut}>
                     Sign Out
@@ -421,7 +429,7 @@ const Index = () => {
             </h1>
             
             <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Navigate your career with AI-powered resume creation. Import from LinkedIn or build from scratch with intelligent guidance that helps your resume soar.
+              Navigate your career with AI-powered resume creation. Build professional resumes from scratch with intelligent guidance that helps your resume soar.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
@@ -434,9 +442,10 @@ const Index = () => {
                 Take Off Now
                 <ArrowRight className="ml-3 w-5 h-5" />
               </Button>
-              <Button 
-                variant="outline" 
-                size="lg" 
+              {/* LINKEDIN INTEGRATION - COMMENTED OUT FOR FUTURE USE */}
+              {/* <Button
+                variant="outline"
+                size="lg"
                 className="text-lg px-10 py-6 border-2 border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 shadow-lg hover:shadow-xl transition-all duration-300"
                 onClick={() => {
                   if (user) {
@@ -450,7 +459,7 @@ const Index = () => {
                   <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                 </svg>
                 {user ? 'Import from LinkedIn' : 'Sign In to Import from LinkedIn'}
-              </Button>
+              </Button> */}
             </div>
 
             {/* Enhanced Stats */}
@@ -488,8 +497,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* LinkedIn Integration Highlight */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 relative overflow-hidden">
+      {/* LINKEDIN INTEGRATION SECTION - COMMENTED OUT FOR FUTURE USE */}
+      {/* <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 relative overflow-hidden">
       <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")" }}></div>
         <div className="container mx-auto px-4 relative">
           <div className="max-w-4xl mx-auto text-center">
@@ -497,14 +506,14 @@ const Index = () => {
               <img src="/upscalemedia-transformed.png" alt="Resume Pilot" className="w-6 h-6" />
               <span className="text-white font-semibold">LinkedIn Integration Now Live!</span>
             </div>
-            
+
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
               Skip the Manual Flight Plan
             </h2>
             <p className="text-xl text-blue-100 mb-12 max-w-2xl mx-auto">
               Import your professional profile directly from LinkedIn in seconds. Let your career take flight with perfectly formatted resumes instantly.
             </p>
-            
+
             <div className="grid md:grid-cols-2 gap-8 mb-12">
               <div className="bg-white/10 backdrop-blur-sm p-8 rounded-2xl border border-white/20">
                 <h3 className="text-xl font-semibold mb-4 text-white">❌ Traditional Way</h3>
@@ -515,7 +524,7 @@ const Index = () => {
                   <li>• Takes 2-3 hours</li>
                 </ul>
               </div>
-              
+
               <div className="bg-white/20 backdrop-blur-sm p-8 rounded-2xl border-2 border-white/40">
                 <h3 className="text-xl font-semibold mb-4 text-white">✅ With LinkedIn Import</h3>
                 <ul className="text-left space-y-3 text-white">
@@ -527,8 +536,8 @@ const Index = () => {
               </div>
             </div>
 
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               onClick={() => setShowLinkedInImport(true)}
               className="text-lg px-10 py-6 bg-white text-blue-600 hover:bg-gray-50 shadow-2xl hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
@@ -539,7 +548,7 @@ const Index = () => {
             </Button>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Enhanced Features Section */}
       <section className="py-24 bg-white">
@@ -555,7 +564,8 @@ const Index = () => {
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
-              <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 bg-gradient-to-br from-blue-50 to-indigo-50 hover:scale-105 group">
+              {/* LINKEDIN INTEGRATION CARD - COMMENTED OUT FOR FUTURE USE */}
+              {/* <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 bg-gradient-to-br from-blue-50 to-indigo-50 hover:scale-105 group">
                 <CardHeader className="pb-6">
                   <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                     <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
@@ -567,7 +577,7 @@ const Index = () => {
                     Import your professional information directly from LinkedIn with intelligent data extraction and automatic formatting.
                   </CardDescription>
                 </CardHeader>
-              </Card>
+              </Card> */}
 
               <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-500 bg-gradient-to-br from-purple-50 to-indigo-50 hover:scale-105 group">
                 <CardHeader className="pb-6">
@@ -631,7 +641,7 @@ const Index = () => {
               Ready to Build Your Perfect Resume?
             </h2>
             <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
-              Join thousands of professionals who've landed their dream jobs with our AI-powered resume builder and LinkedIn integration.
+              Join thousands of professionals who've landed their dream jobs with our AI-powered resume builder.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <Button 
@@ -643,8 +653,9 @@ const Index = () => {
                 Start From Scratch
                 <ArrowRight className="ml-3 w-5 h-5" />
               </Button>
-              <Button 
-                size="lg" 
+              {/* LINKEDIN INTEGRATION BUTTON - COMMENTED OUT FOR FUTURE USE */}
+              {/* <Button
+                size="lg"
                 variant="outline"
                 className="text-lg px-10 py-6 border-2 border-white text-foreground hover:bg-white hover:text-primary transition-all duration-300 transform hover:scale-105"
                 onClick={() => setShowLinkedInImport(true)}
@@ -653,7 +664,7 @@ const Index = () => {
                   <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                 </svg>
                 Import from LinkedIn
-              </Button>
+              </Button> */}
             </div>
           </div>
         </div>
@@ -684,7 +695,8 @@ const Index = () => {
         onSignIn={handleSignIn}
       />
 
-      {showLinkedInImport && (
+      {/* LINKEDIN INTEGRATION MODALS - COMMENTED OUT FOR FUTURE USE */}
+      {/* {showLinkedInImport && (
         <LinkedInImport
           onImport={handleLinkedInImport}
           onClose={() => setShowLinkedInImport(false)}
@@ -696,7 +708,7 @@ const Index = () => {
           onImportSuccess={handleRealLinkedInImport}
           onClose={() => setShowRealLinkedInImport(false)}
         />
-      )}
+      )} */}
     </div>
   );
 };
